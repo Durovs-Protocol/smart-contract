@@ -1,7 +1,7 @@
-import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { toNano } from '@ton/core';
-import { ProductOwner } from '../wrappers/ProductOwner';
+import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import '@ton/test-utils';
+import { ProductOwner } from '../wrappers/ProductOwner';
 
 describe('ProductOwner', () => {
     let blockchain: Blockchain;
@@ -14,28 +14,42 @@ describe('ProductOwner', () => {
         productOwner = blockchain.openContract(await ProductOwner.fromInit());
 
         deployer = await blockchain.treasury('deployer');
-
-        const deployResult = await productOwner.send(
-            deployer.getSender(),
-            {
-                value: toNano('0.05'),
-            },
-            {
-                $$type: 'Deploy',
-                queryId: 0n,
-            }
-        );
-
-        expect(deployResult.transactions).toHaveTransaction({
-            from: deployer.address,
-            to: productOwner.address,
-            deploy: true,
-            success: true,
-        });
+            const deployResult = await productOwner.send(
+                deployer.getSender(),
+                {
+                    value: toNano('0.05'),
+                },
+                {
+                    $$type: 'Deploy',
+                    queryId: 0n,
+                }
+            );
+    
+            expect(deployResult.transactions).toHaveTransaction({
+                from: deployer.address,
+                to: productOwner.address,
+                deploy: true,
+                success: true,
+            });
     });
 
-    it('should deploy', async () => {
-        // the check is done inside beforeEach
-        // blockchain and productOwner are ready to use
+    it('should create product', async () => {
+        const createProduct = await productOwner.send(
+            deployer.getSender(),
+            {
+                value: toNano('1'),
+            },
+            {
+                $$type: 'CreateProduct',
+                name: 'Product name',
+                description: 'Description',
+            }
+        );
+        expect(createProduct.transactions).toHaveTransaction({
+            from: deployer.address,
+            to: productOwner.address,
+            success: true,
+            outMessagesCount: 1
+        });
     });
 });
