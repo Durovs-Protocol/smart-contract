@@ -1,21 +1,21 @@
+import { Address, toNano } from '@ton/core';
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
-import { toNano } from '@ton/core';
-import { SecurityPackages } from '../wrappers/SecurityPackages';
 import '@ton/test-utils';
+import { InsurancePool } from '../../wrappers/insurance/InsurancePool';
 
-describe('SecurityPackages', () => {
+describe('InsurancePool', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
-    let securityPackages: SandboxContract<SecurityPackages>;
+    let insurancePool: SandboxContract<InsurancePool>;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
 
-        securityPackages = blockchain.openContract(await SecurityPackages.fromInit());
+        insurancePool = blockchain.openContract(await InsurancePool.fromAddress(Address.parse('EQDMIjPdVwqre3TVNL_imU2eX281SfcmnQAXPU1KBkWDULl5')));
 
         deployer = await blockchain.treasury('deployer');
 
-        const deployResult = await securityPackages.send(
+        const deployResult = await insurancePool.send(
             deployer.getSender(),
             {
                 value: toNano('0.05'),
@@ -28,7 +28,7 @@ describe('SecurityPackages', () => {
 
         expect(deployResult.transactions).toHaveTransaction({
             from: deployer.address,
-            to: securityPackages.address,
+            to: insurancePool.address,
             deploy: true,
             success: true,
         });
@@ -36,6 +36,6 @@ describe('SecurityPackages', () => {
 
     it('should deploy', async () => {
         // the check is done inside beforeEach
-        // blockchain and securityPackages are ready to use
+        // blockchain and insurancePool are ready to use
     });
 });

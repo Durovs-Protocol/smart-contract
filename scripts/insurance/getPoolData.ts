@@ -1,6 +1,6 @@
-import { Address, toNano } from '@ton/core';
-import { InsurancePool } from '../wrappers/InsurancePool';
 import { NetworkProvider } from '@ton/blueprint';
+import { Address } from '@ton/core';
+import { InsurancePool } from '../../wrappers/insurance/InsurancePool';
 
 export async function run(provider: NetworkProvider) {
 

@@ -1,6 +1,6 @@
-import { toNano } from '@ton/core';
-import { InsurancePool } from '../wrappers/InsurancePool';
 import { NetworkProvider } from '@ton/blueprint';
+import { toNano } from '@ton/core';
+import { InsurancePool } from '../../wrappers/insurance/InsurancePool';
 
 export async function run(provider: NetworkProvider) {
     const randomInt = BigInt(Math.floor(Math.random() * 1000000))

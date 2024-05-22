@@ -1,6 +1,6 @@
-import { toNano } from '@ton/core';
-import { ProductOwner } from '../wrappers/ProductOwner';
 import { NetworkProvider } from '@ton/blueprint';
+import { toNano } from '@ton/core';
+import { ProductOwner } from '../../wrappers/insurance/ProductOwner';
 
 export async function run(provider: NetworkProvider) {
     const productOwner = provider.open(await ProductOwner.fromInit());

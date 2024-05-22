@@ -1,7 +1,7 @@
 import { toNano } from '@ton/core';
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import '@ton/test-utils';
-import { ProductOwner } from '../wrappers/ProductOwner';
+import { ProductOwner } from '../../wrappers/insurance/ProductOwner';
 
 describe('ProductOwner', () => {
     let blockchain: Blockchain;

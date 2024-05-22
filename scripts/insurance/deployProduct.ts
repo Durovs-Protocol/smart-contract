@@ -1,6 +1,6 @@
-import { toNano } from '@ton/core';
-import { Product } from '../wrappers/Product';
 import { NetworkProvider } from '@ton/blueprint';
+import { toNano } from '@ton/core';
+import { Product } from '../../wrappers/insurance/Product';
 
 export async function run(provider: NetworkProvider) {
     const product = provider.open(await Product.fromInit(BigInt(Math.floor(Math.random() * 10000))));
