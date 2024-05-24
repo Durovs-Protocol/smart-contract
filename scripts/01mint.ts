@@ -10,7 +10,7 @@ export async function run(provider: NetworkProvider) {
     
     const sampleJetton = provider.open(await SupplyToken.fromInit(deployer, content, maxSupply));
 
-    const amount = toNano('0');
+    const amount = toNano('100000');
 
     await sampleJetton.send(
         provider.sender(),

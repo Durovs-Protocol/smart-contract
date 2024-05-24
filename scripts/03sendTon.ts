@@ -11,9 +11,9 @@ export async function run(provider: NetworkProvider) {
     const jettonWallet = provider.open(await JettonWallet.fromInit(jettonAddress, user));
     const toWallet = jettonWallet.address;
 
-    const jettonAmount = toNano(10);
+    const jettonAmount = toNano(30);
     const tonAmount = toNano('0.5');
-
+//Отправка Ton в хранилище и получение ST
     await teasury.send(
         provider.sender(),
         {
@@ -21,7 +21,7 @@ export async function run(provider: NetworkProvider) {
         },
         {
             $$type: 'TonToSwapJetton',
-            sender: toWallet ,
+            sender: user,
             amount: jettonAmount,
             queryId: 1n,
             toWallet: user,

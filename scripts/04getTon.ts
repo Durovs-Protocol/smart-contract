@@ -12,7 +12,7 @@ export async function run(provider: NetworkProvider) {
     
     const tonAmount = toNano(0.05);
     const jettonAmount = toNano(5);
-
+//Отправка ST пользователем в хранилище и возврат TON
     await jettonWallet.send(
         provider.sender(),
         {
