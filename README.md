@@ -11,16 +11,24 @@
 
 ### Build
 
-`npx blueprint build` or `yarn blueprint build`
+`npx blueprint build` or `yarn build`
 
 ### Test
 
-`npx blueprint test` or `yarn blueprint test`
+`npx blueprint test` or `yarn test`
 
 ### Deploy or run another script
 
-`npx blueprint run` or `yarn blueprint run`
+`npx blueprint run` or `yarn run`
 
 ### Add a new contract
 
 `npx blueprint create ContractName` or `yarn blueprint create ContractName`
+
+
+## Контракты
+
+- `01mint` - `EQAejN_aP5HZ6cplzI5nhjPH9rze0SdztPR-yonzyBfgZCfk`
+- `02deployTreasury` & `03sendTon` & `05info` - `EQB93h6ym6QThQkAQwjtQFV776Xnc59BEYeoqZx_xQPcw2-f`
+- `05info` - взаимодействие
+- `07deployPool` - `EQCNm8SNX_wBt5LdqNQfDFxuFd1dLBnch2tpRw8SpIB6lWrd`

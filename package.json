@@ -1,6 +1,7 @@
 {
-    "name": "wallet-insurance-ton-smartcontract",
-    "version": "0.0.1",
+    "name": "wallet-loans",
+    "version": "1.0.0",
+    "private": true,
     "scripts": {
         "action": "blueprint run",
         "build": "blueprint build",

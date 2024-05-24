@@ -27,7 +27,7 @@ export async function run(provider: NetworkProvider) {
     await provider.waitForDeploy(sampleJetton.address);
     let data = JSON.stringify(sampleJetton.address.toString());
     fs.writeFileSync('JettonAddress.json', data);
-    console.log('----------------YT deployed--------------------------')
+    console.log('---------------- sample Jetton deployed --------------------------')
     
     const user_jetton_wallet = provider.open(await JettonWallet.fromInit(sampleJetton.address, deployer));
     console.log(`user's yt: ${(await user_jetton_wallet.getGetWalletData()).balance}`)
