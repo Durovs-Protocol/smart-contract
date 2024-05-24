@@ -18,7 +18,7 @@ message SetMyJettonWallet{
     wallet: Address;
 }
 
-
+//Хранилище через кторое будет происходить обмен 
 contract Treasury with Jetton, Deployable{
     jetton: Address;
     totalSupply: Int as coins; // Already set initially 
@@ -44,7 +44,7 @@ contract Treasury with Jetton, Deployable{
         self.jettonReserve = 0;
     }
         
-
+//Установка адреса SupplyToken кошелька принадлежащего Treasury
     receive(msg: SetMyJettonWallet){
         let ctx: Context = context();
         require(ctx.sender == self.owner, "The sender is not the owner!");
@@ -53,19 +53,17 @@ contract Treasury with Jetton, Deployable{
         self.isSetMyJettonWallet = true;
     }
 
-    
+//Отправка пользователем SupplyT, возврат вложений
     receive(msg: TokenNotification){
-
         let ctx: Context = context();
         let jettonAmount: Int = msg.amount;
-
-        // // jetton to swap Ton
         if (msg.forward_payload == self.createOffchainContent("JettonToSwapTon").asSlice()) {
             require(ctx.sender == self.MyJettonWallet, "sender error.");
+            //значение указано минимальным для тестирования
             let tonAmount: Int = ctx.value;
             send(SendParameters{
                 to: ctx.sender, 
-                value: ctx.value,
+                value: tonAmount,
                 mode: 0, 
                 bounce: false,
                 body: "Jetton to swap Ton success!".asComment()
@@ -75,14 +73,14 @@ contract Treasury with Jetton, Deployable{
     }
 
 
-
+//Вложение TON, получение SupplyT
     receive(msg: TonToSwapJetton){
         let ctx: Context = context();
         // require(msg.sender == ctx.sender, "The sender is not the same as the user!");
         // require(msg.amount > 0, "The amount of Ton is not enough!");
 
         // send the Jetton to the user
-        self.sendJetton(msg.sender, msg.amount, msg.queryId, msg.amount);
+        self.sendJetton(msg.sender, msg.amount, msg.queryId, 0);
     }
 
     fun sendJetton(to: Address, amount: Int, queryId: Int, value: Int){

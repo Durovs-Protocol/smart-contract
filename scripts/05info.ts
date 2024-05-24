@@ -6,6 +6,7 @@ import { jettonAddress } from '../utils/helpers';
 
 
 export async function run(provider: NetworkProvider) {
+    // получение балансов для проверки после запуска скриптов
     const user = provider.sender().address as Address;
     const treasury = provider.open(await Treasury.fromInit(jettonAddress, user));
     const user_jetton_wallet = provider.open(await JettonWallet.fromInit(jettonAddress, user));

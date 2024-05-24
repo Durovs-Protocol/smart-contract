@@ -6,6 +6,7 @@ message Mint {
     receiver: Address;
 }
 
+//Supply токен на основе Jetton
 contract SupplyToken with Deployable, Jetton {
     totalSupply: Int as coins;
     owner: Address;

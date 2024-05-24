@@ -41,6 +41,7 @@ export async function run(provider: NetworkProvider) {
     );
 
     await provider.waitForDeploy(sampleJetton.address);
+    //минт токенов в хранилище
     const treasury_jetton_wallet = provider.open(await JettonWallet.fromInit(sampleJetton.address, treasury.address));
 
     console.log(`mint to treasury: ${(await treasury_jetton_wallet.getGetWalletData()).balance}`)
