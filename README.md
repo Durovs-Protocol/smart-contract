@@ -1,51 +1,45 @@
 # Описание проекта
 
-## Описание архитектуры
+Внешние документы:
+1. [Примеры](/docs/examples.md)
+2. [Контроль цены](/docs/price_control.md)
 
-### Смарт-контракты для обеспечения функционала
+## Дорожная карта
 
-Функционал:
-- Предоставление TON в обмен на wTON - в качестве залогового обязательства
-    - Точка входа: `Pool`
-    - TON добавляется в `Treasury`
-    - `Pool` выдает wTON
+### Этап 1
 
-- Создание (mint) `usdTON`
-    - Точка входа: `Pool`
-    - {данные о расчете целевой цены}
-    - {данные о стандарте залога wTON} - сейчас 180% (health rate: 1.8)
-    - Выпуск usdTON
+1. `Pool` - точка входа для добавления залога TON (конвертации в wTON), чеканки usdTON и погашения займа
+2. `Treasury` - расчетный счет с TON полученых в качестве залога
+3. Оракул для получения данных
+4. Расчет health rate на балансах и авто ликвидация залога
+5. Базовая настройка Stability (service) fee, которая в том числе тратиться на поддержание курса usdTON (в моменты когда он становится отрицательным)
+6. Механизм аварийного глобального [расчета](/docs/price_control.md#глобальный-расчет)
 
-- Погашение (burn) usdTON
-    - Точка входа: `Pool`
+### Этап 2
 
-- Возврат обсеспечения
-    - Точка входа: `Pool`
+7. Запуск торговых пары usdTON/TON, usdTON/jUSDT, usdTON/jUSDC, usdTON/jDAI на DEX от TON
 
+### Этап 3
 
-Ценообразование:
+8. Параметр чувствительности - переключает систему с механизма целевой цены на механизм обратной связи целевого курса (Target Rate Feedback Mechanism, TRFM)
+9. Работа [TRFM](/docs/price_control.md#2-этап-переключение-с-целевой-цены-на-механизм-обратной-связи-целевого-курса---trfm): запрос курса TON(через оракул) и изменение Stability (service) fee (изменяется ассиметрично изменению курса)
 
-- Предоставление ликвидности: при леквидации высоко-рисковых обязательств покупается залог (wTON) и сразу же продается
+## Разработка
 
-## How to use
+Целевые настройки:
+- Health rate ликвидации: 1.5
+- Health rate для эмиссии: >=2 (необходимый health rate для создания)
+- Stability Fee: 1% (за использование usdTON)
+
+Команды:
+- `yarn build` - сборка смарт-контракта
+- `yarn test` - запуск теста для смарт-контракта
+- `yarn run` - запуск выполнения скрипта для взаимодействия со смарт-контрактом
+- `yarn blueprint create ContractName` - создание зависимостей при создании смарт-контракта
+
+## Прочее
 
 -   `contracts` - source code of all the smart contracts of the project and their dependencies.
 -   `wrappers` - wrapper classes (implementing `Contract` from ton-core) for the contracts, including any [de]serialization primitives and compilation functions.
 -   `tests` - tests for the contracts.
 -   `scripts` - scripts used by the project, mainly the deployment scripts.
-
-### Build
-
-`npx blueprint build` or `yarn build`
-
-### Test
-
-`npx blueprint test` or `yarn test`
-
-### Deploy or run another script
-
-`npx blueprint run` or `yarn run`
-
-### Add a new contract
-
-`npx blueprint create ContractName` or `yarn blueprint create ContractName`
