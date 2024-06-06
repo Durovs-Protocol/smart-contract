@@ -72,3 +72,41 @@ export const jettonAddress = Address.parse(JSON.parse(rawdata.toString()));
 export function cell(pram: string) {
     return beginCell().storeBit(1).storeUint(0, 32).storeStringTail(pram).endCell();
 }
+
+export async function timer(message: string, initVal: any, checkFunction: Function) {
+           let expectedValue = initVal
+           console.log(`before: ${message}`, initVal)
+           let attempt = 1;
+
+           while(initVal === expectedValue) {
+               console.log('Increment counter, attempt: ', attempt);
+               await delay(2000);
+               expectedValue =  await checkFunction();
+               attempt++;
+           }
+           console.log(`after: ${message}`, expectedValue)
+}
+
+function delay(ms: number) {
+    return new Promise( resolve => setTimeout(resolve, ms) );
+}
+
+
+function getFilename(name: string, nameSuffix?: string) {
+    return `deploy/${name}${nameSuffix ? `_${nameSuffix}` : ""}.address`;
+}
+
+  export async function saveAddress(
+    name: string,
+    address: Address,
+    nameSuffix?: string
+  ) {
+    const filename = getFilename(name, nameSuffix);
+    await fs.promises.writeFile(filename, address.toString());
+  
+    console.log(`Address '${address.toString()}' saved to file ${filename}.`);
+  }
+  
+  export async function loadAddress(name: string, nameSuffix?: string) {
+    return await fs.promises.readFile(getFilename(name, nameSuffix), "utf8");
+  }
