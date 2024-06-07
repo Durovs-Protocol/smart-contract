@@ -120,24 +120,25 @@ describe('UserFlow', () => {
             },
         );
 
-        // await pool.send(
-        //     deployer.getSender(),
-        //     { value: toNano(1) },
-        //     {
-        //         $$type: 'UpdateTonPriceMsg',
-        //         price: 3200000000n,
-        //     },
-        // );
-        // await pool.send(
-        //     deployer.getSender(),
-        //     { value: toNano(1) },
-        //     {
-        //         $$type: 'PoolSettingsMsg',
-        //         liquidationRatio: 1200000000n,
-        //         stabilityFeeRate: 1000000000625n,
-        //         liquidatorIncentiveBps: 10500n,
-        //     },
-        // );
+        await pool.send(
+            deployer.getSender(),
+            { value: toNano(1) },
+            {
+                $$type: 'PoolSettingsMsg',
+                liquidationRatio: toNano(1.2),
+                stabilityFeeRate: 1000000000625n,
+                liquidatorIncentiveBps: toNano(1.05),
+            },
+        );
+
+        await pool.send(
+            deployer.getSender(),
+            { value: toNano(1) },
+            {
+                $$type: 'UpdateTonPriceMsg',
+                price: toNano(3.5),
+            },
+        );
     });
     it('deps set ok', async () => {
         const stablecoinDeps = await stablecoinMaster.getDeps();
@@ -153,19 +154,20 @@ describe('UserFlow', () => {
         expect(poolDeps.positionsManagerAddress.toString()).toEqual(manager.address.toString());
     });
 
-    // it('pool settings set ok', async () => {
-    //     const poolSettings = await pool.getPoolSettings();
-    //     expect(poolSettings.liquidationRatio).toEqual(1200000000n);
-    //     expect(poolSettings.liquidatorIncentiveBps).toEqual(10500n);
-    //     expect(poolSettings.stabilityFeeRate).toEqual(1000000000625n);
-    // });
+    it('pool settings set ok', async () => {
+        const poolSettings = await pool.getPoolSettings();
+        expect(poolSettings.liquidationRatio).toEqual(toNano(1.2));
+        expect(poolSettings.liquidatorIncentiveBps).toEqual(toNano(1.05));
+        expect(poolSettings.stabilityFeeRate).toEqual(1000000000625n);
+    });
 
-    // it('initial price set ok', async () => {
-    //     const tonPrice = await pool.getTonPrice();
-    //     expect(tonPrice).toEqual(3200000000n);
-    //     const tonPriceWithSafetyMargin = await pool.getTonPriceWithSafetyMargin();
-    //     expect(tonPriceWithSafetyMargin).toEqual(2666666666n);
-    // });
+    it('initial price set ok', async () => {
+        const tonPrice = await pool.getTonPrice();
+        expect(tonPrice).toEqual(toNano(3.5));
+        const tonPriceWithSafetyMargin = await pool.getTonPriceWithSafetyMargin();
+        expect(tonPriceWithSafetyMargin).toEqual(2916666666n);
+        ///???
+    });
 
     it('user actions flow', async () => {
         const collateralDepositAmount = toNano(1);

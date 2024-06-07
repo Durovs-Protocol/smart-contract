@@ -24,19 +24,18 @@ export async function run(provider: NetworkProvider) {
             },
         );
 
-        const managerAddr = 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
-        await timer(`Адрес менеджера в контракте ${name}: `, managerAddr, managerAddress(contract));
-
-        const poolAddr = await poolAddress(contract)();
-
-        await timer(`Адрес пула в контракте ${name}: `, managerAddr, poolAddress(contract));
-        const stablecoinAddressAddr = await stablecoinAddress(contract)();
-        await timer(`Адрес стейблкоина в контракте ${name}: `, managerAddr, stablecoinAddress(contract));
+        const emptyAddress = 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
+        await timer(`manager address`, `Set deps in ${name}`, emptyAddress, managerAddress(contract));
+        await timer(`pool address`, `Set deps in ${name}`, emptyAddress, poolAddress(contract));
+        await timer(`stable address`, `Set deps in ${name}`, emptyAddress, stablecoinAddress(contract));
     }
 
     await setDeps(stablecoin, 'stablecoin');
     await setDeps(manager, 'manager');
     await setDeps(poolContract, 'pool');
+    console.log('=============================================================================');
+    console.log('Deps installed successfully');
+    console.log('=============================================================================');
 }
 
 const managerAddress = function (contract: any) {

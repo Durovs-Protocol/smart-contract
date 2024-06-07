@@ -1,7 +1,7 @@
-import "./user_position.tact";
+import "../user_position.tact";
 import "./jetton.tact";
 import "./stablecoin_wallet.tact";
-import "./messages";
+import "../messages";
 import "@stdlib/deploy";
 
 message Mint {

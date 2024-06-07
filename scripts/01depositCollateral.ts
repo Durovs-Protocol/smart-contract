@@ -17,15 +17,19 @@ export async function run(provider: NetworkProvider) {
         const positionAddressContract = provider.open(
             await PositionAddressContract.fromAddress(positionAddressContractAddress),
         );
+
+        provider.waitForDeploy(positionAddressContract.address, 30);
+
         let userPossitionAddress = await positionAddressContract.getPositionAddress();
         const userPositionContract = provider.open(await UserPosition.fromAddress(userPossitionAddress));
+
         const state = await userPositionContract.getPositionState();
         return state.collateral;
     };
 
-    console.log(
-        '01 | Пользователь вносит залог, создается контракт пользовательской позиции--------------------------------',
-    );
+    console.log('=============================================================================');
+    console.log('01 | Пользователь вносит залог, создается контракт пользовательской позиции');
+    console.log('=============================================================================');
 
     const collateralAmount = toNano(1);
     const currentPositionId = await manager.getLastPositionId();
@@ -39,14 +43,13 @@ export async function run(provider: NetworkProvider) {
             amount: collateralAmount,
         },
     );
-    console.log('currentPositionId:', currentPositionId);
 
     if (currentPositionId <= 0) {
-        await timer(`Id последней зарегистрированной позиции:`, currentPositionId, manager.getLastPositionId);
+        await timer(`Position Id`, 'Внесение залога', currentPositionId, manager.getLastPositionId);
         const userBalanceBefore = await userCollateral();
-        await timer(`Баланс залога пользователя`, userBalanceBefore, userCollateral);
+        await timer(`User balance`, 'Внесение залога', userBalanceBefore, userCollateral);
     } else {
         const userBalanceBefore = await userCollateral();
-        await timer(`Баланс залога пользователя`, userBalanceBefore, userCollateral);
+        await timer(`User balance`, 'Внесение залога', userBalanceBefore, userCollateral);
     }
 }

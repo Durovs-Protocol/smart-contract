@@ -24,10 +24,10 @@ export async function run(provider: NetworkProvider) {
         },
     );
 
-    await provider.waitForDeploy(stablecoin.address);
+    await provider.waitForDeploy(stablecoin.address, 30);
     await saveAddress('stablecoin', stablecoin.address);
-    console.log(
-        '----------------------------------------------------------------------------------stablecoin deployed successfully',
-    );
+    console.log('=============================================================================');
+    console.log('Stablecoin deployed successfully');
+    console.log('=============================================================================');
     // run methods on `stablecoin`
 }

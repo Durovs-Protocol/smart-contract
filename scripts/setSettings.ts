@@ -16,13 +16,13 @@ export async function run(provider: NetworkProvider) {
         { value: toNano('0.3') },
         {
             $$type: 'PoolSettingsMsg',
-            liquidationRatio: toNano('1'),
+            liquidationRatio: toNano('1.2'),
             stabilityFeeRate: 1000000000625n,
-            liquidatorIncentiveBps: 10500n,
+            liquidatorIncentiveBps: toNano(1.05),
         },
     );
 
-    const currentliquidRatio = await getliquidRatio();
+    const liquidRatio = await getliquidRatio();
 
-    await timer(`liquidation ratio:`, currentliquidRatio, getliquidRatio);
+    await timer(`liquid ratio`, 'Настройка пула', liquidRatio, getliquidRatio);
 }
