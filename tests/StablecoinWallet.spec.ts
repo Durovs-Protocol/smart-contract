@@ -1,21 +1,21 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { toNano } from '@ton/core';
-import { SupplyToken } from '../wrappers/SupplyToken';
+import { StablecoinWallet } from '../wrappers/StablecoinWallet';
 import '@ton/test-utils';
 
-describe('SupplyToken', () => {
+describe('StablecoinWallet', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
-    let supplyToken: SandboxContract<SupplyToken>;
+    let stablecoinWallet: SandboxContract<StablecoinWallet>;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
 
-        supplyToken = blockchain.openContract(await SupplyToken.fromInit());
+        stablecoinWallet = blockchain.openContract(await StablecoinWallet.fromInit());
 
         deployer = await blockchain.treasury('deployer');
 
-        const deployResult = await supplyToken.send(
+        const deployResult = await stablecoinWallet.send(
             deployer.getSender(),
             {
                 value: toNano('0.05'),
@@ -28,7 +28,7 @@ describe('SupplyToken', () => {
 
         expect(deployResult.transactions).toHaveTransaction({
             from: deployer.address,
-            to: supplyToken.address,
+            to: stablecoinWallet.address,
             deploy: true,
             success: true,
         });
@@ -36,6 +36,6 @@ describe('SupplyToken', () => {
 
     it('should deploy', async () => {
         // the check is done inside beforeEach
-        // blockchain and supplyToken are ready to use
+        // blockchain and stablecoinWallet are ready to use
     });
 });

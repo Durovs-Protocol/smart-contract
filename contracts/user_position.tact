@@ -1,0 +1,262 @@
+import "./messages";
+
+struct PositionState {
+    collateral: Int as coins;
+    debt: Int as uint64;
+}
+
+struct Message {
+    timestamp: Int as uint64;
+    message: String;
+}
+
+contract UserPosition  {
+
+    const MinTonsForStorage: Int = ton("0.01");
+
+    user: Address;
+    stablecoinMasterAddress: Address;
+    positionsManagerAddress: Address;
+    collateral: Int as coins = 0;
+    debt: Int = 0;
+    message: Message;
+
+    init(user: Address, stablecoinMasterAddress: Address, positionsManagerAddress: Address) {
+        self.user = user; 
+        self.stablecoinMasterAddress = stablecoinMasterAddress;
+        self.positionsManagerAddress = positionsManagerAddress;
+        self.message = Message{
+            timestamp: 0,
+            message: "Position Created"
+        };
+
+        // register this position in positionsManager
+        send(SendParameters{
+            to: self.positionsManagerAddress, 
+            // how much we should send to this contract? 
+            // how to pay for storage for this contract later? 
+            // we have no more writes in position address contract ever
+            mode: SendIgnoreErrors, 
+            value: ton("0.1"), 
+            bounce: true,
+            body: NewPositionIdMessage{
+                user: user
+            }.toCell()
+        });
+    }
+
+
+    /*01 | Внесение залога пользователем (from manager)'*/
+    receive(msg: DepositCollateralMessage) {
+        require(sender() == self.positionsManagerAddress, "not from positionsManager");
+
+        self.collateral = self.collateral + msg.amount;
+        self.setMessage("Collateral added");
+
+        // pay excess to user
+        send(SendParameters{
+            to: msg.user,
+            bounce: false,
+            value: 0,
+            mode: SendRemainingValue + SendIgnoreErrors
+        });
+        self.reply("Colleteral was added".asComment());
+    }
+
+    /*02 | Начисление USDTON пользователю (from manager)'*/
+    receive(msg: WithdrawStablecoinMessage) {
+        require(sender() == self.positionsManagerAddress, "not from positionsManager");
+
+        let debtAfterWithdraw: Int = self.debt + msg.amount;
+
+        if (!self.isPositionHealthy(self.collateral, debtAfterWithdraw, msg.tonPriceWithSafetyMargin, msg.rate.debtAccumulatedRate)){
+            self.setMessage("position will not be healthy");
+            // pay excess to user
+            send(SendParameters{
+                to: msg.user,
+                bounce: false,
+                value: 0,
+                mode: SendRemainingValue + SendIgnoreErrors
+            });
+            self.reply("position will not be healthy".asComment());
+            return;
+        } 
+
+
+        send(SendParameters{
+            to: self.stablecoinMasterAddress, 
+            value: ton("0.1"),
+            mode: SendIgnoreErrors, 
+            bounce: true,
+            body: MintMessage{
+                user: msg.user,
+                amount: msg.amount
+            }.toCell()
+        });
+
+        self.debt = debtAfterWithdraw;
+        self.setMessage("Stablecoins sent");
+
+        // todo move this send after successfull stable mint notification
+        send(SendParameters{
+            to: self.positionsManagerAddress, 
+            value: 0,
+            mode: SendRemainingValue + SendIgnoreErrors, 
+            bounce: true,
+            body: IncreaseTotalStableMessage{
+                user: msg.user,
+                amount: msg.amount
+            }.toCell()
+        });
+    }
+
+
+    /*03 | Погашение задолженности (from manager)'*/
+    receive(msg: RepayStablecoinMessage) {
+
+        require(sender() == self.positionsManagerAddress, "not from positionsManager");
+
+        let amountToBurn: Int = msg.amount;
+
+        let factDebtInStables: Int = self.debt * msg.rate.debtAccumulatedRate / 1000000000;
+
+        if (!self.isPositionHealthy(self.collateral, self.debt, msg.tonPriceWithSafetyMargin, msg.rate.debtAccumulatedRate)){
+            self.setMessage("position is not healthy");
+            // pay excess to user
+            send(SendParameters{
+                to: msg.user,
+                bounce: false,
+                value: 0,
+                mode: SendRemainingValue + SendIgnoreErrors
+            });
+            self.reply("position will not be healthy".asComment());
+            return;
+        } 
+
+        // todo add bounced handler in sender to pay ctx.value back to sender
+        if (factDebtInStables < msg.amount) {
+            self.setMessage("Your debt is less than you want to repay, charge sent back");
+            amountToBurn = factDebtInStables;
+        }
+
+        self.setMessage("stables are going to burn...");
+
+        send(SendParameters{
+            to: self.stablecoinMasterAddress, 
+            value: 0,
+            mode: SendRemainingValue + SendIgnoreErrors, 
+            bounce: true,
+            body: RepayBurnMessage{
+                user: msg.user,
+                amount: amountToBurn,
+                rate: msg.rate,
+                userPosition: myAddress()
+            }.toCell()
+        });
+    }
+        receive(msg: StablecoinBurnedMessage) {
+
+        require(sender() == self.stablecoinMasterAddress, "not from stablecoin master");
+
+        // todo check if debt still more than repayment
+
+        self.debt = self.debt - msg.amount * 1000000000 / msg.rate.debtAccumulatedRate;
+
+        self.setMessage("you've paid stables back");
+
+        send(SendParameters{
+            to: self.positionsManagerAddress, 
+            value: 0,
+            mode: SendRemainingValue + SendIgnoreErrors,
+            bounce: true,
+            body: DecreaseTotalStableMessage{
+                user: msg.user,
+                amount: msg.amount
+            }.toCell()
+        }); 
+        
+    }
+
+    /*04 | Возврат залога (from positionsManager)'*/
+    receive(msg: WithdrawCollateralMessage) {
+        require(sender() == self.positionsManagerAddress, "not from positions manager");
+
+        if (msg.amount  > self.collateral) {
+            self.setMessage("withdrawal amount more than position has");
+            // pay excess to user
+            send(SendParameters{
+                to: msg.user,
+                bounce: false,
+                value: 0,
+                mode: SendRemainingValue + SendIgnoreErrors
+            });
+            return;
+        }
+
+        let collateralAfterWithdraw: Int = self.collateral - msg.amount;
+
+        if (!self.isPositionHealthy(collateralAfterWithdraw, self.debt, msg.tonPriceWithSafetyMargin, msg.rate.debtAccumulatedRate)) {
+            self.setMessage("position will not be healthy");
+            // pay excess to user
+            send(SendParameters{
+                to: msg.user,
+                bounce: false,
+                value: 0,
+                mode: SendRemainingValue + SendIgnoreErrors
+            });
+            self.reply("position will not be healthy".asComment());
+            return;
+        } 
+        
+
+        self.collateral = collateralAfterWithdraw;
+        self.setMessage("collateral sent back to yor wallet");
+
+        send(SendParameters{
+            to: self.positionsManagerAddress, 
+            value: 0,
+            mode: SendRemainingValue + SendIgnoreErrors, 
+            bounce: true,
+            body: DoWithdrawCollateralMessage{
+                user: msg.user,
+                amount: msg.amount
+            }.toCell()
+        });
+    }
+
+
+
+    //calculations
+    fun isPositionHealthy(collateral: Int, debt: Int, tonPriceWithSafetyMargin: Int, debtRate: Int): Bool {
+
+        let collateralPriceWithSafetyMargin: Int = collateral * tonPriceWithSafetyMargin / 1000000000;
+        return  collateralPriceWithSafetyMargin >= debt;
+    }
+    //calculations
+
+    //helpers
+    fun setMessage(msg: String) {
+        let updatedMessage: Message = Message{
+            timestamp: now(),
+            message: msg
+        };
+        self.message = updatedMessage;
+    }
+    //helpers
+
+    // offchain interface
+    get fun positionUser(): Address {
+        return self.user;
+    }
+
+    get fun positionState(): PositionState  {
+        return PositionState{
+            collateral: self.collateral,
+            debt: self.debt
+        };
+    }
+
+    get fun message(): Message {
+        return self.message;
+    }
+}

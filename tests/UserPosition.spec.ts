@@ -1,21 +1,21 @@
-import { toNano } from '@ton/core';
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
+import { toNano } from '@ton/core';
+import { UserPosition } from '../wrappers/UserPosition';
 import '@ton/test-utils';
-import { Treasury } from '../wrappers/Treasury';
 
-describe('Treasury', () => {
+describe('UserPosition', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
-    let treasury: SandboxContract<Treasury>;
+    let userPosition: SandboxContract<UserPosition>;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
 
-        treasury = blockchain.openContract(await Treasury.fromInit(deployer.address));
+        userPosition = blockchain.openContract(await UserPosition.fromInit());
 
         deployer = await blockchain.treasury('deployer');
 
-        const deployResult = await treasury.send(
+        const deployResult = await userPosition.send(
             deployer.getSender(),
             {
                 value: toNano('0.05'),
@@ -28,7 +28,7 @@ describe('Treasury', () => {
 
         expect(deployResult.transactions).toHaveTransaction({
             from: deployer.address,
-            to: treasury.address,
+            to: userPosition.address,
             deploy: true,
             success: true,
         });
@@ -36,6 +36,6 @@ describe('Treasury', () => {
 
     it('should deploy', async () => {
         // the check is done inside beforeEach
-        // blockchain and treasury are ready to use
+        // blockchain and userPosition are ready to use
     });
 });

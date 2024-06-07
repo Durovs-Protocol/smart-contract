@@ -1,6 +1,7 @@
 node_modules
 temp
 build
+deploy
 dist
 .DS_Store
 .env

@@ -3,9 +3,28 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
+
+        "run-script": "npx blueprint run --testnet --mnemonic ",
+
         "action": "blueprint run",
         "build": "blueprint build",
-        "test": "jest --verbose"
+        "build-all": "rm -rf build && blueprint build manager && blueprint build pool  && blueprint build stablecoin  && blueprint build userPosition && blueprint build stablecoinWallet",
+        "test": "jest --verbose",
+
+
+        "deploy-stablecoin": "yarn run-script deployStablecoin",
+        "deploy-manager": "yarn run-script deployManager",
+        "deploy-pool": "yarn run-script  deployPool",
+        "set-deps": "yarn run-script  setDeps",
+        "set-settings": "yarn run-script  setSettings",
+        "set-price": "yarn run-script  updatePrice",
+        "deploy-and-set": "yarn deploy-stablecoin && yarn deploy-manager && yarn deploy-pool && yarn set-deps",
+
+        "deposit-collateral": "yarn run-script 01depositCollateral",
+        "withdraw-stablecoin": "yarn run-script 02withdrawStablecoin",
+        "repay-stablecoin": "yarn run-script 03repayStablecoin",
+        "withdraw-collateral": "yarn run-script 04withdrawCollateral",
+        "get-info": "yarn run-script 0info"
     },
     "devDependencies": {
         "@ton/blueprint": "^0.19.0",
