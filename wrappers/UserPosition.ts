@@ -1,1 +1,1 @@
-export * from '../build/UserPosition/tact_UserPositionContract';
+export * from '../build/UserPosition/tact_UserPosition';

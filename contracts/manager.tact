@@ -18,6 +18,7 @@ contract Manager with Deployable, Ownable {
         };
     }
 
+    //setup
     receive(msg: SetDeps){
         self.requireOwner();
         self.deps = Deps{
@@ -28,21 +29,20 @@ contract Manager with Deployable, Ownable {
         self.reply("deps set".asComment());
     }
 
-    /*
-        message came from pool
-        deploy new user position (if needed) 
-        and call userPosition.addCollateral
+    /*01 | Внесение залога пользователем (from pool)'
+    deploy user position
+    добавление залога
     */
     receive(msg: DepositCollateralMessage){
         let ctx: Context = context();
-
-        // require(ctx.value > msg.amount + fwdFee + 2 * self.GasConsumption + self.MinTonsForStorage, "Invalid value");
-
-        let init: StateInit = initOf UserPositionContract(msg.user,
+        let init: StateInit = initOf UserPosition(msg.user,
             self.deps.stablecoinMasterAddress,
             self.deps.positionsManagerAddress
         );
         let userPosition: Address = contractAddress(init);
+
+        // later - need maybe send amount to separate contract with payseparategas
+
         send(SendParameters{
                 to: userPosition,
                 value: 0,
@@ -54,6 +54,11 @@ contract Manager with Deployable, Ownable {
             }
         );
     }
+
+    /*01 | (from userPosition)
+        deploys positionAddressConrtact that stores positionId and position address
+        used to get position address by id for liquidations
+    */
 
     receive(msg: NewPositionIdMessage){
         self.onlyUserPosition(msg.user);
@@ -72,6 +77,7 @@ contract Manager with Deployable, Ownable {
         );
     }
 
+    /*02 | Начисление USDTON пользователю (from pool)'*/
     receive(msg: WithdrawStablecoinMessage){
         send(SendParameters{
                 to: self._userPositionAddress(msg.user),
@@ -83,10 +89,7 @@ contract Manager with Deployable, Ownable {
         );
     }
 
-    /*  
-        message came from userPosition
-        call pool.increaseTotalStable(amount)
-    */
+    /*02 |  call pool.increaseTotalStable(amount) (from userPosition)'*/
     receive(msg: IncreaseTotalStableMessage){
         self.onlyUserPosition(msg.user);
         send(SendParameters{
@@ -99,10 +102,7 @@ contract Manager with Deployable, Ownable {
         );
     }
 
-    /*  
-        message came from pool
-        call userPosition.repayStable()
-    */
+    /*03 | Погашение задолженности (from pool)'*/
     receive(msg: RepayStablecoinMessage){
         require(sender() == self.deps.poolAddress, "not from pool");
         send(SendParameters{
@@ -115,10 +115,7 @@ contract Manager with Deployable, Ownable {
         );
     }
 
-    /*  
-        message came from userPosition
-        call pool.decreaseTotalStable
-    */
+    /*03 | call pool.decreaseTotalStable (from userPosition)'*/
     receive(msg: DecreaseTotalStableMessage){
         self.onlyUserPosition(msg.user);
         send(SendParameters{
@@ -131,10 +128,7 @@ contract Manager with Deployable, Ownable {
         );
     }
 
-    /*  
-        message came from pool
-        call userPosition.withdrawCollateral
-    */
+    /*04 | Возврат залога (from pool)'*/
     receive(msg: WithdrawCollateralMessage){
         require(sender() == self.deps.poolAddress, "not from pool");
         send(SendParameters{
@@ -147,10 +141,7 @@ contract Manager with Deployable, Ownable {
         );
     }
 
-    /*  
-        message came from userPosition
-        call pool.doWithdrawCollateral(DoWithdrawCollateralMessage)
-    */
+    /*04 | Передача сообщения пулу после расчетов (from userPosition)'*/
     receive(msg: DoWithdrawCollateralMessage){
         self.onlyUserPosition(msg.user);
         send(SendParameters{
@@ -163,18 +154,21 @@ contract Manager with Deployable, Ownable {
         );
     }
 
+    //helpers
     fun onlyUserPosition(user: Address) {
         // todo enable next line
         // nativeThrowUnless(132, self._userPositionAddress(user) == sender());
     }
 
     fun _userPositionAddress(user: Address): Address {
-        let init: StateInit = initOf UserPositionContract(user,
+        let init: StateInit = initOf UserPosition(user,
             self.deps.stablecoinMasterAddress,
             self.deps.positionsManagerAddress
         );
         return contractAddress(init);
     }
+
+    // offchain interface
 
     get fun lastPositionId(): Int {
         return self.lastPositionId;
@@ -183,8 +177,6 @@ contract Manager with Deployable, Ownable {
     get fun userPositionAddress(user: Address): Address {
         return self._userPositionAddress(user);
     }
-
-    // todo add test
 
     get fun userPositionAddressById(id: Int): Address {
         let init: StateInit = initOf PositionAddressContract(id);
@@ -198,7 +190,6 @@ contract Manager with Deployable, Ownable {
 
 // this contract stores positionaddress by position id
 // for liquidators mostly
-
 contract PositionAddressContract with Deployable {
     id: Int as uint32;
     positionAddress: Address;
@@ -217,11 +208,9 @@ contract PositionAddressContract with Deployable {
         and get positionAddress by getter
     */
     receive(msg: SetPositionAddressMessage){
-        // todo enable access check below
         require(sender() == self.positionsManagerAddress, "Invalid sender");
         require(self.positionAddress == newAddress(0, 0), "Already set");
-        self.positionAddress = msg.position; //msg.positionAddress;
-
+        self.positionAddress = msg.position;
         dump("pay excess");
         // pay excess to user
         send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});

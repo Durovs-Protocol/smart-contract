@@ -8,6 +8,9 @@ message PoolSettingsMsg {
     stabilityFeeRate: Int; // 1000000000625 = X**1.000000000627 every second = 2%/yr., look at ./math/math.tact
     liquidatorIncentiveBps: Int;
 }
+message UpdateTonPriceMsg {
+    price: Int as coins;
+}
 message DepositCollateralUserMessage {
     user: Address;
     amount: Int as coins;
@@ -51,8 +54,7 @@ contract Pool with Deployable, Ownable {
         };
     }
 
-    // owner actions
-
+    //setup
     receive(msg: SetDeps){
         self.requireOwner();
         self.deps = Deps{
@@ -63,8 +65,27 @@ contract Pool with Deployable, Ownable {
         self.reply("deps set".asComment());
     }
 
+    receive(msg: PoolSettingsMsg){
+        self.requireOwner();
+        self.poolSettings = PoolSettings{
+            liquidationRatio: msg.liquidationRatio,
+            stabilityFeeRate: msg.stabilityFeeRate,
+            liquidatorIncentiveBps: msg.liquidatorIncentiveBps
+        };
+        self.reply("pool settings updated".asComment());
+    }
+
+    // TODO Заменить на оракул
+    receive(msg: UpdateTonPriceMsg){
+        self.requireOwner();
+        self.tonPriceWithSafetyMargin = msg.price * 1000000000 / self.poolSettings.liquidationRatio;
+        self.tonPrice = msg.price;
+        self.reply("ton price updated".asComment());
+    }
+
     // user actions
 
+    /*01 | Внесение залога пользователем (from user)'*/
     receive(msg: DepositCollateralUserMessage){
         require(sender() == msg.user, "Invalid sender");
         require(context().value >= ((msg.amount + self.GasConsumption) + self.MinTonForStorage),
@@ -88,10 +109,7 @@ contract Pool with Deployable, Ownable {
         );
     }
 
-    /*
-        called by user owner
-        call positionsManager.withdrawStablecoin(WithdrawStablecoinMessage)
-    */
+    /*02 | Начисление USDTON пользователю (from user)'*/
     receive(msg: WithdrawStablecoinUserMessage){
         send(SendParameters{
                 to: self.deps.positionsManagerAddress,
@@ -109,10 +127,19 @@ contract Pool with Deployable, Ownable {
         );
     }
 
-    /*
-        called by user owner
-        call positionsManager.repayStablecoin(RepayStablecoinMessage)
+    /*02 |(from manager)'
+            increasr stablecoinsIssued
+        send excess to user
+        userStatus.message('stable paid received)
     */
+    receive(msg: IncreaseTotalStableMessage){
+        require(sender() == self.deps.positionsManagerAddress, "invalid sender");
+        self.stablecoinsIssued = (self.stablecoinsIssued + msg.amount);
+        // pay excess back to user
+        send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
+    }
+
+    /*03 | Погашение задолженности (from user)'*/
     receive(msg: RepayStablecoinUserMessage){
         send(SendParameters{
                 to: self.deps.positionsManagerAddress,
@@ -130,10 +157,19 @@ contract Pool with Deployable, Ownable {
         );
     }
 
-    /*
-        called by user owner
-        call positionsManager.withdrawCollateral(RepayStablecoinMessage)
+    /*03 |(from manager)'
+        decrease stablecoinsIssued
+        increase totalFeesCollected
+        send excess to user
     */
+    receive(msg: DecreaseTotalStableMessage){
+        require(sender() == self.deps.positionsManagerAddress, "invalid sender");
+        self.stablecoinsIssued = (self.stablecoinsIssued - msg.amount);
+        // pay excess
+        send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
+    }
+
+    /*04 | Возврат залога (from user)'*/
     receive(msg: WithdrawCollateralUserMessage){
         require(sender() == msg.user, "invalid sender");
         send(SendParameters{
@@ -152,12 +188,9 @@ contract Pool with Deployable, Ownable {
         );
     }
 
-    // from positionsManagers actions
-
-    /*
-        called by positionsManager
+    /*04 | Возврат залога (from manager)'
         transfer ton to user wallet
-    */
+        */
     receive(msg: DoWithdrawCollateralMessage){
         require(sender() == self.deps.positionsManagerAddress, "invalid sender");
         require((self.totalCollateralAmount - msg.amount) >= 0, "not enough collateral on contract");
@@ -172,34 +205,6 @@ contract Pool with Deployable, Ownable {
         );
     }
 
-    /*
-        called by positionsManager
-        decrease stablecoinsIssued
-        increase totalFeesCollected
-        send excess to user
-
-    */
-    receive(msg: DecreaseTotalStableMessage){
-        require(sender() == self.deps.positionsManagerAddress, "invalid sender");
-        self.stablecoinsIssued = (self.stablecoinsIssued - msg.amount);
-        // pay excess
-        send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
-    }
-
-    /*
-        called by positionsManager
-        increasr stablecoinsIssued
-        send excess to user
-        userStatus.message('stable paid received)
-    */
-    receive(msg: IncreaseTotalStableMessage){
-        require(sender() == self.deps.positionsManagerAddress, "invalid sender");
-        self.stablecoinsIssued = (self.stablecoinsIssued + msg.amount);
-        // pay excess back to user
-        send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
-    }
-
-    // send all balance to the owner, should be removed later
     receive("EmergencyExit"){
         require(sender() == self.owner, "invalid sender");
         send(SendParameters{
@@ -211,10 +216,41 @@ contract Pool with Deployable, Ownable {
         );
     }
 
+    receive("CollectFees"){
+        require(now() > self.debtRate.lastAccumulationTime, "updateDebtAccumulatedRate: Invalid timestamp");
+        let precision: Int = pow(10, 12);
+        let updatedDebtAccumulatedRate: Int =
+            self.debtRate.debtAccumulatedRate *
+                rpow(self.poolSettings.stabilityFeeRate, (now() - self.debtRate.lastAccumulationTime), precision);
+        let updatedLastAccumulationTime: Int = now();
+        self.debtRate = DebtRate{
+            debtAccumulatedRate: updatedDebtAccumulatedRate,
+            lastAccumulationTime: updatedLastAccumulationTime
+        };
+        self.reply("debt rate updated".asComment());
+    }
+
+    receive("WithdrawFees"){
+        self.requireOwner();
+        require(self.totalFeesCollected > 0, "no fees collected");
+        send(SendParameters{
+                to: sender(),
+                bounce: false,
+                value: 0,
+                mode: (SendRemainingValue + SendIgnoreErrors),
+                body: WithdrawFeesMessage{to: sender(), amount: self.totalFeesCollected}.toCell()
+            }
+        );
+        self.totalFeesCollected = 0;
+    }
+
+    //helpers
     fun getUserPositionAddress(user: Address): Address {
-        let init: StateInit = initOf UserPositionContract(user, self.deps.stablecoinMasterAddress, myAddress());
+        let init: StateInit = initOf UserPosition(user, self.deps.stablecoinMasterAddress, myAddress());
         return contractAddress(init);
     }
+
+    // offchain interface
 
     get fun poolSettings(): PoolSettings {
         return self.poolSettings;

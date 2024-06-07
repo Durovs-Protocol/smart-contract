@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { toNano } from '@ton/core';
 import { saveAddress } from '../utils/helpers';
-import { Pool } from '../wrappers/PoolContract';
+import { Pool } from '../wrappers/Pool';
 
 export async function run(provider: NetworkProvider) {
     const poolContract = provider.open(await Pool.fromInit());
@@ -14,11 +14,13 @@ export async function run(provider: NetworkProvider) {
         {
             $$type: 'Deploy',
             queryId: 0n,
-        }
+        },
     );
 
     await provider.waitForDeploy(poolContract.address);
     await saveAddress('pool_contract', poolContract.address);
-    console.log('pool contract deployed successfully----------------------------------------------------------------');
+    console.log(
+        '----------------------------------------------------------------------------------pool contract deployed successfully',
+    );
     // run methods on `poolContract`
 }

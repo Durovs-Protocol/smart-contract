@@ -2,9 +2,9 @@ import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { loadAddress, timer } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
-import { Pool } from '../wrappers/PoolContract';
+import { Pool } from '../wrappers/Pool';
 import { PositionAddressContract } from '../wrappers/PositionAddress';
-import { UserPositionContract } from '../wrappers/UserPosition';
+import { UserPosition } from '../wrappers/UserPosition';
 
 export async function run(provider: NetworkProvider) {
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
@@ -19,11 +19,11 @@ export async function run(provider: NetworkProvider) {
     );
 
     const userPossitionAddress = await positionAddressContract.getPositionAddress();
-    const userPositionContract = provider.open(await UserPositionContract.fromAddress(userPossitionAddress));
+    const userPositionContract = provider.open(await UserPosition.fromAddress(userPossitionAddress));
 
     console.log('04 | Возврат залога--------------------------------');
 
-    const collateralToWithdraw = toNano('1');
+    const collateralToWithdraw = toNano(2);
 
     const userCollateral = async function () {
         const state = await userPositionContract.getPositionState();
@@ -33,7 +33,7 @@ export async function run(provider: NetworkProvider) {
 
     await poolContract.send(
         user,
-        { value: toNano(1) },
+        { value: toNano(0.3) },
         {
             $$type: 'WithdrawCollateralUserMessage',
             user: user.address as Address,

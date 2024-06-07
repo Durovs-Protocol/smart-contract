@@ -14,11 +14,13 @@ export async function run(provider: NetworkProvider) {
         {
             $$type: 'Deploy',
             queryId: 0n,
-        }
+        },
     );
 
     await provider.waitForDeploy(manager.address);
     await saveAddress('manager', manager.address);
-    console.log('manager deployed successfully----------------------------------------------------------------');
+    console.log(
+        '----------------------------------------------------------------------------------manager deployed successfully',
+    );
     // run methods on `manager`
 }

@@ -113,12 +113,12 @@ contract StablecoinMaster with Jetton, Deployable {
         send transfer to jetton
     */
     receive(msg: WithdrawFeesMessage) {
-        require(sender() == self.deps.poolAddress, "not from gatekeeper");
+        require(sender() == self.deps.poolAddress, "not from pool");
         self.mint(msg.to, msg.amount, msg.to);
     }
 
     fun _userPositionAddress(user: Address): Address {
-        let init: StateInit = initOf UserPositionContract(user, self.deps.stablecoinMasterAddress, self.deps.positionsManagerAddress);
+        let init: StateInit = initOf UserPosition(user, self.deps.stablecoinMasterAddress, self.deps.positionsManagerAddress);
         let userPositionAddress: Address = contractAddress(init);
         return userPositionAddress;
     }

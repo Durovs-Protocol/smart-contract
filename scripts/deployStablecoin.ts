@@ -1,13 +1,13 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
-import { buildOnchainMetadata, saveAddress } from '../../utils/helpers';
-import { StablecoinMaster } from '../../wrappers/Stablecoin';
+import { buildOnchainMetadata, saveAddress } from '../utils/helpers';
+import { StablecoinMaster } from '../wrappers/Stablecoin';
 
 export async function run(provider: NetworkProvider) {
     const jettonParams = {
-        name: 'usdTON',
-        symbol: 'SDTN',
-        description: 'YT: USDTTON',
+        name: 'yt0.2',
+        symbol: 'yt0.2',
+        description: 'v0.2',
         image: '',
     };
     const owner = provider.sender().address as Address;
@@ -26,6 +26,8 @@ export async function run(provider: NetworkProvider) {
 
     await provider.waitForDeploy(stablecoin.address);
     await saveAddress('stablecoin', stablecoin.address);
-    console.log('staclecoin deployed successfully----------------------------------------------------------------');
+    console.log(
+        '----------------------------------------------------------------------------------stablecoin deployed successfully',
+    );
     // run methods on `stablecoin`
 }

@@ -1,19 +1,27 @@
-import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { toNano } from '@ton/core';
-import { Stablecoin } from '../wrappers/Stablecoin';
+import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import '@ton/test-utils';
+import { buildOnchainMetadata } from '../utils/helpers';
+import { StablecoinMaster } from '../wrappers/Stablecoin';
 
 describe('Stablecoin', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
-    let stablecoin: SandboxContract<Stablecoin>;
+    let stablecoin: SandboxContract<StablecoinMaster>;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
-
-        stablecoin = blockchain.openContract(await Stablecoin.fromInit());
-
+        const jettonParams = {
+            name: 'yt0.2',
+            symbol: 'yt0.2',
+            description: 'v0.2',
+            image: '',
+        };
         deployer = await blockchain.treasury('deployer');
+
+        stablecoin = blockchain.openContract(
+            await StablecoinMaster.fromInit(deployer.getSender().address, buildOnchainMetadata(jettonParams)),
+        );
 
         const deployResult = await stablecoin.send(
             deployer.getSender(),
@@ -23,7 +31,7 @@ describe('Stablecoin', () => {
             {
                 $$type: 'Deploy',
                 queryId: 0n,
-            }
+            },
         );
 
         expect(deployResult.transactions).toHaveTransaction({
