@@ -31,12 +31,12 @@ export async function run(provider: NetworkProvider) {
     console.log('----collateral:', fromNano(state.collateral).toString());
     console.log('----debt:', fromNano(state.debt).toString());
 
-    const managerDeps = await manager.getDeps();
-    console.log('managerDeps', managerDeps);
+    // const managerDeps = await manager.getDeps();
+    // console.log('managerDeps', managerDeps);
 
-    const stablecoinDeps = await stablecoin.getDeps();
-    console.log('stablecoinDeps', stablecoinDeps);
+    // const stablecoinDeps = await stablecoin.getDeps();
+    // console.log('stablecoinDeps', stablecoinDeps);
 
-    const poolContractDeps = await poolContract.getDeps();
-    console.log('poolContractDeps', poolContractDeps);
+    // const poolContractDeps = await poolContract.getDeps();
+    // console.log('poolContractDeps', poolContractDeps);
 }

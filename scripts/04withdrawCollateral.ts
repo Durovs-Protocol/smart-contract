@@ -23,7 +23,7 @@ export async function run(provider: NetworkProvider) {
 
     console.log('04 | Возврат залога--------------------------------');
 
-    const collateralToWithdraw = toNano(2);
+    const collateralToWithdraw = toNano(1);
 
     const userCollateral = async function () {
         const state = await userPositionContract.getPositionState();

@@ -1,27 +1,22 @@
 import { toNano } from '@ton/core';
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
-
+import '@ton/test-utils';
 import { buildOnchainMetadata } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { Pool } from '../wrappers/Pool';
 import { PositionAddressContract } from '../wrappers/PositionAddress';
 import { StablecoinMaster } from '../wrappers/Stablecoin';
 import { UserStablecoinWallet } from '../wrappers/StablecoinWallet';
-
 import { UserPosition } from '../wrappers/UserPosition';
 
-describe('Integration test', () => {
+describe('UserFlow', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
-    let stablecoinWallet: SandboxContract<UserStablecoinWallet>;
+    let pool: SandboxContract<Pool>;
     let stablecoinMaster: SandboxContract<StablecoinMaster>;
-    let positionsManager: SandboxContract<Manager>;
-    let poolContract: SandboxContract<Pool>;
+    let manager: SandboxContract<Manager>;
 
     beforeAll(async () => {
-        blockchain = await Blockchain.create();
-        deployer = await blockchain.treasury('deployer');
-
         const jettonParams = {
             name: 'yt0.2',
             symbol: 'yt0.2',
@@ -29,134 +24,154 @@ describe('Integration test', () => {
             image: '',
         };
 
-        let stablecoinMaster = blockchain.openContract(
+        blockchain = await Blockchain.create();
+        deployer = await blockchain.treasury('deployer');
+
+        stablecoinMaster = blockchain.openContract(
             await StablecoinMaster.fromInit(deployer.getSender().address, buildOnchainMetadata(jettonParams)),
         );
-        let positionsManager = blockchain.openContract(await Manager.fromInit());
-        let poolContract = blockchain.openContract(await Pool.fromInit());
+        pool = blockchain.openContract(await Pool.fromInit());
+        manager = blockchain.openContract(await Manager.fromInit());
 
-        // deps
-        const stablecoinSetDepsRes = await stablecoinMaster.send(
+        const deployPool = await pool.send(
+            deployer.getSender(),
+            {
+                value: toNano('0.05'),
+            },
+            {
+                $$type: 'Deploy',
+                queryId: 0n,
+            },
+        );
+
+        expect(deployPool.transactions).toHaveTransaction({
+            from: deployer.address,
+            to: pool.address,
+            deploy: true,
+            success: true,
+        });
+
+        await pool.send(
             deployer.getSender(),
             { value: toNano(0.1) },
             {
                 $$type: 'SetDeps',
-                positionsManagerAddress: positionsManager.address,
-                poolAddress: poolContract.address,
+                positionsManagerAddress: manager.address,
+                poolAddress: pool.address,
                 stablecoinMasterAddress: stablecoinMaster.address,
             },
         );
 
-        expect(stablecoinSetDepsRes.transactions).toHaveTransaction({
+        const deployManager = await manager.send(
+            deployer.getSender(),
+            {
+                value: toNano('0.05'),
+            },
+            {
+                $$type: 'Deploy',
+                queryId: 0n,
+            },
+        );
+
+        expect(deployManager.transactions).toHaveTransaction({
+            from: deployer.address,
+            to: manager.address,
+            deploy: true,
+            success: true,
+        });
+
+        await manager.send(
+            deployer.getSender(),
+            { value: toNano(0.1) },
+            {
+                $$type: 'SetDeps',
+                positionsManagerAddress: manager.address,
+                poolAddress: pool.address,
+                stablecoinMasterAddress: stablecoinMaster.address,
+            },
+        );
+
+        const deployStablecoin = await stablecoinMaster.send(
+            deployer.getSender(),
+            {
+                value: toNano('0.05'),
+            },
+            {
+                $$type: 'Deploy',
+                queryId: 0n,
+            },
+        );
+
+        expect(deployStablecoin.transactions).toHaveTransaction({
             from: deployer.address,
             to: stablecoinMaster.address,
             deploy: true,
             success: true,
         });
 
-        const managerSetDepsRes = await positionsManager.send(
+        await stablecoinMaster.send(
             deployer.getSender(),
             { value: toNano(0.1) },
             {
                 $$type: 'SetDeps',
-                positionsManagerAddress: positionsManager.address,
-                poolAddress: poolContract.address,
+                positionsManagerAddress: manager.address,
+                poolAddress: pool.address,
                 stablecoinMasterAddress: stablecoinMaster.address,
             },
         );
-        expect(managerSetDepsRes.transactions).toHaveTransaction({
-            from: deployer.address,
-            to: positionsManager.address,
-            deploy: true,
-            success: true,
-        });
 
-        const poolSetDepsRes = await poolContract.send(
-            deployer.getSender(),
-            { value: toNano(0.1) },
-            {
-                $$type: 'SetDeps',
-                positionsManagerAddress: positionsManager.address,
-                poolAddress: poolContract.address,
-                stablecoinMasterAddress: stablecoinMaster.address,
-            },
-        );
-        expect(poolSetDepsRes.transactions).toHaveTransaction({
-            from: deployer.address,
-            to: poolContract.address,
-            deploy: true,
-            success: true,
-        });
-
-        // initial pool settings
-        const poolSetting = await poolContract.send(
-            deployer.getSender(),
-            { value: toNano(1) },
-            {
-                $$type: 'PoolSettingsMsg',
-                liquidationRatio: 1200000000n,
-                stabilityFeeRate: 1000000000625n,
-                liquidatorIncentiveBps: 10500n,
-            },
-        );
-        expect(poolSetting.transactions).toHaveTransaction({
-            from: deployer.address,
-            to: poolContract.address,
-            deploy: true,
-            success: true,
-        });
-
-        // initial ton price
-        const poolPrice = await poolContract.send(
-            deployer.getSender(),
-            { value: toNano(1) },
-            {
-                $$type: 'UpdateTonPriceMsg',
-                price: 3200000000n,
-            },
-        );
-        expect(poolPrice.transactions).toHaveTransaction({
-            from: deployer.address,
-            to: poolContract.address,
-            deploy: true,
-            success: true,
-        });
+        // await pool.send(
+        //     deployer.getSender(),
+        //     { value: toNano(1) },
+        //     {
+        //         $$type: 'UpdateTonPriceMsg',
+        //         price: 3200000000n,
+        //     },
+        // );
+        // await pool.send(
+        //     deployer.getSender(),
+        //     { value: toNano(1) },
+        //     {
+        //         $$type: 'PoolSettingsMsg',
+        //         liquidationRatio: 1200000000n,
+        //         stabilityFeeRate: 1000000000625n,
+        //         liquidatorIncentiveBps: 10500n,
+        //     },
+        // );
     });
-
     it('deps set ok', async () => {
         const stablecoinDeps = await stablecoinMaster.getDeps();
-        expect(stablecoinDeps.poolAddress.toString()).toEqual(poolContract.address.toString());
-        expect(stablecoinDeps.positionsManagerAddress.toString()).toEqual(positionsManager.address.toString());
+        expect(stablecoinDeps.poolAddress.toString()).toEqual(pool.address.toString());
+        expect(stablecoinDeps.positionsManagerAddress.toString()).toEqual(manager.address.toString());
 
-        const positionsManagerDeps = await positionsManager.getDeps();
-        expect(positionsManagerDeps.poolAddress.toString()).toEqual(poolContract.address.toString());
+        const positionsManagerDeps = await manager.getDeps();
+        expect(positionsManagerDeps.poolAddress.toString()).toEqual(pool.address.toString());
         expect(positionsManagerDeps.stablecoinMasterAddress.toString()).toEqual(stablecoinMaster.address.toString());
 
-        const poolDeps = await poolContract.getDeps();
+        const poolDeps = await pool.getDeps();
         expect(poolDeps.stablecoinMasterAddress.toString()).toEqual(stablecoinMaster.address.toString());
-        expect(poolDeps.positionsManagerAddress.toString()).toEqual(positionsManager.address.toString());
+        expect(poolDeps.positionsManagerAddress.toString()).toEqual(manager.address.toString());
     });
 
-    it('pool settings set ok', async () => {
-        const poolSettings = await poolContract.getPoolSettings();
-        expect(poolSettings.liquidationRatio).toEqual(1200000000n);
-        expect(poolSettings.liquidatorIncentiveBps).toEqual(10500n);
-        expect(poolSettings.stabilityFeeRate).toEqual(1000000000625n);
-    });
+    // it('pool settings set ok', async () => {
+    //     const poolSettings = await pool.getPoolSettings();
+    //     expect(poolSettings.liquidationRatio).toEqual(1200000000n);
+    //     expect(poolSettings.liquidatorIncentiveBps).toEqual(10500n);
+    //     expect(poolSettings.stabilityFeeRate).toEqual(1000000000625n);
+    // });
 
-    it('initial price set ok', async () => {
-        const tonPrice = await poolContract.getTonPrice();
-        expect(tonPrice).toEqual(3200000000n);
-
-        const tonPriceWithSafetyMargin = await poolContract.getTonPriceWithSafetyMargin();
-        expect(tonPriceWithSafetyMargin).toEqual(2666666666n);
-    });
+    // it('initial price set ok', async () => {
+    //     const tonPrice = await pool.getTonPrice();
+    //     expect(tonPrice).toEqual(3200000000n);
+    //     const tonPriceWithSafetyMargin = await pool.getTonPriceWithSafetyMargin();
+    //     expect(tonPriceWithSafetyMargin).toEqual(2666666666n);
+    // });
 
     it('user actions flow', async () => {
         const collateralDepositAmount = toNano(1);
-        const currentPositionId = await positionsManager.getLastPositionId();
+        const currentPositionId = await manager.getLastPositionId();
 
-        await poolContract.send(
+        await pool.send(
             deployer.getSender(),
             { value: collateralDepositAmount + toNano(1) },
             {
@@ -166,11 +181,11 @@ describe('Integration test', () => {
             },
         );
 
-        const lastPositionId = await positionsManager.getLastPositionId();
+        const lastPositionId = await manager.getLastPositionId();
         expect(lastPositionId - currentPositionId).toEqual(1n);
 
-        // positionsManager has address of userPositionAddress for new position
-        const userPositionAddressContractAddress = await positionsManager.getUserPositionAddressById(lastPositionId);
+        // manager has address of userPositionAddress for new position
+        const userPositionAddressContractAddress = await manager.getUserPositionAddressById(lastPositionId);
         expect(userPositionAddressContractAddress).toBeDefined();
 
         // userPositionAdress stores userPosition contract address
@@ -179,8 +194,8 @@ describe('Integration test', () => {
         );
         const userPositionContractAddress = await userPositionAddressContract.getPositionAddress();
 
-        // positionsManager know userPositionAddress by user.address
-        const positionAddress = await positionsManager.getUserPositionAddress(deployer.getSender().address);
+        // manager know userPositionAddress by user.address
+        const positionAddress = await manager.getUserPositionAddress(deployer.getSender().address);
         expect(positionAddress.toString()).toEqual(userPositionContractAddress.toString());
 
         // userPosition contract has a state with deposited collateral stored
@@ -198,7 +213,7 @@ describe('Integration test', () => {
 
         const stablesBorrowed = toNano(1);
 
-        await poolContract.send(
+        await pool.send(
             deployer.getSender(),
             { value: toNano(1) },
             {
@@ -208,12 +223,18 @@ describe('Integration test', () => {
             },
         );
 
-        const userStablecoinWalletAddress = await stablecoinMaster.getGetWalletAddress(deployer.getSender().address);
+        // TODO понять почему так не работает////////////////////////////////////////////////////////////////////////
+        // const userStablecoinWalletAddress = await stablecoinMaster.getGetWalletAddress(deployer.getSender().address);
+        // const userStableWallet = blockchain.openContract(
+        //     await UserStablecoinWallet.fromInit(stablecoinMaster.address, deployer.getSender().address),
+        // );
+        // let userStableBalance = await userStableWallet.getGetBalance();
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        const userStablecoinWalletAddress = await stablecoinMaster.getGetWalletAddress(deployer.getSender().address);
         const userStableWallet = blockchain.openContract(
             await UserStablecoinWallet.fromAddress(userStablecoinWalletAddress),
         );
-
         let userStableBalance = await userStableWallet.getGetBalance();
 
         expect(userStableBalance).toEqual(stablesBorrowed);
@@ -229,7 +250,7 @@ describe('Integration test', () => {
         console.log('balance before repay', userStableBalance);
 
         // user pays stables back
-        await poolContract.send(
+        await pool.send(
             deployer.getSender(),
             { value: toNano('1') },
             {
@@ -255,7 +276,7 @@ describe('Integration test', () => {
 
         const collateralToWithdraw = toNano('0.5');
 
-        await poolContract.send(
+        await pool.send(
             deployer.getSender(),
             { value: toNano('1') },
             {

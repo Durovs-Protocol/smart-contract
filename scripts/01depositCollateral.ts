@@ -7,10 +7,13 @@ import { PositionAddressContract } from '../wrappers/PositionAddress';
 import { UserPosition } from '../wrappers/UserPosition';
 
 export async function run(provider: NetworkProvider) {
+    const user = provider.sender();
+    const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
+    const poolContract = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool_contract'))));
+
     const userCollateral = async function () {
         const lastPositionId = await manager.getLastPositionId();
         const positionAddressContractAddress = await manager.getUserPositionAddressById(lastPositionId);
-
         const positionAddressContract = provider.open(
             await PositionAddressContract.fromAddress(positionAddressContractAddress),
         );
@@ -20,16 +23,11 @@ export async function run(provider: NetworkProvider) {
         return state.collateral;
     };
 
-    const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
-    const poolContract = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool_contract'))));
-
-    const user = provider.sender();
-
     console.log(
         '01 | Пользователь вносит залог, создается контракт пользовательской позиции--------------------------------',
     );
 
-    const collateralAmount = toNano(0.2);
+    const collateralAmount = toNano(1);
     const currentPositionId = await manager.getLastPositionId();
 
     await poolContract.send(

@@ -13,7 +13,7 @@ export async function run(provider: NetworkProvider) {
     const poolContract = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool_contract'))));
     const user = provider.sender();
 
-    const stablesBorrowed = toNano(0.1);
+    const stablesBorrowed = toNano(1);
     const userStablecoinWalletAddress = await stablecoin.getGetWalletAddress(user.address as Address);
     const userStableWallet = provider.open(await UserStablecoinWallet.fromAddress(userStablecoinWalletAddress));
 
