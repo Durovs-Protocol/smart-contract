@@ -12,9 +12,8 @@ export async function run(provider: NetworkProvider) {
         { value: toNano('0.3') },
         {
             $$type: 'UpdateTonPriceMsg',
-            price: toNano('1'),
+            price: toNano('3.5'),
         },
     );
-
-    await timer(`ton price:`, tonPrice, poolContract.getTonPrice);
+    await timer(`ton price`, 'Настройка стоимости ton', tonPrice, poolContract.getTonPrice);
 }

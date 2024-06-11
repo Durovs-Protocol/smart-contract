@@ -40,9 +40,6 @@ contract Manager with Deployable, Ownable {
             self.deps.positionsManagerAddress
         );
         let userPosition: Address = contractAddress(init);
-
-        // later - need maybe send amount to separate contract with payseparategas
-
         send(SendParameters{
                 to: userPosition,
                 value: 0,

@@ -17,10 +17,12 @@ export async function run(provider: NetworkProvider) {
         },
     );
 
-    await provider.waitForDeploy(poolContract.address);
+    await provider.waitForDeploy(poolContract.address, 30);
     await saveAddress('pool_contract', poolContract.address);
-    console.log(
-        '----------------------------------------------------------------------------------pool contract deployed successfully',
-    );
+
+    console.log('=============================================================================');
+    console.log('Pool deployed successfully');
+    console.log('=============================================================================');
+
     // run methods on `poolContract`
 }

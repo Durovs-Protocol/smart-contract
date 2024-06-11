@@ -2,18 +2,21 @@
 
 1. `yarn build-all` (Запустит build всех контрактов)
 2. `yarn deploy-and-set` (Деплой контрактов + установка зависимостей)
+   `yarn deploy-pool`
+   `yarn deploy-manager`
+   `yarn deploy-stablecoin`
+   `yarn set-deps`
 3. `yarn set-settings` (Настройка параметров пула)
-4. `yarn set-price` (ДУстановка цены тона)
+4. `yarn set-price` (Установка цены тона)
 
 # User flow
 
 1. `yarn deposit-collateral` (Внесение залога (Для проверки баланса использовать скрипт info))
-
 2. `yarn withdraw-stablecoin` (Перечесление stablecoin пользователю)
 3. `yarn repay-stablecoin` (Возврат стейблкоина пользователем)
 4. `yarn withdraw-collateral` (Возврат залога пользователю)
 
-`yarn get-info*` (Получение информации о позиции пользователя)
+`yarn get-info` (Получение информации о позиции пользователя)
 
 ### Путь обращения пользователя: **user => pool => manager => user_position(вычисления) => jetton master/pool(исполнение)**
 

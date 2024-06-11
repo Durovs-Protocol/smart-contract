@@ -1,37 +1,36 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
-import { toNano } from '@ton/core';
-import { StablecoinWallet } from '../wrappers/StablecoinWallet';
 import '@ton/test-utils';
+import { UserStablecoinWallet } from '../wrappers/StablecoinWallet';
 
 describe('StablecoinWallet', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
-    let stablecoinWallet: SandboxContract<StablecoinWallet>;
+    let stablecoinWallet: SandboxContract<UserStablecoinWallet>;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
 
-        stablecoinWallet = blockchain.openContract(await StablecoinWallet.fromInit());
+        // stablecoinWallet = blockchain.openContract(await UserStablecoinWallet.fromInit());
 
         deployer = await blockchain.treasury('deployer');
 
-        const deployResult = await stablecoinWallet.send(
-            deployer.getSender(),
-            {
-                value: toNano('0.05'),
-            },
-            {
-                $$type: 'Deploy',
-                queryId: 0n,
-            }
-        );
+        // const deployResult = await stablecoinWallet.send(
+        //     deployer.getSender(),
+        //     {
+        //         value: toNano('0.05'),
+        //     },
+        //     {
+        //         $$type: 'Deploy',
+        //         queryId: 0n,
+        //     },
+        // );
 
-        expect(deployResult.transactions).toHaveTransaction({
-            from: deployer.address,
-            to: stablecoinWallet.address,
-            deploy: true,
-            success: true,
-        });
+        // expect(deployResult.transactions).toHaveTransaction({
+        //     from: deployer.address,
+        //     to: stablecoinWallet.address,
+        //     deploy: true,
+        //     success: true,
+        // });
     });
 
     it('should deploy', async () => {

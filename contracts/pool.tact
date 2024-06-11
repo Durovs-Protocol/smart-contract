@@ -127,18 +127,6 @@ contract Pool with Deployable, Ownable {
         );
     }
 
-    /*02 |(from manager)'
-            increasr stablecoinsIssued
-        send excess to user
-        userStatus.message('stable paid received)
-    */
-    receive(msg: IncreaseTotalStableMessage){
-        require(sender() == self.deps.positionsManagerAddress, "invalid sender");
-        self.stablecoinsIssued = (self.stablecoinsIssued + msg.amount);
-        // pay excess back to user
-        send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
-    }
-
     /*03 | Погашение задолженности (from user)'*/
     receive(msg: RepayStablecoinUserMessage){
         send(SendParameters{
@@ -155,18 +143,6 @@ contract Pool with Deployable, Ownable {
                 }.toCell()
             }
         );
-    }
-
-    /*03 |(from manager)'
-        decrease stablecoinsIssued
-        increase totalFeesCollected
-        send excess to user
-    */
-    receive(msg: DecreaseTotalStableMessage){
-        require(sender() == self.deps.positionsManagerAddress, "invalid sender");
-        self.stablecoinsIssued = (self.stablecoinsIssued - msg.amount);
-        // pay excess
-        send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
     }
 
     /*04 | Возврат залога (from user)'*/
@@ -203,6 +179,30 @@ contract Pool with Deployable, Ownable {
                 mode: (SendRemainingValue + SendIgnoreErrors)
             }
         );
+    }
+
+    /*03 |(from manager)'
+        decrease stablecoinsIssued
+        increase totalFeesCollected
+        send excess to user
+    */
+    receive(msg: DecreaseTotalStableMessage){
+        require(sender() == self.deps.positionsManagerAddress, "invalid sender");
+        self.stablecoinsIssued = (self.stablecoinsIssued - msg.amount);
+        // pay excess
+        send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
+    }
+
+    /*02 |(from manager)'
+            increasr stablecoinsIssued
+        send excess to user
+        userStatus.message('stable paid received)
+    */
+    receive(msg: IncreaseTotalStableMessage){
+        require(sender() == self.deps.positionsManagerAddress, "invalid sender");
+        self.stablecoinsIssued = (self.stablecoinsIssued + msg.amount);
+        // pay excess back to user
+        send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
     }
 
     receive("EmergencyExit"){

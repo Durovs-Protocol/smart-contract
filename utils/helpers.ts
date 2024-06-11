@@ -73,18 +73,22 @@ export function cell(pram: string) {
     return beginCell().storeBit(1).storeUint(0, 32).storeStringTail(pram).endCell();
 }
 
-export async function timer(message: string, initVal: any, checkFunction: Function) {
+export async function timer(message: string, action: string, initVal: any, checkFunction: Function) {
     let expectedValue = initVal;
-    console.log(`before: ${message}`, initVal);
+    console.log(`Started | ${message}:${initVal}`);
+    console.log('=============================================================================');
+
     let attempt = 1;
 
     while (initVal === expectedValue) {
-        console.log(`${message}: ${expectedValue} | (${attempt})`);
+        console.log(`${action} (attempts: ${attempt})`);
         await delay(3000);
         expectedValue = await checkFunction();
         attempt++;
     }
-    console.log(`Finished with: ${message}`, expectedValue);
+
+    console.log(`Finished | ${message}:${expectedValue}`);
+    console.log('=============================================================================');
 }
 
 function delay(ms: number) {

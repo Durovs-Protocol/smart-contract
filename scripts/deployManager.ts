@@ -17,10 +17,11 @@ export async function run(provider: NetworkProvider) {
         },
     );
 
-    await provider.waitForDeploy(manager.address);
+    await provider.waitForDeploy(manager.address, 30);
     await saveAddress('manager', manager.address);
-    console.log(
-        '----------------------------------------------------------------------------------manager deployed successfully',
-    );
+    console.log('=============================================================================');
+    console.log('Manager deployed successfully');
+    console.log('=============================================================================');
+
     // run methods on `manager`
 }

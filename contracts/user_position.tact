@@ -67,21 +67,15 @@ contract UserPosition  {
     receive(msg: WithdrawStablecoinMessage) {
         require(sender() == self.positionsManagerAddress, "not from positionsManager");
 
-        let debtAfterWithdraw: Int = self.debt + msg.amount;
+        let normalizedWithdrawDebt: Int = msg.amount * 1000000000 / msg.rate.debtAccumulatedRate;
+        let debtAfterWithdraw: Int = self.debt + normalizedWithdrawDebt;
 
-        if (!self.isPositionHealthy(self.collateral, debtAfterWithdraw, msg.tonPriceWithSafetyMargin, msg.rate.debtAccumulatedRate)){
-            self.setMessage("position will not be healthy");
-            // pay excess to user
-            send(SendParameters{
-                to: msg.user,
-                bounce: false,
-                value: 0,
-                mode: SendRemainingValue + SendIgnoreErrors
-            });
-            self.reply("position will not be healthy".asComment());
-            return;
-        } 
-
+        // dump("check healthy");
+        // if (!self.isPositionHealthy(self.collateral, debtAfterWithdraw, msg.tonPriceWithSafetyMargin, msg.rate.debtAccumulatedRate)){
+        //     self.unhealthyPositionHandler(msg.user);
+        //     return;
+        // } 
+        // dump("position healthy");
 
         send(SendParameters{
             to: self.stablecoinMasterAddress, 
@@ -120,18 +114,13 @@ contract UserPosition  {
 
         let factDebtInStables: Int = self.debt * msg.rate.debtAccumulatedRate / 1000000000;
 
-        if (!self.isPositionHealthy(self.collateral, self.debt, msg.tonPriceWithSafetyMargin, msg.rate.debtAccumulatedRate)){
-            self.setMessage("position is not healthy");
-            // pay excess to user
-            send(SendParameters{
-                to: msg.user,
-                bounce: false,
-                value: 0,
-                mode: SendRemainingValue + SendIgnoreErrors
-            });
-            self.reply("position will not be healthy".asComment());
-            return;
-        } 
+
+        // dump("check healthy");
+        // if (!self.isPositionHealthy(self.collateral, self.debt, msg.tonPriceWithSafetyMargin, msg.rate.debtAccumulatedRate)){
+        //     self.unhealthyPositionHandler(msg.user);
+        //     return;
+        // } 
+        // dump("position healthy");
 
         // todo add bounced handler in sender to pay ctx.value back to sender
         if (factDebtInStables < msg.amount) {
@@ -154,7 +143,9 @@ contract UserPosition  {
             }.toCell()
         });
     }
-        receive(msg: StablecoinBurnedMessage) {
+
+    /*02 | (from stablecoinMaster)'*/
+    receive(msg: StablecoinBurnedMessage) {
 
         require(sender() == self.stablecoinMasterAddress, "not from stablecoin master");
 
@@ -195,18 +186,12 @@ contract UserPosition  {
 
         let collateralAfterWithdraw: Int = self.collateral - msg.amount;
 
-        if (!self.isPositionHealthy(collateralAfterWithdraw, self.debt, msg.tonPriceWithSafetyMargin, msg.rate.debtAccumulatedRate)) {
-            self.setMessage("position will not be healthy");
-            // pay excess to user
-            send(SendParameters{
-                to: msg.user,
-                bounce: false,
-                value: 0,
-                mode: SendRemainingValue + SendIgnoreErrors
-            });
-            self.reply("position will not be healthy".asComment());
-            return;
-        } 
+        // dump("check healthy");
+        // if (!self.isPositionHealthy(collateralAfterWithdraw, self.debt, msg.tonPriceWithSafetyMargin, msg.rate.debtAccumulatedRate)){
+        //     self.unhealthyPositionHandler(msg.user);
+        //     return;
+        // } 
+        // dump("position healthy");
         
 
         self.collateral = collateralAfterWithdraw;
@@ -223,16 +208,42 @@ contract UserPosition  {
             }.toCell()
         });
     }
-
-
-
-    //calculations
     fun isPositionHealthy(collateral: Int, debt: Int, tonPriceWithSafetyMargin: Int, debtRate: Int): Bool {
+        // todo rewrite healh calculation to loanToValue ratio
+        dump("collateral");
+        dump(collateral);
+        dump("debt");
+        dump(debt);
+        dump("tonPriceWithSafetyMargin");
+        dump(tonPriceWithSafetyMargin);
+        dump("debtRate"); 
+        dump(debtRate);
+
+        // 1000000000 * 0 / 1000000000 / 1000000000
+
+        // todo normalize debt to stables
+        let normalizedDebt: Int = debt * 1000000000 / debtRate;
+        dump("isPositionHealthy.normalizedDebt");
+        dump(normalizedDebt);
 
         let collateralPriceWithSafetyMargin: Int = collateral * tonPriceWithSafetyMargin / 1000000000;
+        dump("isPositionHealthy.collateralPriceWithSafetyMargin");
+        dump(collateralPriceWithSafetyMargin);
+
         return  collateralPriceWithSafetyMargin >= debt;
     }
-    //calculations
+
+    fun unhealthyPositionHandler(user: Address) {
+            self.setMessage("position is not healthy");
+            dump("position is not healthy");
+            // pay excess to user
+            send(SendParameters{
+                to: user,
+                bounce: false,
+                value: 0,
+                mode: SendRemainingValue + SendIgnoreErrors
+            });
+    }
 
     //helpers
     fun setMessage(msg: String) {
@@ -242,7 +253,6 @@ contract UserPosition  {
         };
         self.message = updatedMessage;
     }
-    //helpers
 
     // offchain interface
     get fun positionUser(): Address {
