@@ -20,6 +20,12 @@
 
 ### Путь обращения пользователя: **user => pool => manager => user_position(вычисления) => jetton master/pool(исполнение)**
 
+# Runecoins
+
+1. `yarn deploy-runes-owner` (Деплой контракта-владельца runacoins)
+2. `yarn send-runes-to-owner` (Деплой runacoin и минт 1000000 токенов на баланс владельца)
+3. `yarn get-runes` (Получение runacoins пользователем)
+
 ### Дополнительный RPC
 
 https://ton.access.orbs.network/4410c0ff5Bd3F8B62C092Ab4D238bEE463E64410/1/testnet/toncenter-api-v2/jsonRPC

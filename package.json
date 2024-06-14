@@ -24,7 +24,12 @@
         "withdraw-stablecoin": "yarn run-script 02withdrawStablecoin",
         "repay-stablecoin": "yarn run-script 03repayStablecoin",
         "withdraw-collateral": "yarn run-script 04withdrawCollateral",
-        "get-info": "yarn run-script 0info"
+        "get-info": "yarn run-script 0info",
+
+        "deploy-runes-owner": "yarn run-script deployRunecoinsOwner",
+        "send-runes-to-owner": "yarn run-script sendRunecoinsToOwner",
+        "get-runes": "yarn run-script getRunecoins",
+        "runes-info": "yarn run-script runes-info"
     },
     "devDependencies": {
         "@ton/blueprint": "^0.19.0",

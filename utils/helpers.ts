@@ -66,9 +66,6 @@ export const content = buildOnchainMetadata(jettonParams);
 
 export const maxSupply = toNano(12345000);
 
-let rawdata = fs.readFileSync('JettonAddress.json');
-export const jettonAddress = Address.parse(JSON.parse(rawdata.toString()));
-
 export function cell(pram: string) {
     return beginCell().storeBit(1).storeUint(0, 32).storeStringTail(pram).endCell();
 }
