@@ -29,9 +29,9 @@ contract Manager with Deployable, Ownable {
         self.reply("deps set".asComment());
     }
 
-    /*01 | Внесение залога пользователем (from pool)'
+    /*01 | Внесение обеспечения пользователем (from pool)'
     deploy user position
-    добавление залога
+    добавление обеспечения
     */
     receive(msg: DepositCollateralMessage){
         let ctx: Context = context();
@@ -125,7 +125,7 @@ contract Manager with Deployable, Ownable {
         );
     }
 
-    /*04 | Возврат залога (from pool)'*/
+    /*04 | Возврат обеспечения (from pool)'*/
     receive(msg: WithdrawCollateralMessage){
         require(sender() == self.deps.poolAddress, "not from pool");
         send(SendParameters{

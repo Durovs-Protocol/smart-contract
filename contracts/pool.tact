@@ -85,7 +85,7 @@ contract Pool with Deployable, Ownable {
 
     // user actions
 
-    /*01 | Внесение залога пользователем (from user)'*/
+    /*01 | Внесение обеспечения пользователем (from user)'*/
     receive(msg: DepositCollateralUserMessage){
         require(sender() == msg.user, "Invalid sender");
         require(context().value >= ((msg.amount + self.GasConsumption) + self.MinTonForStorage),
@@ -145,7 +145,7 @@ contract Pool with Deployable, Ownable {
         );
     }
 
-    /*04 | Возврат залога (from user)'*/
+    /*04 | Возврат обеспечения (from user)'*/
     receive(msg: WithdrawCollateralUserMessage){
         require(sender() == msg.user, "invalid sender");
         send(SendParameters{
@@ -164,7 +164,7 @@ contract Pool with Deployable, Ownable {
         );
     }
 
-    /*04 | Возврат залога (from manager)'
+    /*04 | Возврат обеспечения (from manager)'
         transfer ton to user wallet
         */
     receive(msg: DoWithdrawCollateralMessage){

@@ -11,6 +11,7 @@ export async function run(provider: NetworkProvider) {
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const poolContract = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool_contract'))));
 
+    // Получаем переменную текущей позиции обеспечения
     const userCollateral = async function () {
         const lastPositionId = await manager.getLastPositionId();
         const positionAddressContractAddress = await manager.getUserPositionAddressById(lastPositionId);
@@ -28,7 +29,7 @@ export async function run(provider: NetworkProvider) {
     };
 
     console.log('=============================================================================');
-    console.log('01 | Пользователь вносит залог, создается контракт пользовательской позиции');
+    console.log('01 | Пользователь вносит обеспечение, создается контракт пользовательской позиции');
     console.log('=============================================================================');
 
     const collateralAmount = toNano(1);
@@ -45,11 +46,11 @@ export async function run(provider: NetworkProvider) {
     );
 
     if (currentPositionId <= 0) {
-        await timer(`Position Id`, 'Внесение залога', currentPositionId, manager.getLastPositionId);
+        await timer(`Position Id`, 'Внесение обеспечения', currentPositionId, manager.getLastPositionId);
         const userBalanceBefore = await userCollateral();
-        await timer(`User balance`, 'Внесение залога', userBalanceBefore, userCollateral);
+        await timer(`User balance`, 'Внесение обеспечения', userBalanceBefore, userCollateral);
     } else {
         const userBalanceBefore = await userCollateral();
-        await timer(`User balance`, 'Внесение залога', userBalanceBefore, userCollateral);
+        await timer(`User balance`, 'Внесение обеспечения', userBalanceBefore, userCollateral);
     }
 }

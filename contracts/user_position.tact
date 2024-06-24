@@ -46,7 +46,7 @@ contract UserPosition  {
     }
 
 
-    /*01 | Внесение залога пользователем (from manager)'*/
+    /*01 | Внесение обеспечения пользователем (from manager)'*/
     receive(msg: DepositCollateralMessage) {
         require(sender() == self.positionsManagerAddress, "not from positionsManager");
 
@@ -168,7 +168,7 @@ contract UserPosition  {
         
     }
 
-    /*04 | Возврат залога (from positionsManager)'*/
+    /*04 | Возврат обеспечения (from positionsManager)'*/
     receive(msg: WithdrawCollateralMessage) {
         require(sender() == self.positionsManagerAddress, "not from positions manager");
 

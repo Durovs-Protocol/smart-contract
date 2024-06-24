@@ -22,7 +22,7 @@ export async function run(provider: NetworkProvider) {
     const userPositionContract = provider.open(await UserPosition.fromAddress(userPossitionAddress));
 
     console.log('=============================================================================');
-    console.log('04 | Возврат залога');
+    console.log('04 | Возврат обеспечения');
     console.log('=============================================================================');
 
     const collateralToWithdraw = toNano(1);
@@ -43,5 +43,5 @@ export async function run(provider: NetworkProvider) {
         },
     );
 
-    await timer('User balance', 'Возврат залога', collateralBeforeWithdraw, userCollateral);
+    await timer('User balance', 'Возврат обеспечения', collateralBeforeWithdraw, userCollateral);
 }

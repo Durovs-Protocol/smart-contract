@@ -18,6 +18,7 @@
         "set-deps": "yarn run-script  setDeps",
         "set-settings": "yarn run-script  setSettings",
         "set-price": "yarn run-script  updatePrice",
+        
         "deploy-and-set": "yarn deploy-stablecoin && yarn deploy-manager && yarn deploy-pool && yarn set-deps",
 
         "deposit-collateral": "yarn run-script 01depositCollateral",

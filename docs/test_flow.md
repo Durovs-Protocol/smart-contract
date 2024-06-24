@@ -1,20 +1,22 @@
 # Сборка и деплой
 
-1. `yarn build-all` (Запустит build всех контрактов)
-2. `yarn deploy-and-set` (Деплой контрактов + установка зависимостей)
-   `yarn deploy-pool`
-   `yarn deploy-manager`
-   `yarn deploy-stablecoin`
-   `yarn set-deps`
+> Создать папку `deploy` если ее нет
+
+1. `yarn build-all` (Запустит build всех контрактов: stablecoin, manager, pool, deps)
+2. `yarn deploy-and-set` (Деплой контрактов + установка зависимостей между контрактами)
+   - `yarn deploy-pool`
+   - `yarn deploy-manager`
+   - `yarn deploy-stablecoin`
+   - `yarn set-deps`
 3. `yarn set-settings` (Настройка параметров пула)
-4. `yarn set-price` (Установка цены тона)
+4. `yarn set-price` (Установка цены тона - по факту метод updatePrice)
 
 # User flow
 
-1. `yarn deposit-collateral` (Внесение залога (Для проверки баланса использовать скрипт info))
+1. `yarn deposit-collateral` (Внесение обеспечения (Для проверки баланса использовать скрипт info))
 2. `yarn withdraw-stablecoin` (Перечесление stablecoin пользователю)
 3. `yarn repay-stablecoin` (Возврат стейблкоина пользователем)
-4. `yarn withdraw-collateral` (Возврат залога пользователю)
+4. `yarn withdraw-collateral` (Возврат обеспечения пользователю)
 
 `yarn get-info` (Получение информации о позиции пользователя)
 
