@@ -13,7 +13,7 @@ export async function run(provider: NetworkProvider) {
     const user = provider.sender();
 
     console.log('=============================================================================');
-    console.log('02 | Пользователь берет stablecoin');
+    console.log('02 | Пользователь минтит usdTON');
     console.log('=============================================================================');
     const userStablecoinWalletAddress = await stablecoin.getGetWalletAddress(user.address as Address);
     const userStableWallet = provider.open(await UserStablecoinWallet.fromAddress(userStablecoinWalletAddress));
@@ -33,7 +33,7 @@ export async function run(provider: NetworkProvider) {
         },
     );
 
-    await timer(`User stable balance`, 'Выдача stablecoin', userStableBalance, userStableWallet.getGetBalance);
+    await timer(`User stable balance`, 'Mint stablecoin', userStableBalance, userStableWallet.getGetBalance);
 
     await saveAddress('user_stablecoin_wallet_address', userStablecoinWalletAddress);
 }

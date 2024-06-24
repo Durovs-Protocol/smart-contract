@@ -45,7 +45,7 @@ npm manifest:
           "deploy-and-set": "yarn deploy-stablecoin && yarn deploy-manager && yarn deploy-pool && yarn set-deps",
   
           "deposit-collateral": "yarn run-script 01depositCollateral",
-          "withdraw-stablecoin": "yarn run-script 02withdrawStablecoin",
+          "mint-stablecoin": "yarn run-script 02mintStablecoin",
           "repay-stablecoin": "yarn run-script 03repayStablecoin",
           "withdraw-collateral": "yarn run-script 04withdrawCollateral",
           "get-info": "yarn run-script 0info",

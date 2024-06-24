@@ -35,6 +35,7 @@ export async function run(provider: NetworkProvider) {
     const collateralAmount = toNano(1);
     const currentPositionId = await manager.getLastPositionId();
 
+    // Отправляем в пулл средства через метод смарт-контракта пула: DepositCollateralUserMessage
     await poolContract.send(
         user,
         { value: collateralAmount + toNano(0.3) },
@@ -45,12 +46,15 @@ export async function run(provider: NetworkProvider) {
         },
     );
 
+    console.log(`currentPositionId | ${currentPositionId}`);
     if (currentPositionId <= 0) {
         await timer(`Position Id`, 'Внесение обеспечения', currentPositionId, manager.getLastPositionId);
-        const userBalanceBefore = await userCollateral();
-        await timer(`User balance`, 'Внесение обеспечения', userBalanceBefore, userCollateral);
-    } else {
-        const userBalanceBefore = await userCollateral();
-        await timer(`User balance`, 'Внесение обеспечения', userBalanceBefore, userCollateral);
     }
+
+    const userBalanceBefore = await userCollateral();
+    console.log(`userBalanceBefore | ${userBalanceBefore}`);
+
+    const userBalanceAfter = userBalanceBefore + collateralAmount;
+
+    await timer(`User balance`, 'Внесение обеспечения', userBalanceAfter, userCollateral);
 }

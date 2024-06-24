@@ -14,7 +14,8 @@
 # User flow
 
 1. `yarn deposit-collateral` (Внесение обеспечения (Для проверки баланса использовать скрипт info))
-2. `yarn withdraw-stablecoin` (Перечесление stablecoin пользователю)
+   - collateral: 2, debt:0
+2. `yarn mint-stablecoin` (Перечесление stablecoin пользователю)
 3. `yarn repay-stablecoin` (Возврат стейблкоина пользователем)
 4. `yarn withdraw-collateral` (Возврат обеспечения пользователю)
 

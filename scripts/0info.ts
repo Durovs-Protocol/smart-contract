@@ -28,8 +28,8 @@ export async function run(provider: NetworkProvider) {
 
     const state = await userPositionContract.getPositionState();
 
-    console.log('----collateral:', fromNano(state.collateral).toString());
-    console.log('----debt:', fromNano(state.debt).toString());
+    console.log('----TON supply:', fromNano(state.collateral).toString());
+    console.log('----usdTON borrow:', fromNano(state.debt).toString());
 
     // const managerDeps = await manager.getDeps();
     // console.log('managerDeps', managerDeps);
