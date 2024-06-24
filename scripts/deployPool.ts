@@ -4,7 +4,7 @@ import { saveAddress } from '../utils/helpers';
 import { Pool } from '../wrappers/Pool';
 
 export async function run(provider: NetworkProvider) {
-    const poolContract = provider.open(await Pool.fromInit());
+    const poolContract = provider.open(await Pool.fromInit(provider.sender().address!));
 
     await poolContract.send(
         provider.sender(),

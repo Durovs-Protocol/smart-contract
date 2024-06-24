@@ -8,7 +8,7 @@
 
         "action": "blueprint run",
         "build": "blueprint build",
-        "build-all": "rm -rf build && blueprint build manager && blueprint build pool  && blueprint build stablecoin  && blueprint build userPosition && blueprint build stablecoinWallet",
+        "build-all": "rm -rf build && blueprint build manager && blueprint build pool  && blueprint build stablecoin  && blueprint build userPosition && blueprint build stablecoinWallet && blueprint build runecoinsOwner  && blueprint build runecoin",
         "test": "jest --verbose",
 
 

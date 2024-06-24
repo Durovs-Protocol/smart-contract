@@ -1,5 +1,4 @@
 import "@stdlib/deploy";
-import "@stdlib/ownable";
 import "./runecoins_wallet.tact";
 import "./runecoin.tact";
 message SetBalance {
@@ -15,8 +14,8 @@ contract RuneCoinsOwner with Deployable {
     runaCoinAddress: Address;
     owner: Address;
     totalCoins: Int;
-    init(){
-        self.owner = sender();
+    init(owner: Address){
+        self.owner = owner;
         self.totalCoins = 0;
         self.runaCoinAddress = newAddress(0, 0);
     }

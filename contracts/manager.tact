@@ -3,14 +3,14 @@ import "@stdlib/deploy";
 import "@stdlib/ownable";
 import "./messages";
 
-contract Manager with Deployable, Ownable {
+contract Manager with Deployable, OwnableTransferable {
     const MinTonsForStorage: Int = ton("0.01");
     const GasConsumption: Int = ton("0.01");
     deps: Deps;
     owner: Address;
     lastPositionId: Int as uint32 = 0;
-    init(){
-        self.owner = sender();
+    init(owner: Address){
+        self.owner = owner;
         self.deps = Deps{
             positionsManagerAddress: newAddress(0, 0),
             poolAddress: newAddress(0, 0),
@@ -60,7 +60,7 @@ contract Manager with Deployable, Ownable {
     receive(msg: NewPositionIdMessage){
         self.onlyUserPosition(msg.user);
         self.lastPositionId = (self.lastPositionId + 1);
-        let init: StateInit = initOf PositionAddressContract(self.lastPositionId);
+        let init: StateInit = initOf PositionAddressContract(self.lastPositionId, myAddress());
         let positionAddress: Address = contractAddress(init);
         send(SendParameters{
                 to: positionAddress,
@@ -176,7 +176,7 @@ contract Manager with Deployable, Ownable {
     }
 
     get fun userPositionAddressById(id: Int): Address {
-        let init: StateInit = initOf PositionAddressContract(id);
+        let init: StateInit = initOf PositionAddressContract(id, myAddress());
         return contractAddress(init);
     }
 
@@ -191,11 +191,11 @@ contract PositionAddressContract with Deployable {
     id: Int as uint32;
     positionAddress: Address;
     positionsManagerAddress: Address;
-    init(id: Int){
+    init(id: Int, manager: Address){
         let ctx: Context = context();
         self.id = id;
         self.positionAddress = newAddress(0, 0);
-        self.positionsManagerAddress = ctx.sender;
+        self.positionsManagerAddress = manager;
     }
 
     /*

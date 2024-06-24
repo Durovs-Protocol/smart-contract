@@ -1,4 +1,3 @@
-import "@stdlib/ownable";
 import "../messages";
 
 @interface("org.ton.jetton.wallet")

@@ -48,7 +48,7 @@ export async function run(provider: NetworkProvider) {
 
     console.log(`currentPositionId | ${currentPositionId}`);
     if (currentPositionId <= 0) {
-        await timer(`Position Id`, 'Внесение обеспечения', currentPositionId, manager.getLastPositionId);
+        await timer(`Position Id`, 'Внесение обеспечения', currentPositionId + 1n, manager.getLastPositionId);
     }
 
     const userBalanceBefore = await userCollateral();

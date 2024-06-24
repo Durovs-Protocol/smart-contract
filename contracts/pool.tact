@@ -28,21 +28,21 @@ message WithdrawCollateralUserMessage {
     amount: Int as coins;
 }
 
-contract Pool with Deployable, Ownable {
+contract Pool with Deployable, OwnableTransferable {
     const MinTonForStorage: Int = ton("0.01");
     const GasConsumption: Int = ton("0.01");
     // deps
     deps: Deps;
     owner: Address;
     poolSettings: PoolSettings;
-    tonPrice: Int as uint32;
+    tonPrice: Int;
     tonPriceWithSafetyMargin: Int;
     debtRate: DebtRate;
     totalCollateralAmount: Int as coins = 0;
     stablecoinsIssued: Int as coins = 0;
     totalFeesCollected: Int as coins = 0;
-    init(){
-        self.owner = sender();
+    init(owner: Address){
+        self.owner = owner;
         self.poolSettings = PoolSettings{liquidationRatio: 0, stabilityFeeRate: 0, liquidatorIncentiveBps: 0};
         self.tonPrice = 0;
         self.tonPriceWithSafetyMargin = 0;
@@ -78,7 +78,11 @@ contract Pool with Deployable, Ownable {
     // TODO Заменить на оракул
     receive(msg: UpdateTonPriceMsg){
         self.requireOwner();
+        dump(msg.price);
+        dump(self.poolSettings.liquidationRatio);
+
         self.tonPriceWithSafetyMargin = msg.price * 1000000000 / self.poolSettings.liquidationRatio;
+        dump(self.tonPriceWithSafetyMargin);
         self.tonPrice = msg.price;
         self.reply("ton price updated".asComment());
     }

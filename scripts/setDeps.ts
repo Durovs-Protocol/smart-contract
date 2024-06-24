@@ -13,6 +13,7 @@ export async function run(provider: NetworkProvider) {
     const poolContract = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool_contract'))));
 
     async function setDeps(contract: any, name: string) {
+        console.log(`${name}=============================================================================`);
         await contract.send(
             provider.sender(),
             { value: toNano('0.1') },
@@ -24,15 +25,14 @@ export async function run(provider: NetworkProvider) {
             },
         );
 
-        const emptyAddress = 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
-        await timer(`manager address`, `Set deps in ${name}`, emptyAddress, managerAddress(contract));
-        await timer(`pool address`, `Set deps in ${name}`, emptyAddress, poolAddress(contract));
-        await timer(`stable address`, `Set deps in ${name}`, emptyAddress, stablecoinAddress(contract));
+        await timer(`manager address`, `Set deps in ${name}`, manager.address, managerAddress(contract));
+        await timer(`pool address`, `Set deps in ${name}`, poolContract.address, poolAddress(contract));
+        await timer(`stable address`, `Set deps in ${name}`, stablecoin.address, stablecoinAddress(contract));
     }
 
     await setDeps(stablecoin, 'stablecoin');
     await setDeps(manager, 'manager');
-    await setDeps(poolContract, 'pool');
+    // await setDeps(poolContract, 'pool');
     console.log('=============================================================================');
     console.log('Deps installed successfully');
     console.log('=============================================================================');

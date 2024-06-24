@@ -77,7 +77,7 @@ export async function timer(message: string, action: string, newVal: any, checkF
 
     let attempt = 1;
 
-    if(newVal == currentVal){
+    if (newVal == currentVal) {
         console.log(`Finished | The same value was received | ${newVal} | ${currentVal}`);
         console.log('=============================================================================');
         return;

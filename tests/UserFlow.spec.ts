@@ -30,8 +30,8 @@ describe('UserFlow', () => {
         stablecoinMaster = blockchain.openContract(
             await StablecoinMaster.fromInit(deployer.getSender().address, buildOnchainMetadata(jettonParams)),
         );
-        pool = blockchain.openContract(await Pool.fromInit());
-        manager = blockchain.openContract(await Manager.fromInit());
+        pool = blockchain.openContract(await Pool.fromInit(deployer.getSender().address));
+        manager = blockchain.openContract(await Manager.fromInit(deployer.getSender().address));
 
         const deployPool = await pool.send(
             deployer.getSender(),
@@ -136,7 +136,7 @@ describe('UserFlow', () => {
             { value: toNano(1) },
             {
                 $$type: 'UpdateTonPriceMsg',
-                price: toNano(3.5),
+                price: toNano(7),
             },
         );
     });
