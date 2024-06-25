@@ -43,7 +43,7 @@ contract Manager with Deployable, OwnableTransferable {
         send(SendParameters{
                 to: userPosition,
                 value: 0,
-                mode: (SendRemainingValue + SendIgnoreErrors),
+                mode: (SendRemainingValue + SendBounceIfActionFail),
                 bounce: true,
                 body: msg.toCell(),
                 code: init.code,
@@ -65,7 +65,7 @@ contract Manager with Deployable, OwnableTransferable {
         send(SendParameters{
                 to: positionAddress,
                 value: 0,
-                mode: (SendRemainingValue + SendIgnoreErrors),
+                mode: (SendRemainingValue + SendBounceIfActionFail),
                 bounce: true,
                 body: SetPositionAddressMessage{user: msg.user, position: sender()}.toCell(),
                 code: init.code,
@@ -79,7 +79,7 @@ contract Manager with Deployable, OwnableTransferable {
         send(SendParameters{
                 to: self._userPositionAddress(msg.user),
                 value: 0,
-                mode: (SendRemainingValue + SendIgnoreErrors),
+                mode: (SendRemainingValue + SendBounceIfActionFail),
                 bounce: true,
                 body: msg.toCell()
             }
@@ -92,7 +92,7 @@ contract Manager with Deployable, OwnableTransferable {
         send(SendParameters{
                 to: self.deps.poolAddress,
                 value: 0,
-                mode: (SendRemainingValue + SendIgnoreErrors),
+                mode: (SendRemainingValue + SendBounceIfActionFail),
                 bounce: true,
                 body: msg.toCell()
             }
@@ -105,7 +105,7 @@ contract Manager with Deployable, OwnableTransferable {
         send(SendParameters{
                 to: self._userPositionAddress(msg.user),
                 value: 0,
-                mode: (SendRemainingValue + SendIgnoreErrors),
+                mode: (SendRemainingValue + SendBounceIfActionFail),
                 bounce: true,
                 body: msg.toCell()
             }
@@ -118,7 +118,7 @@ contract Manager with Deployable, OwnableTransferable {
         send(SendParameters{
                 to: self.deps.poolAddress,
                 value: 0,
-                mode: (SendRemainingValue + SendIgnoreErrors),
+                mode: (SendRemainingValue + SendBounceIfActionFail),
                 bounce: true,
                 body: msg.toCell()
             }
@@ -131,7 +131,7 @@ contract Manager with Deployable, OwnableTransferable {
         send(SendParameters{
                 to: self._userPositionAddress(msg.user),
                 value: 0,
-                mode: (SendRemainingValue + SendIgnoreErrors),
+                mode: (SendRemainingValue + SendBounceIfActionFail),
                 bounce: true,
                 body: msg.toCell()
             }
@@ -144,7 +144,7 @@ contract Manager with Deployable, OwnableTransferable {
         send(SendParameters{
                 to: self.deps.poolAddress,
                 value: 0,
-                mode: (SendRemainingValue + SendIgnoreErrors),
+                mode: (SendRemainingValue + SendBounceIfActionFail),
                 bounce: true,
                 body: msg.toCell()
             }
@@ -210,7 +210,8 @@ contract PositionAddressContract with Deployable {
         self.positionAddress = msg.position;
         dump("pay excess");
         // pay excess to user
-        send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
+        send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendBounceIfActionFail)}
+        );
     }
 
     get fun positionAddress(): Address {

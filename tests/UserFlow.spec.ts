@@ -163,9 +163,9 @@ describe('UserFlow', () => {
 
     it('initial price set ok', async () => {
         const tonPrice = await pool.getTonPrice();
-        expect(tonPrice).toEqual(toNano(3.5));
+        expect(tonPrice).toEqual(toNano(7));
         const tonPriceWithSafetyMargin = await pool.getTonPriceWithSafetyMargin();
-        expect(tonPriceWithSafetyMargin).toEqual(2916666666n);
+        expect(tonPriceWithSafetyMargin).toEqual(5833333333n);
         ///???
     });
 

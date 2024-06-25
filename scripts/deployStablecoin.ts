@@ -5,9 +5,9 @@ import { StablecoinMaster } from '../wrappers/Stablecoin';
 
 export async function run(provider: NetworkProvider) {
     const jettonParams = {
-        name: 'yt0.3',
-        symbol: 'yt0.3',
-        description: 'v0.3',
+        name: 'yt06',
+        symbol: 'yt06',
+        description: 'v06',
         image: '',
     };
     const owner = provider.sender().address as Address;

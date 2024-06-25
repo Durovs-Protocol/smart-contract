@@ -13,7 +13,9 @@ export async function run(provider: NetworkProvider) {
     const poolContract = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool_contract'))));
 
     async function setDeps(contract: any, name: string) {
-        console.log(`${name}=============================================================================`);
+        console.log(
+            `======${name.toUpperCase()}=============================================================================`,
+        );
         await contract.send(
             provider.sender(),
             { value: toNano('0.1') },
@@ -32,7 +34,7 @@ export async function run(provider: NetworkProvider) {
 
     await setDeps(stablecoin, 'stablecoin');
     await setDeps(manager, 'manager');
-    // await setDeps(poolContract, 'pool');
+    await setDeps(poolContract, 'pool');
     console.log('=============================================================================');
     console.log('Deps installed successfully');
     console.log('=============================================================================');

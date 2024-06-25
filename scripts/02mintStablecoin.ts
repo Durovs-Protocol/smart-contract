@@ -16,11 +16,6 @@ export async function run(provider: NetworkProvider) {
     console.log('02 | Пользователь минтит usdTON');
     console.log('=============================================================================');
     const userStablecoinWalletAddress = await stablecoin.getGetWalletAddress(user.address as Address);
-    const userStableWallet = provider.open(await UserStablecoinWallet.fromAddress(userStablecoinWalletAddress));
-
-    await provider.waitForDeploy(userStableWallet.address, 20);
-
-    const userStableBalance = await userStableWallet.getGetBalance();
     const stablesBorrowed = toNano(0.5);
 
     await poolContract.send(
@@ -33,6 +28,10 @@ export async function run(provider: NetworkProvider) {
         },
     );
 
+    const userStableWallet = provider.open(await UserStablecoinWallet.fromAddress(userStablecoinWalletAddress));
+    await provider.waitForDeploy(userStableWallet.address, 20);
+
+    const userStableBalance = await userStableWallet.getGetBalance();
     await timer(`User stable balance`, 'Mint stablecoin', userStableBalance, userStableWallet.getGetBalance);
 
     await saveAddress('user_stablecoin_wallet_address', userStablecoinWalletAddress);

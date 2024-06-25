@@ -80,7 +80,6 @@ contract Pool with Deployable, OwnableTransferable {
         self.requireOwner();
         dump(msg.price);
         dump(self.poolSettings.liquidationRatio);
-
         self.tonPriceWithSafetyMargin = msg.price * 1000000000 / self.poolSettings.liquidationRatio;
         dump(self.tonPriceWithSafetyMargin);
         self.tonPrice = msg.price;
@@ -100,7 +99,7 @@ contract Pool with Deployable, OwnableTransferable {
         send(SendParameters{
                 to: self.deps.positionsManagerAddress,
                 value: valueToSendForward,
-                mode: SendIgnoreErrors,
+                mode: SendBounceIfActionFail,
                 bounce: true,
                 body: DepositCollateralMessage{
                     user: msg.user,
@@ -118,7 +117,7 @@ contract Pool with Deployable, OwnableTransferable {
         send(SendParameters{
                 to: self.deps.positionsManagerAddress,
                 value: 0,
-                mode: (SendRemainingValue + SendIgnoreErrors),
+                mode: (SendRemainingValue + SendBounceIfActionFail),
                 bounce: true,
                 body: WithdrawStablecoinMessage{
                     user: msg.user,

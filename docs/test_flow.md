@@ -2,7 +2,7 @@
 
 > Создать папку `deploy` если ее нет
 
-1. `yarn build-all` (Запустит build всех контрактов: stablecoin, manager, pool, deps)
+1. `yarn build-all` (Запустит build всех контрактов: stablecoin, manager, pool, deps, runes, runes-owner)
 2. `yarn deploy-and-set` (Деплой контрактов + установка зависимостей между контрактами)
     - `yarn deploy-pool`
     - `yarn deploy-manager`
