@@ -4,7 +4,7 @@ import { saveAddress } from '../utils/helpers';
 import { RuneCoinsOwner } from '../wrappers/RunecoinsOwner';
 
 export async function run(provider: NetworkProvider) {
-    const runecoinsOwner = provider.open(await RuneCoinsOwner.fromInit());
+    const runecoinsOwner = provider.open(await RuneCoinsOwner.fromInit(provider.sender().address!));
 
     await runecoinsOwner.send(
         provider.sender(),

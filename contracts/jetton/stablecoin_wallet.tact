@@ -1,5 +1,4 @@
-import "@stdlib/ownable";
-import "../messages";
+import "../utils/messages.tact";
 
 @interface("org.ton.jetton.wallet")
 contract UserStablecoinWallet

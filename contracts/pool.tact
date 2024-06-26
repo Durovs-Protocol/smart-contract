@@ -1,8 +1,9 @@
 import "@stdlib/deploy";
 import "@stdlib/ownable";
-import "./messages";
+import "./utils/messages.tact";
 import "./user_position.tact";
 import "./utils/math.tact";
+import "./runecoins/runecoins_wallet.tact";
 message PoolSettingsMsg {
     liquidationRatio: Int;
     stabilityFeeRate: Int; // 1000000000625 = X**1.000000000627 every second = 2%/yr., look at ./math/math.tact
@@ -28,21 +29,21 @@ message WithdrawCollateralUserMessage {
     amount: Int as coins;
 }
 
-contract Pool with Deployable, Ownable {
+contract Pool with Deployable, OwnableTransferable {
     const MinTonForStorage: Int = ton("0.01");
     const GasConsumption: Int = ton("0.01");
     // deps
     deps: Deps;
     owner: Address;
     poolSettings: PoolSettings;
-    tonPrice: Int as uint32;
+    tonPrice: Int;
     tonPriceWithSafetyMargin: Int;
     debtRate: DebtRate;
     totalCollateralAmount: Int as coins = 0;
     stablecoinsIssued: Int as coins = 0;
     totalFeesCollected: Int as coins = 0;
-    init(){
-        self.owner = sender();
+    init(owner: Address){
+        self.owner = owner;
         self.poolSettings = PoolSettings{liquidationRatio: 0, stabilityFeeRate: 0, liquidatorIncentiveBps: 0};
         self.tonPrice = 0;
         self.tonPriceWithSafetyMargin = 0;
@@ -50,7 +51,8 @@ contract Pool with Deployable, Ownable {
         self.deps = Deps{
             positionsManagerAddress: newAddress(0, 0),
             poolAddress: newAddress(0, 0),
-            stablecoinMasterAddress: newAddress(0, 0)
+            stablecoinMasterAddress: newAddress(0, 0),
+            runecoinAddress: newAddress(0, 0)
         };
     }
 
@@ -58,9 +60,10 @@ contract Pool with Deployable, Ownable {
     receive(msg: SetDeps){
         self.requireOwner();
         self.deps = Deps{
-            stablecoinMasterAddress: msg.stablecoinMasterAddress,
+            positionsManagerAddress: msg.positionsManagerAddress,
             poolAddress: msg.poolAddress,
-            positionsManagerAddress: msg.positionsManagerAddress
+            stablecoinMasterAddress: msg.stablecoinMasterAddress,
+            runecoinAddress: msg.runecoinAddress
         };
         self.reply("deps set".asComment());
     }
@@ -96,7 +99,7 @@ contract Pool with Deployable, Ownable {
         send(SendParameters{
                 to: self.deps.positionsManagerAddress,
                 value: valueToSendForward,
-                mode: SendIgnoreErrors,
+                mode: SendBounceIfActionFail,
                 bounce: true,
                 body: DepositCollateralMessage{
                     user: msg.user,
@@ -111,17 +114,21 @@ contract Pool with Deployable, Ownable {
 
     /*02 | Начисление USDTON пользователю (from user)'*/
     receive(msg: WithdrawStablecoinUserMessage){
+        let winit: StateInit = initOf RunecoinsWallet(self.deps.runecoinAddress, msg.user);
+        let runecoinWalletAddress: Address = contractAddress(winit);
         send(SendParameters{
                 to: self.deps.positionsManagerAddress,
                 value: 0,
-                mode: (SendRemainingValue + SendIgnoreErrors),
+                mode: (SendRemainingValue + SendBounceIfActionFail),
                 bounce: true,
                 body: WithdrawStablecoinMessage{
                     user: msg.user,
                     amount: msg.amount,
                     settings: self.poolSettings,
                     rate: self.debtRate,
-                    tonPriceWithSafetyMargin: self.tonPriceWithSafetyMargin
+                    deps: self.deps,
+                    tonPriceWithSafetyMargin: self.tonPriceWithSafetyMargin,
+                    runecoinWalletAddress: runecoinWalletAddress
                 }.toCell()
             }
         );
@@ -246,7 +253,11 @@ contract Pool with Deployable, Ownable {
 
     //helpers
     fun getUserPositionAddress(user: Address): Address {
-        let init: StateInit = initOf UserPosition(user, self.deps.stablecoinMasterAddress, myAddress());
+        let init: StateInit = initOf UserPosition(user,
+            self.deps.stablecoinMasterAddress,
+            myAddress(),
+            self.deps.runecoinAddress
+        );
         return contractAddress(init);
     }
 

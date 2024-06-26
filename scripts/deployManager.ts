@@ -4,7 +4,7 @@ import { saveAddress } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 
 export async function run(provider: NetworkProvider) {
-    const manager = provider.open(await Manager.fromInit());
+    const manager = provider.open(await Manager.fromInit(provider.sender().address!));
 
     await manager.send(
         provider.sender(),

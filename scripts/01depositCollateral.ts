@@ -32,13 +32,13 @@ export async function run(provider: NetworkProvider) {
     console.log('01 | Пользователь вносит обеспечение, создается контракт пользовательской позиции');
     console.log('=============================================================================');
 
-    const collateralAmount = toNano(1);
+    const collateralAmount = toNano(0.5);
     const currentPositionId = await manager.getLastPositionId();
 
     // Отправляем в пулл средства через метод смарт-контракта пула: DepositCollateralUserMessage
     await poolContract.send(
         user,
-        { value: collateralAmount + toNano(0.3) },
+        { value: collateralAmount + toNano(0.5) },
         {
             $$type: 'DepositCollateralUserMessage',
             user: user.address as Address,
@@ -48,7 +48,7 @@ export async function run(provider: NetworkProvider) {
 
     console.log(`currentPositionId | ${currentPositionId}`);
     if (currentPositionId <= 0) {
-        await timer(`Position Id`, 'Внесение обеспечения', currentPositionId, manager.getLastPositionId);
+        await timer(`Position Id`, 'Внесение обеспечения', currentPositionId + 1n, manager.getLastPositionId);
     }
 
     const userBalanceBefore = await userCollateral();

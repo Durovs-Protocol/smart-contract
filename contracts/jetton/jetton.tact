@@ -1,7 +1,7 @@
 import "@stdlib/ownable";
-import "../messages";
+import "../utils/messages.tact";
 @interface("org.ton.jetton.master")
-trait Jetton with Ownable {
+trait Jetton with OwnableTransferable {
     //
     // Storage
     //

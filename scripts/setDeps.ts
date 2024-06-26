@@ -11,8 +11,18 @@ export async function run(provider: NetworkProvider) {
     );
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const poolContract = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool_contract'))));
+    const runeCoin = provider.open(await StablecoinMaster.fromAddress(Address.parse(await loadAddress('runecoin'))));
 
     async function setDeps(contract: any, name: string) {
+        console.log(
+            `--------------------------------------------------------------------------------------------------------`,
+        );
+        console.log(
+            `======${name.toUpperCase()}=============================================================================`,
+        );
+        console.log(
+            `--------------------------------------------------------------------------------------------------------`,
+        );
         await contract.send(
             provider.sender(),
             { value: toNano('0.1') },
@@ -21,13 +31,14 @@ export async function run(provider: NetworkProvider) {
                 positionsManagerAddress: manager.address,
                 poolAddress: poolContract.address,
                 stablecoinMasterAddress: stablecoin.address,
+                runecoinAddress: runeCoin.address,
             },
         );
 
-        const emptyAddress = 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
-        await timer(`manager address`, `Set deps in ${name}`, emptyAddress, managerAddress(contract));
-        await timer(`pool address`, `Set deps in ${name}`, emptyAddress, poolAddress(contract));
-        await timer(`stable address`, `Set deps in ${name}`, emptyAddress, stablecoinAddress(contract));
+        await timer(`manager address`, `Set deps in ${name}`, manager.address, managerAddress(contract));
+        await timer(`pool address`, `Set deps in ${name}`, poolContract.address, poolAddress(contract));
+        await timer(`stable address`, `Set deps in ${name}`, stablecoin.address, stablecoinAddress(contract));
+        await timer(`runeCoin address`, `Set deps in ${name}`, runeCoin.address, runecoinAddress(contract));
     }
 
     await setDeps(stablecoin, 'stablecoin');
@@ -54,5 +65,12 @@ const stablecoinAddress = function (contract: any) {
     return async function () {
         const deps = await contract.getDeps();
         return deps.stablecoinMasterAddress.toString();
+    };
+};
+
+const runecoinAddress = function (contract: any) {
+    return async function () {
+        const deps = await contract.getDeps();
+        return deps.runecoinAddress.toString();
     };
 };

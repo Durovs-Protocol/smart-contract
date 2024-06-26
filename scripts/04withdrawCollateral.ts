@@ -43,5 +43,5 @@ export async function run(provider: NetworkProvider) {
         },
     );
 
-    await timer('User balance', 'Возврат обеспечения', collateralBeforeWithdraw, userCollateral);
+    await timer('User balance', 'Возврат обеспечения', collateralBeforeWithdraw - collateralToWithdraw, userCollateral);
 }

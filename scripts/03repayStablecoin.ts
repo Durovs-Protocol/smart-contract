@@ -36,7 +36,7 @@ export async function run(provider: NetworkProvider) {
     await timer(
         'User stable balance',
         'Погашение задолжности',
-        userStableBalanceAfterRepay,
+        userStableBalanceAfterRepay - stablesBorrowed,
         userStableWallet.getGetBalance,
     );
 }

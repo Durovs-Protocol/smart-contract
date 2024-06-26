@@ -8,28 +8,31 @@
 
         "action": "blueprint run",
         "build": "blueprint build",
-        "build-all": "rm -rf build && blueprint build manager && blueprint build pool  && blueprint build stablecoin  && blueprint build userPosition && blueprint build stablecoinWallet",
+        "build-all": "rm -rf build && blueprint build manager && blueprint build pool  && blueprint build stablecoin  && blueprint build userPosition && blueprint build stablecoinWallet && blueprint build runecoinsOwner  && blueprint build runecoins",
         "test": "jest --verbose",
 
 
         "deploy-stablecoin": "yarn run-script deployStablecoin",
         "deploy-manager": "yarn run-script deployManager",
         "deploy-pool": "yarn run-script  deployPool",
+        "deploy-runecoin-owner": "yarn run-script  deployRunecoinsOwner",
+        "deploy-runecoin": "yarn run-script  sendRunecoinsToOwner",
+
         "set-deps": "yarn run-script  setDeps",
         "set-settings": "yarn run-script  setSettings",
         "set-price": "yarn run-script  updatePrice",
         
-        "deploy-and-set": "yarn deploy-stablecoin && yarn deploy-manager && yarn deploy-pool && yarn set-deps",
+        "deploy-and-set": "yarn deploy-stablecoin && yarn deploy-manager && yarn deploy-pool && yarn deploy-runecoin-owner && yarn deploy-runecoin  &&  yarn set-deps",
 
         "deposit-collateral": "yarn run-script 01depositCollateral",
         "mint-stablecoin": "yarn run-script 02mintStablecoin",
         "repay-stablecoin": "yarn run-script 03repayStablecoin",
         "withdraw-collateral": "yarn run-script 04withdrawCollateral",
-        "get-info": "yarn run-script 0info",
+        "get-info": "yarn run-script 0.0info",
 
         "deploy-runes-owner": "yarn run-script deployRunecoinsOwner",
         "send-runes-to-owner": "yarn run-script sendRunecoinsToOwner",
-        "get-runes": "yarn run-script getRunecoins",
+        "get-runes": "yarn run-script 0.2getRunecoins",
         "runes-info": "yarn run-script runes-info"
     },
     "devDependencies": {

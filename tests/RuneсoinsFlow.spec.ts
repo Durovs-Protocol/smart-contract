@@ -25,7 +25,7 @@ describe('RunaCoinOwner', () => {
         };
         blockchain = await Blockchain.create();
         deployer = await blockchain.treasury('deployer');
-        runecoinOwner = blockchain.openContract(await RuneCoinsOwner.fromInit());
+        runecoinOwner = blockchain.openContract(await RuneCoinsOwner.fromInit(deployer.getSender().address));
         runecoin = blockchain.openContract(
             await Runecoin.fromInit(runecoinOwner.address, buildOnchainMetadata(jettonParams)),
         );
@@ -56,7 +56,7 @@ describe('RunaCoinOwner', () => {
         userAmount = toNano(50);
     });
 
-    it('runacoins goes to owner', async () => {
+    it('runecoins goes to owner', async () => {
         const balanceBefore = await runecoinOwner.getTotalAmount();
 
         const jettonParams = {
@@ -81,7 +81,7 @@ describe('RunaCoinOwner', () => {
         expect(balanceAfter).toEqual(balanceBefore + totalAmount);
     });
 
-    it('runacoin goes to user', async () => {
+    it('runecoin goes to user', async () => {
         const balanceBefore = await runecoinOwner.getTotalAmount();
 
         await runecoinOwner.send(
