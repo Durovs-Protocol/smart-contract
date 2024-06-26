@@ -3,6 +3,7 @@ import { Address, toNano } from '@ton/core';
 import { loadAddress, timer } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { Pool } from '../wrappers/Pool';
+import { Runecoin } from '../wrappers/Runecoins';
 import { StablecoinMaster } from '../wrappers/Stablecoin';
 
 export async function run(provider: NetworkProvider) {
@@ -11,7 +12,7 @@ export async function run(provider: NetworkProvider) {
     );
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const poolContract = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool_contract'))));
-    const runeCoin = provider.open(await StablecoinMaster.fromAddress(Address.parse(await loadAddress('runecoin'))));
+    const runeCoin = provider.open(await Runecoin.fromAddress(Address.parse(await loadAddress('runecoin'))));
 
     async function setDeps(contract: any, name: string) {
         console.log(

@@ -79,6 +79,7 @@ contract Manager with Deployable, OwnableTransferable {
 
     /*02 | Начисление USDTON пользователю (from pool)'*/
     receive(msg: WithdrawStablecoinMessage){
+        dump("Начисление USDTON пользователю (from pool)'*/");
         send(SendParameters{
                 to: self._userPositionAddress(msg.user),
                 value: 0,

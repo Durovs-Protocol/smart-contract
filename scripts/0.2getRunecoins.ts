@@ -17,7 +17,7 @@ export async function run(provider: NetworkProvider) {
 
     await runecoinsOwner.send(
         user,
-        { value: toNano(0.6) },
+        { value: toNano(0.3) },
         {
             $$type: 'GetRunecoins',
             amount: amount,

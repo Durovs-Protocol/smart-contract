@@ -17,7 +17,7 @@
 
 # User flow
 
-1. `yarn deposit-collateral` (Внесение обеспечения (Для проверки баланса использовать скрипт info))
+1. `yarn deposit-collateral` (Внесение обеспечения (Для проверки баланса использовать скрипт info(в случае ошибки Exit code: -256 )))
     - collateral: 2, debt:0
 2. `yarn get-runes` (Получение runecoins пользователем)
 3. `yarn mint-stablecoin` (Перечесление stablecoin пользователю)

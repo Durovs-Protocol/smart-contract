@@ -7,6 +7,8 @@ import { Pool } from '../wrappers/Pool';
 import { PositionAddressContract } from '../wrappers/PositionAddress';
 import { Runecoin } from '../wrappers/Runecoins';
 import { RuneCoinsOwner } from '../wrappers/RunecoinsOwner';
+import { RunecoinsWallet } from '../wrappers/RunecoinsWallet';
+
 import { StablecoinMaster } from '../wrappers/Stablecoin';
 import { UserStablecoinWallet } from '../wrappers/StablecoinWallet';
 import { UserPosition } from '../wrappers/UserPosition';
@@ -19,6 +21,7 @@ describe('UserFlow', () => {
     let manager: SandboxContract<Manager>;
     let runecoin: SandboxContract<Runecoin>;
     let runecoinOwner: SandboxContract<RuneCoinsOwner>;
+    let runecoinWallet: SandboxContract<RunecoinsWallet>;
 
     beforeAll(async () => {
         const jettonParams = {
@@ -40,6 +43,7 @@ describe('UserFlow', () => {
             await StablecoinMaster.fromInit(deployer.getSender().address, buildOnchainMetadata(jettonParams)),
         );
         runecoinOwner = blockchain.openContract(await RuneCoinsOwner.fromInit(deployer.getSender().address));
+
         runecoin = blockchain.openContract(
             await Runecoin.fromInit(runecoinOwner.address, buildOnchainMetadata(runecoinParams)),
         );
@@ -54,6 +58,11 @@ describe('UserFlow', () => {
                 content: buildOnchainMetadata(jettonParams),
             },
         );
+        runecoinWallet = blockchain.openContract(
+            await RunecoinsWallet.fromInit(runecoin.address, deployer.getSender().address),
+        );
+        console.log('runecoinWallet');
+        console.log(runecoinWallet.address);
 
         pool = blockchain.openContract(await Pool.fromInit(deployer.getSender().address));
         manager = blockchain.openContract(await Manager.fromInit(deployer.getSender().address));
@@ -167,6 +176,16 @@ describe('UserFlow', () => {
                 price: toNano(7),
             },
         );
+
+        await runecoinOwner.send(
+            deployer.getSender(),
+            { value: toNano(1) },
+            {
+                $$type: 'GetRunecoins',
+                amount: toNano(123),
+                user: deployer.getSender().address,
+            },
+        );
     });
     it('deps set ok', async () => {
         const stablecoinDeps = await stablecoinMaster.getDeps();
@@ -192,8 +211,8 @@ describe('UserFlow', () => {
     it('initial price set ok', async () => {
         const tonPrice = await pool.getTonPrice();
         expect(tonPrice).toEqual(toNano(7));
-        const tonPriceWithSafetyMargin = await pool.getTonPriceWithSafetyMargin();
-        expect(tonPriceWithSafetyMargin).toEqual(5833333333n);
+        const tonPriceWithHealthRate = await pool.getTonPriceWithSafetyMargin();
+        expect(tonPriceWithHealthRate).toEqual(5833333333n);
         ///???
     });
 
@@ -243,7 +262,7 @@ describe('UserFlow', () => {
 
         const stablesBorrowed = toNano(2);
 
-        const res = await pool.send(
+        await pool.send(
             deployer.getSender(),
             { value: toNano(1) },
             {
@@ -252,7 +271,6 @@ describe('UserFlow', () => {
                 amount: stablesBorrowed,
             },
         );
-        console.log(res);
 
         // TODO понять почему так не работает////////////////////////////////////////////////////////////////////////
         // const userStablecoinWalletAddress = await stablecoinMaster.getGetWalletAddress(deployer.getSender().address);
