@@ -21,7 +21,7 @@ export async function run(provider: NetworkProvider) {
         {
             $$type: 'PoolSettingsMsg',
             liquidationRatio: newLiquidationRatio,
-            stabilityFeeRate: 1000000000625n,
+            stabilityFeeRate: toNano('0.02'),
             liquidatorIncentiveBps: newLiquidatorIncentiveBps,
         },
     );

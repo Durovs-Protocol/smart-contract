@@ -1,4 +1,5 @@
-import "../messages";
+import "../utils/messages.tact";
+import "../user_position.tact";
 
 @interface("org.ton.jetton.wallet")
 contract RunecoinsWallet
@@ -12,6 +13,46 @@ contract RunecoinsWallet
         self.balance = 0;
         self.owner = owner;
         self.master = master;
+    }
+
+    receive(msg: TokenTransferFromPositionManager){
+        // Check sender
+        let ctx: Context = context();
+        let userPositionAddress: Address = self._userPositionAddress(self.owner, msg.deps);
+        dump(ctx.sender);
+        dump(userPositionAddress);
+        dump(self.owner);
+        require(ctx.sender == self.owner || ctx.sender == userPositionAddress, "Invalid sender");
+        // Update balance
+        self.balance = (self.balance - msg.amount);
+        require(self.balance >= 0, "Invalid balance");
+        // Gas checks
+        let fwdFee: Int = ctx.readForwardFee();
+        let fwdCount: Int = 1;
+        if (msg.forwardTonAmount > 0) {
+            fwdCount = 2;
+        }
+        require(ctx.value > ((fwdCount * fwdFee + 2 * self.gasConsumption) + self.minTonsForStorage), "Invalid value");
+        // Send tokens
+        let init: StateInit = initOf RunecoinsWallet(self.master, msg.destination);
+        let walletAddress: Address = contractAddress(init);
+        send(SendParameters{
+                to: walletAddress,
+                value: 0,
+                mode: SendRemainingValue,
+                bounce: true,
+                body: TokenTransferInternal{
+                    amount: msg.amount,
+                    queryId: msg.queryId,
+                    from: self.owner,
+                    responseAddress: self.owner,
+                    forwardTonAmount: msg.forwardTonAmount,
+                    forwardPayload: msg.forwardPayload
+                }.toCell(),
+                code: init.code,
+                data: init.data
+            }
+        );
     }
 
     receive(msg: TokenTransfer){
@@ -176,5 +217,14 @@ contract RunecoinsWallet
 
     get fun getBalance(): Int {
         return self.balance;
+    }
+
+    fun _userPositionAddress(user: Address, deps: Deps): Address {
+        let init: StateInit = initOf UserPosition(user,
+            deps.stablecoinMasterAddress,
+            deps.positionsManagerAddress,
+            deps.runecoinAddress
+        );
+        return contractAddress(init);
     }
 }

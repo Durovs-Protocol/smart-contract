@@ -1,8 +1,9 @@
 import "@stdlib/deploy";
 import "@stdlib/ownable";
-import "./messages";
+import "./utils/messages.tact";
 import "./user_position.tact";
 import "./utils/math.tact";
+import "./runecoins/runecoins_wallet.tact";
 message PoolSettingsMsg {
     liquidationRatio: Int;
     stabilityFeeRate: Int; // 1000000000625 = X**1.000000000627 every second = 2%/yr., look at ./math/math.tact
@@ -50,7 +51,8 @@ contract Pool with Deployable, OwnableTransferable {
         self.deps = Deps{
             positionsManagerAddress: newAddress(0, 0),
             poolAddress: newAddress(0, 0),
-            stablecoinMasterAddress: newAddress(0, 0)
+            stablecoinMasterAddress: newAddress(0, 0),
+            runecoinAddress: newAddress(0, 0)
         };
     }
 
@@ -58,9 +60,10 @@ contract Pool with Deployable, OwnableTransferable {
     receive(msg: SetDeps){
         self.requireOwner();
         self.deps = Deps{
-            stablecoinMasterAddress: msg.stablecoinMasterAddress,
+            positionsManagerAddress: msg.positionsManagerAddress,
             poolAddress: msg.poolAddress,
-            positionsManagerAddress: msg.positionsManagerAddress
+            stablecoinMasterAddress: msg.stablecoinMasterAddress,
+            runecoinAddress: msg.runecoinAddress
         };
         self.reply("deps set".asComment());
     }
@@ -78,10 +81,7 @@ contract Pool with Deployable, OwnableTransferable {
     // TODO Заменить на оракул
     receive(msg: UpdateTonPriceMsg){
         self.requireOwner();
-        dump(msg.price);
-        dump(self.poolSettings.liquidationRatio);
         self.tonPriceWithSafetyMargin = msg.price * 1000000000 / self.poolSettings.liquidationRatio;
-        dump(self.tonPriceWithSafetyMargin);
         self.tonPrice = msg.price;
         self.reply("ton price updated".asComment());
     }
@@ -114,6 +114,8 @@ contract Pool with Deployable, OwnableTransferable {
 
     /*02 | Начисление USDTON пользователю (from user)'*/
     receive(msg: WithdrawStablecoinUserMessage){
+        let winit: StateInit = initOf RunecoinsWallet(self.deps.runecoinAddress, msg.user);
+        let runecoinWalletAddress: Address = contractAddress(winit);
         send(SendParameters{
                 to: self.deps.positionsManagerAddress,
                 value: 0,
@@ -124,7 +126,9 @@ contract Pool with Deployable, OwnableTransferable {
                     amount: msg.amount,
                     settings: self.poolSettings,
                     rate: self.debtRate,
-                    tonPriceWithSafetyMargin: self.tonPriceWithSafetyMargin
+                    deps: self.deps,
+                    tonPriceWithSafetyMargin: self.tonPriceWithSafetyMargin,
+                    runecoinWalletAddress: runecoinWalletAddress
                 }.toCell()
             }
         );
@@ -249,7 +253,11 @@ contract Pool with Deployable, OwnableTransferable {
 
     //helpers
     fun getUserPositionAddress(user: Address): Address {
-        let init: StateInit = initOf UserPosition(user, self.deps.stablecoinMasterAddress, myAddress());
+        let init: StateInit = initOf UserPosition(user,
+            self.deps.stablecoinMasterAddress,
+            myAddress(),
+            self.deps.runecoinAddress
+        );
         return contractAddress(init);
     }
 

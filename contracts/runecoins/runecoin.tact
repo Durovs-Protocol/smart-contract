@@ -1,6 +1,6 @@
 import "./jetton.tact";
 import "./runecoins_wallet.tact";
-import "../messages";
+import "../utils/messages.tact";
 import "@stdlib/deploy";
 
 message Mint {
@@ -68,5 +68,6 @@ contract Runecoin with Jetton, Deployable {
     get fun message(): String {
         return self.message;
     }
+
 
 }

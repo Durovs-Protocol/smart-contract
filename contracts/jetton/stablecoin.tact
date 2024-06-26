@@ -1,7 +1,7 @@
 import "../user_position.tact";
 import "./jetton.tact";
 import "./stablecoin_wallet.tact";
-import "../messages";
+import "../utils/messages.tact";
 import "@stdlib/deploy";
 
 message Mint {
@@ -24,7 +24,8 @@ contract StablecoinMaster with Jetton, Deployable {
         self.deps = Deps{
             stablecoinMasterAddress: newAddress(0, 0),
             poolAddress: newAddress(0, 0),
-            positionsManagerAddress: newAddress(0, 0)
+            positionsManagerAddress: newAddress(0, 0),
+            runecoinAddress: newAddress(0, 0)
         };
         self.message = "";
     }
@@ -32,9 +33,10 @@ contract StablecoinMaster with Jetton, Deployable {
     receive (msg: SetDeps) {
         self.requireOwner();
         self.deps = Deps{
-            stablecoinMasterAddress: msg.stablecoinMasterAddress,
+            positionsManagerAddress: msg.positionsManagerAddress,
             poolAddress: msg.poolAddress,
-            positionsManagerAddress: msg.positionsManagerAddress
+            stablecoinMasterAddress: msg.stablecoinMasterAddress,
+            runecoinAddress:  msg.runecoinAddress,
         };
         self.reply("deps set".asComment());
     }
@@ -118,7 +120,7 @@ contract StablecoinMaster with Jetton, Deployable {
     }
 
     fun _userPositionAddress(user: Address): Address {
-        let init: StateInit = initOf UserPosition(user, self.deps.stablecoinMasterAddress, self.deps.positionsManagerAddress);
+        let init: StateInit = initOf UserPosition(user, self.deps.stablecoinMasterAddress, self.deps.positionsManagerAddress, self.deps.runecoinAddress,);
         let userPositionAddress: Address = contractAddress(init);
         return userPositionAddress;
     }

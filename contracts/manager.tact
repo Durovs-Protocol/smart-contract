@@ -1,7 +1,7 @@
 import "./user_position.tact";
 import "@stdlib/deploy";
 import "@stdlib/ownable";
-import "./messages";
+import "./utils/messages.tact";
 
 contract Manager with Deployable, OwnableTransferable {
     const MinTonsForStorage: Int = ton("0.01");
@@ -14,7 +14,8 @@ contract Manager with Deployable, OwnableTransferable {
         self.deps = Deps{
             positionsManagerAddress: newAddress(0, 0),
             poolAddress: newAddress(0, 0),
-            stablecoinMasterAddress: newAddress(0, 0)
+            stablecoinMasterAddress: newAddress(0, 0),
+            runecoinAddress: newAddress(0, 0)
         };
     }
 
@@ -24,7 +25,8 @@ contract Manager with Deployable, OwnableTransferable {
         self.deps = Deps{
             positionsManagerAddress: msg.positionsManagerAddress,
             poolAddress: msg.poolAddress,
-            stablecoinMasterAddress: msg.stablecoinMasterAddress
+            stablecoinMasterAddress: msg.stablecoinMasterAddress,
+            runecoinAddress: msg.runecoinAddress
         };
         self.reply("deps set".asComment());
     }
@@ -37,7 +39,8 @@ contract Manager with Deployable, OwnableTransferable {
         let ctx: Context = context();
         let init: StateInit = initOf UserPosition(msg.user,
             self.deps.stablecoinMasterAddress,
-            self.deps.positionsManagerAddress
+            self.deps.positionsManagerAddress,
+            self.deps.runecoinAddress
         );
         let userPosition: Address = contractAddress(init);
         send(SendParameters{
@@ -160,7 +163,8 @@ contract Manager with Deployable, OwnableTransferable {
     fun _userPositionAddress(user: Address): Address {
         let init: StateInit = initOf UserPosition(user,
             self.deps.stablecoinMasterAddress,
-            self.deps.positionsManagerAddress
+            self.deps.positionsManagerAddress,
+            self.deps.runecoinAddress
         );
         return contractAddress(init);
     }

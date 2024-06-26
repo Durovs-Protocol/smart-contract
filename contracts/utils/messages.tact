@@ -23,9 +23,11 @@ message WithdrawCollateralMessage {
 }
 message WithdrawStablecoinMessage {
     user: Address;
+    runecoinWalletAddress: Address;
     amount: Int as uint64;
     settings: PoolSettings;
     rate: DebtRate;
+    deps: Deps;
     tonPriceWithSafetyMargin: Int as coins;
 }
 message RepayStablecoinMessage {
@@ -47,6 +49,7 @@ message DecreaseTotalStableMessage {
     user: Address;
     amount: Int as uint64;
 }
+
 // stablecoinMaster messages
 
 struct JettonData {
@@ -62,6 +65,7 @@ struct JettonWalletData {
     master: Address;
     walletCode: Cell;
 }
+
 // userPosition messages
 
 message SetUserPositionDependecyMessage {
@@ -79,6 +83,7 @@ message SetPositionAddressMessage {
     user: Address;
     position: Address;
 }
+
 // stablecoinMaster messages
 
 message MintMessage {
@@ -102,6 +107,17 @@ message StablecoinBurnedMessage {
     amount: Int as coins;
     rate: DebtRate;
 }
+message TokenTransferFromPositionManager {
+    queryId: Int as uint64;
+    amount: Int as coins;
+    destination: Address;
+    responseDestination: Address?;
+    customPayload: Cell?;
+    forwardTonAmount: Int as coins;
+    forwardPayload: Slice as remaining;
+    deps: Deps;
+}
+
 // jetton messages
 
 message(0xf8a7ea5) TokenTransfer {
@@ -153,9 +169,11 @@ message SetDeps {
     positionsManagerAddress: Address;
     poolAddress: Address;
     stablecoinMasterAddress: Address;
+    runecoinAddress: Address;
 }
 struct Deps {
     positionsManagerAddress: Address;
     poolAddress: Address;
     stablecoinMasterAddress: Address;
+    runecoinAddress: Address;
 }

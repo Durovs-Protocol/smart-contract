@@ -50,11 +50,11 @@ npm manifest:
           "withdraw-collateral": "yarn run-script 04withdrawCollateral",
           "get-info": "yarn run-script 0info",
   
-          "deploy-runacoin-owner": "yarn run-script deployRunaCoinOwner",
+          "deploy-runecoin-owner": "yarn run-script deployRunaCoinOwner",
           "send-runa-to-owner": "yarn run-script sendRunaToOwner",
           "buy-runa": "yarn run-script getRunaCoins"
   
-          // "deploy-runacoin": "yarn run-script deployRunaCoin",
+          // "deploy-runecoin": "yarn run-script deployRunaCoin",
       },
       "devDependencies": {
           "@ton/blueprint": "^0.19.0",

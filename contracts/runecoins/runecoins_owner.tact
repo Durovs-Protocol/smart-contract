@@ -1,6 +1,7 @@
 import "@stdlib/deploy";
 import "./runecoins_wallet.tact";
 import "./runecoin.tact";
+import "../utils/helpers.tact";
 message SetBalance {
     amount: Int;
     content: Cell?;
@@ -11,19 +12,19 @@ message GetRunecoins {
 }
 
 contract RuneCoinsOwner with Deployable {
-    runaCoinAddress: Address;
+    runecoinAddress: Address;
     owner: Address;
     totalCoins: Int;
     init(owner: Address){
         self.owner = owner;
         self.totalCoins = 0;
-        self.runaCoinAddress = newAddress(0, 0);
+        self.runecoinAddress = newAddress(0, 0);
     }
 
     receive(msg: SetBalance){
         let init: StateInit = initOf Runecoin(myAddress(), msg.content);
         let address: Address = contractAddress(init);
-        self.runaCoinAddress = address;
+        self.runecoinAddress = address;
         send(SendParameters{
                 to: address,
                 value: ton("0.5"),
@@ -38,9 +39,9 @@ contract RuneCoinsOwner with Deployable {
     }
 
     // user actions
-    /*01 | Запрос на получение runacoin (from user)'*/
+    /*01 | Запрос на получение runecoin (from user)'*/
     receive(msg: GetRunecoins){
-        let winit: StateInit = initOf RunecoinsWallet(self.runaCoinAddress, myAddress());
+        let winit: StateInit = initOf RunecoinsWallet(self.runecoinAddress, myAddress());
         let walletAddress: Address = contractAddress(winit);
         send(SendParameters{
                 to: walletAddress,
@@ -52,9 +53,9 @@ contract RuneCoinsOwner with Deployable {
                     amount: msg.amount,
                     destination: msg.user,
                     responseDestination: myAddress(),
-                    customPayload: self.createOffchainContent("custom"),
+                    customPayload: createOffchainContent("custom"),
                     forwardTonAmount: 0,
-                    forwardPayload: self.createOffchainContent("forward").asSlice()
+                    forwardPayload: createOffchainContent("forward").asSlice()
                 }.toCell()
             }
         );
@@ -62,18 +63,12 @@ contract RuneCoinsOwner with Deployable {
         self.reply("Runacoins sent".asComment());
     }
 
-    fun createOffchainContent(pram: String): Cell {
-        let s: StringBuilder = beginStringFromBuilder(beginCell().storeBool(true).storeUint(0, 32));
-        s.append(pram);
-        return s.toCell();
-    }
-
     get fun totalAmount(): Int {
         return self.totalCoins;
     }
 
     get fun address(): Address {
-        return self.runaCoinAddress;
+        return self.runecoinAddress;
     }
 
     get fun owner(): Address {

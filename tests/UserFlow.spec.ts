@@ -5,6 +5,8 @@ import { buildOnchainMetadata } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { Pool } from '../wrappers/Pool';
 import { PositionAddressContract } from '../wrappers/PositionAddress';
+import { Runecoin } from '../wrappers/Runecoins';
+import { RuneCoinsOwner } from '../wrappers/RunecoinsOwner';
 import { StablecoinMaster } from '../wrappers/Stablecoin';
 import { UserStablecoinWallet } from '../wrappers/StablecoinWallet';
 import { UserPosition } from '../wrappers/UserPosition';
@@ -15,21 +17,44 @@ describe('UserFlow', () => {
     let pool: SandboxContract<Pool>;
     let stablecoinMaster: SandboxContract<StablecoinMaster>;
     let manager: SandboxContract<Manager>;
+    let runecoin: SandboxContract<Runecoin>;
+    let runecoinOwner: SandboxContract<RuneCoinsOwner>;
 
     beforeAll(async () => {
         const jettonParams = {
-            name: 'yt0.2',
-            symbol: 'yt0.2',
-            description: 'v0.2',
+            name: 'yt',
+            symbol: 'yt',
+            description: 'yt',
             image: '',
         };
-
+        const runecoinParams = {
+            name: 'rune',
+            symbol: 'rune',
+            description: 'rune',
+            image: '',
+        };
         blockchain = await Blockchain.create();
         deployer = await blockchain.treasury('deployer');
 
         stablecoinMaster = blockchain.openContract(
             await StablecoinMaster.fromInit(deployer.getSender().address, buildOnchainMetadata(jettonParams)),
         );
+        runecoinOwner = blockchain.openContract(await RuneCoinsOwner.fromInit(deployer.getSender().address));
+        runecoin = blockchain.openContract(
+            await Runecoin.fromInit(runecoinOwner.address, buildOnchainMetadata(runecoinParams)),
+        );
+        await runecoinOwner.send(
+            deployer.getSender(),
+            {
+                value: toNano(1),
+            },
+            {
+                $$type: 'SetBalance',
+                amount: toNano(1000000000),
+                content: buildOnchainMetadata(jettonParams),
+            },
+        );
+
         pool = blockchain.openContract(await Pool.fromInit(deployer.getSender().address));
         manager = blockchain.openContract(await Manager.fromInit(deployer.getSender().address));
 
@@ -59,6 +84,7 @@ describe('UserFlow', () => {
                 positionsManagerAddress: manager.address,
                 poolAddress: pool.address,
                 stablecoinMasterAddress: stablecoinMaster.address,
+                runecoinAddress: runecoin.address,
             },
         );
 
@@ -88,6 +114,7 @@ describe('UserFlow', () => {
                 positionsManagerAddress: manager.address,
                 poolAddress: pool.address,
                 stablecoinMasterAddress: stablecoinMaster.address,
+                runecoinAddress: runecoin.address,
             },
         );
 
@@ -117,6 +144,7 @@ describe('UserFlow', () => {
                 positionsManagerAddress: manager.address,
                 poolAddress: pool.address,
                 stablecoinMasterAddress: stablecoinMaster.address,
+                runecoinAddress: runecoin.address,
             },
         );
 
@@ -126,7 +154,7 @@ describe('UserFlow', () => {
             {
                 $$type: 'PoolSettingsMsg',
                 liquidationRatio: toNano(1.2),
-                stabilityFeeRate: 1000000000625n,
+                stabilityFeeRate: toNano('0.02'),
                 liquidatorIncentiveBps: toNano(1.05),
             },
         );
@@ -158,7 +186,7 @@ describe('UserFlow', () => {
         const poolSettings = await pool.getPoolSettings();
         expect(poolSettings.liquidationRatio).toEqual(toNano(1.2));
         expect(poolSettings.liquidatorIncentiveBps).toEqual(toNano(1.05));
-        expect(poolSettings.stabilityFeeRate).toEqual(1000000000625n);
+        expect(poolSettings.stabilityFeeRate).toEqual(toNano('0.02'));
     });
 
     it('initial price set ok', async () => {
@@ -213,9 +241,9 @@ describe('UserFlow', () => {
 
         expect(initialTotalSupply).toEqual(0n);
 
-        const stablesBorrowed = toNano(1);
+        const stablesBorrowed = toNano(2);
 
-        await pool.send(
+        const res = await pool.send(
             deployer.getSender(),
             { value: toNano(1) },
             {
@@ -224,6 +252,7 @@ describe('UserFlow', () => {
                 amount: stablesBorrowed,
             },
         );
+        console.log(res);
 
         // TODO понять почему так не работает////////////////////////////////////////////////////////////////////////
         // const userStablecoinWalletAddress = await stablecoinMaster.getGetWalletAddress(deployer.getSender().address);

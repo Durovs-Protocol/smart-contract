@@ -1,4 +1,5 @@
-import "./messages";
+import "./utils/messages.tact";
+import "./utils/helpers.tact";
 
 struct PositionState {
     collateral: Int as coins;
@@ -17,14 +18,21 @@ contract UserPosition  {
     user: Address;
     stablecoinMasterAddress: Address;
     positionsManagerAddress: Address;
+    poolAddress: Address;
+
+
+
     collateral: Int as coins = 0;
     debt: Int = 0;
     message: Message;
 
-    init(user: Address, stablecoinMasterAddress: Address, positionsManagerAddress: Address) {
+    init(user: Address, stablecoinMasterAddress: Address, positionsManagerAddress: Address, poolAddress: Address) {
         self.user = user; 
         self.stablecoinMasterAddress = stablecoinMasterAddress;
         self.positionsManagerAddress = positionsManagerAddress;
+        self.poolAddress = poolAddress;
+
+
         self.message = Message{
             timestamp: 0,
             message: "Position Created"
@@ -76,6 +84,26 @@ contract UserPosition  {
         //     return;
         // } 
         // dump("position healthy");
+        let stabilityFee: Int = msg.amount / 1000000000 * msg.settings.stabilityFeeRate;
+
+        send(SendParameters {
+                to: msg.runecoinWalletAddress,
+                value: 0,
+                // mode: (SendRemainingValue + SendBounceIfActionFail),
+                bounce: false,
+                body: TokenTransferFromPositionManager{
+                    queryId: 0,
+                    amount: stabilityFee,
+                    destination: self.poolAddress,
+                    responseDestination: msg.user,
+                    deps: msg.deps,
+                    customPayload: createOffchainContent("custom"),
+                    forwardTonAmount: 0,
+                    forwardPayload: createOffchainContent("forward").asSlice()
+                }.toCell()
+            }
+        );
+
 
         send(SendParameters{
             to: self.stablecoinMasterAddress, 

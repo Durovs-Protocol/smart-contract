@@ -9,9 +9,9 @@ export async function run(provider: NetworkProvider) {
     );
 
     const jettonParams = {
-        name: 'runa',
-        symbol: 'RN',
-        description: 'runa',
+        name: 'runa2',
+        symbol: 'RN2',
+        description: 'runa2',
         image: 'https://d391b93f5f62d9c15f67142e43841acc.ipfscdn.io/ipfs/bafybeighpd4rtwtnv3cumptlz4pmvi7z3iuo75mvyvdlthusdiuumfedbq/logo-dark.png',
     };
 
@@ -31,7 +31,12 @@ export async function run(provider: NetworkProvider) {
 
     const totalAmount = await runecoinsOwner.getTotalAmount();
 
-    await timer('owners balance', 'Передача runecoins контракту-владельцу', totalAmount, runecoinsOwner.getTotalAmount);
+    await timer(
+        'owners balance',
+        'Передача runecoins контракту-владельцу',
+        totalAmount + amount,
+        runecoinsOwner.getTotalAmount,
+    );
     const getAddress = await runecoinsOwner.getAddress();
     await saveAddress('runecoin', getAddress);
 

@@ -16,7 +16,7 @@ export async function run(provider: NetworkProvider) {
     console.log('02 | Пользователь минтит usdTON');
     console.log('=============================================================================');
     const userStablecoinWalletAddress = await stablecoin.getGetWalletAddress(user.address as Address);
-    const stablesBorrowed = toNano(0.5);
+    const stablesBorrowed = toNano(0.2);
 
     await poolContract.send(
         user,
