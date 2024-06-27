@@ -36,13 +36,13 @@ npm manifest:
           "test": "jest --verbose",
   
   
-          "deploy-stablecoin": "yarn run-script deployStablecoin",
+          "deploy-usdton": "yarn run-script deployStablecoin",
           "deploy-manager": "yarn run-script deployManager",
           "deploy-pool": "yarn run-script  deployPool",
           "set-deps": "yarn run-script  setDeps",
           "set-settings": "yarn run-script  setSettings",
-          "set-price": "yarn run-script  updatePrice",
-          "deploy-and-set": "yarn deploy-stablecoin && yarn deploy-manager && yarn deploy-pool && yarn set-deps",
+          "update-price": "yarn run-script  updatePrice",
+          "deploy-and-set": "yarn deploy-usdton && yarn deploy-manager && yarn deploy-pool && yarn set-deps",
   
           "deposit-collateral": "yarn run-script 01depositCollateral",
           "mint-stablecoin": "yarn run-script 02mintStablecoin",

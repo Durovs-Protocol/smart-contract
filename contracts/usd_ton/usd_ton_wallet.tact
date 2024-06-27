@@ -1,8 +1,7 @@
 import "../utils/messages.tact";
-import "../user_position.tact";
 
 @interface("org.ton.jetton.wallet")
-contract RunecoinsWallet
+contract UsdTonWallet
 {
     const minTonsForStorage: Int = ton("0.01");
     const gasConsumption: Int = ton("0.01");
@@ -13,46 +12,6 @@ contract RunecoinsWallet
         self.balance = 0;
         self.owner = owner;
         self.master = master;
-    }
-
-    receive(msg: TokenTransferFromPositionManager){
-        // Check sender
-        let ctx: Context = context();
-        let userPositionAddress: Address = self._userPositionAddress(self.owner, msg.deps);
-        dump(ctx.sender);
-        dump(userPositionAddress);
-        dump(self.owner);
-        require(ctx.sender == self.owner || ctx.sender == userPositionAddress, "Invalid sender");
-        // Update balance
-        self.balance = (self.balance - msg.amount);
-        require(self.balance >= 0, "Invalid balance");
-        // Gas checks
-        let fwdFee: Int = ctx.readForwardFee();
-        let fwdCount: Int = 1;
-        if (msg.forwardTonAmount > 0) {
-            fwdCount = 2;
-        }
-        require(ctx.value > ((fwdCount * fwdFee + 2 * self.gasConsumption) + self.minTonsForStorage), "Invalid value");
-        // Send tokens
-        let init: StateInit = initOf RunecoinsWallet(self.master, msg.destination);
-        let walletAddress: Address = contractAddress(init);
-        send(SendParameters{
-                to: walletAddress,
-                value: 0,
-                mode: SendRemainingValue,
-                bounce: true,
-                body: TokenTransferInternal{
-                    amount: msg.amount,
-                    queryId: msg.queryId,
-                    from: self.owner,
-                    responseAddress: self.owner,
-                    forwardTonAmount: msg.forwardTonAmount,
-                    forwardPayload: msg.forwardPayload
-                }.toCell(),
-                code: init.code,
-                data: init.data
-            }
-        );
     }
 
     receive(msg: TokenTransfer){
@@ -70,7 +29,7 @@ contract RunecoinsWallet
         }
         require(ctx.value > ((fwdCount * fwdFee + 2 * self.gasConsumption) + self.minTonsForStorage), "Invalid value");
         // Send tokens
-        let init: StateInit = initOf RunecoinsWallet(self.master, msg.destination);
+        let init: StateInit = initOf UsdTonWallet(self.master, msg.destination);
         let walletAddress: Address = contractAddress(init);
         send(SendParameters{
                 to: walletAddress,
@@ -95,7 +54,7 @@ contract RunecoinsWallet
         // Check sender
         let ctx: Context = context();
         if (ctx.sender != self.master) {
-            let sinit: StateInit = initOf RunecoinsWallet(self.master, msg.from);
+            let sinit: StateInit = initOf UsdTonWallet(self.master, msg.from);
             require(contractAddress(sinit) == ctx.sender, "Invalid sender");
         }
         // Update balance
@@ -174,7 +133,7 @@ contract RunecoinsWallet
 
     // stablecoin related method
 
-    receive(msg: RepayBurnMessage){
+    receive(msg: BurnBurnMessage){
         /* check if called by master
         if balance >= amount
         decrease balance
@@ -195,7 +154,7 @@ contract RunecoinsWallet
                 value: 0,
                 mode: (SendRemainingValue + SendIgnoreErrors),
                 bounce: true,
-                body: RepayBurnNotification{
+                body: BurnBurnNotification{
                     amount: msg.amount,
                     user: msg.user,
                     rate: msg.rate,
@@ -211,20 +170,11 @@ contract RunecoinsWallet
                 balance: self.balance,
                 owner: self.owner,
                 master: self.master,
-                walletCode: initOf RunecoinsWallet(self.master, self.owner).code
+                walletCode: initOf UsdTonWallet(self.master, self.owner).code
             };
     }
 
     get fun getBalance(): Int {
         return self.balance;
-    }
-
-    fun _userPositionAddress(user: Address, deps: Deps): Address {
-        let init: StateInit = initOf UserPosition(user,
-            deps.stablecoinMasterAddress,
-            deps.positionsManagerAddress,
-            deps.runecoinAddress
-        );
-        return contractAddress(init);
     }
 }

@@ -23,32 +23,34 @@ message WithdrawCollateralMessage {
 }
 message WithdrawStablecoinMessage {
     user: Address;
-    runecoinWalletAddress: Address;
     amount: Int as uint64;
     settings: PoolSettings;
     rate: DebtRate;
-    deps: Deps;
-    tonPriceWithHealthRate: Int as coins;
 }
-message RepayStablecoinMessage {
+message BurnUsdTONMessage {
     user: Address;
     amount: Int as uint64;
     settings: PoolSettings;
     rate: DebtRate;
     tonPriceWithHealthRate: Int as coins;
 }
-message DoWithdrawCollateralMessage {
+message DoWithdrawCollateral {
     user: Address;
     amount: Int as uint64;
 }
-message IncreaseTotalStableMessage {
+message DoDeposit {
     user: Address;
     amount: Int as uint64;
 }
-message DecreaseTotalStableMessage {
+message IncreaseTotalStable {
     user: Address;
     amount: Int as uint64;
 }
+message DecreaseTotalStable {
+    user: Address;
+    amount: Int as uint64;
+}
+
 // stablecoinMaster messages
 
 struct JettonData {
@@ -64,36 +66,38 @@ struct JettonWalletData {
     master: Address;
     walletCode: Cell;
 }
+
 // userPosition messages
 
 message SetUserPositionDependecyMessage {
-    stablecoinMasterAddress: Address;
-    positionsManagerAddress: Address;
+    usdTonAddress: Address;
+    managerAddress: Address;
 }
 message SetPositionIdMessage {
     user: Address;
     positionId: Int;
 }
-message NewPositionIdMessage {
+message AddPositionId {
     user: Address;
 }
 message SetPositionAddressMessage {
     user: Address;
     position: Address;
 }
+
 // stablecoinMaster messages
 
 message MintMessage {
     user: Address;
     amount: Int as coins;
 }
-message RepayBurnMessage {
+message BurnBurnMessage {
     user: Address;
     amount: Int as coins;
     rate: DebtRate;
     userPosition: Address;
 }
-message RepayBurnNotification {
+message BurnBurnNotification {
     user: Address;
     amount: Int as coins;
     rate: DebtRate;
@@ -114,6 +118,7 @@ message TokenTransferFromPositionManager {
     forwardPayload: Slice as remaining;
     deps: Deps;
 }
+
 // jetton messages
 
 message(0xf8a7ea5) TokenTransfer {
@@ -162,14 +167,39 @@ message WithdrawFeesMessage {
     amount: Int as coins;
 }
 message SetDeps {
-    positionsManagerAddress: Address;
+    managerAddress: Address;
     poolAddress: Address;
-    stablecoinMasterAddress: Address;
+    usdTonAddress: Address;
     runecoinAddress: Address;
 }
 struct Deps {
-    positionsManagerAddress: Address;
+    managerAddress: Address;
     poolAddress: Address;
-    stablecoinMasterAddress: Address;
+    usdTonAddress: Address;
     runecoinAddress: Address;
+}
+// manager
+message SetPoolSettings {
+    liquidationRatio: Int;
+    stabilityFeeRate: Int; // 1000000000625 = X**1.000000000627 every second = 2%/yr., look at ./math/math.tact
+    liquidatorIncentiveBps: Int;
+}
+message UpdateTonPriceMsg {
+    price: Int as coins;
+}
+message DepositCollateralUserMessage {
+    user: Address;
+    amount: Int as coins;
+}
+message WithdrawStablecoinUserMessage {
+    user: Address;
+    amount: Int as coins;
+}
+message BurnUsdTONUserMessage {
+    user: Address;
+    amount: Int as coins;
+}
+message WithdrawCollateralUserMessage {
+    user: Address;
+    amount: Int as coins;
 }

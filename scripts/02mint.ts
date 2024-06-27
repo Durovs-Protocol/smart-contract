@@ -1,15 +1,13 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { loadAddress, saveAddress, timer } from '../utils/helpers';
-import { Pool } from '../wrappers/Pool';
-import { StablecoinMaster } from '../wrappers/Stablecoin';
-import { UserStablecoinWallet } from '../wrappers/StablecoinWallet';
+import { Manager } from '../wrappers/Manager';
+import { UsdTonMaster } from '../wrappers/UsdTon';
+import { UsdTonWallet } from '../wrappers/UsdTonWallet';
 
 export async function run(provider: NetworkProvider) {
-    const stablecoin = provider.open(
-        await StablecoinMaster.fromAddress(Address.parse(await loadAddress('stablecoin'))),
-    );
-    const poolContract = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool_contract'))));
+    const stablecoin = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usd_ton'))));
+    const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const user = provider.sender();
 
     console.log('=============================================================================');
@@ -18,7 +16,7 @@ export async function run(provider: NetworkProvider) {
     const userStablecoinWalletAddress = await stablecoin.getGetWalletAddress(user.address as Address);
     const stablesBorrowed = toNano(0.2);
 
-    await poolContract.send(
+    await manager.send(
         user,
         { value: toNano(1) },
         {
@@ -28,7 +26,7 @@ export async function run(provider: NetworkProvider) {
         },
     );
 
-    const userStableWallet = provider.open(await UserStablecoinWallet.fromAddress(userStablecoinWalletAddress));
+    const userStableWallet = provider.open(await UsdTonWallet.fromAddress(userStablecoinWalletAddress));
     await provider.waitForDeploy(userStableWallet.address, 20);
 
     const userStableBalance = await userStableWallet.getGetBalance();

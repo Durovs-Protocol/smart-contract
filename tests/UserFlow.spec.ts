@@ -5,23 +5,23 @@ import { buildOnchainMetadata } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { Pool } from '../wrappers/Pool';
 import { PositionAddressContract } from '../wrappers/PositionAddress';
-import { Runecoin } from '../wrappers/Runecoins';
-import { RuneCoinsOwner } from '../wrappers/RunecoinsOwner';
-import { RunecoinsWallet } from '../wrappers/RunecoinsWallet';
+import { Runecoin } from '../wrappers/Runecoin';
+import { RuneCoinOwner } from '../wrappers/RunecoinOwner';
+import { RunecoinWallet } from '../wrappers/RunecoinWallet';
 
-import { StablecoinMaster } from '../wrappers/Stablecoin';
-import { UserStablecoinWallet } from '../wrappers/StablecoinWallet';
+import { UsdTonMaster } from '../wrappers/UsdTon';
+import { UsdTonWallet } from '../wrappers/UsdTonWallet';
 import { UserPosition } from '../wrappers/UserPosition';
 
 describe('UserFlow', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
     let pool: SandboxContract<Pool>;
-    let stablecoinMaster: SandboxContract<StablecoinMaster>;
+    let stablecoinMaster: SandboxContract<UsdTonMaster>;
     let manager: SandboxContract<Manager>;
     let runecoin: SandboxContract<Runecoin>;
-    let runecoinOwner: SandboxContract<RuneCoinsOwner>;
-    let runecoinWallet: SandboxContract<RunecoinsWallet>;
+    let runecoinOwner: SandboxContract<RuneCoinOwner>;
+    let runecoinWallet: SandboxContract<RunecoinWallet>;
 
     beforeAll(async () => {
         const jettonParams = {
@@ -40,9 +40,9 @@ describe('UserFlow', () => {
         deployer = await blockchain.treasury('deployer');
 
         stablecoinMaster = blockchain.openContract(
-            await StablecoinMaster.fromInit(deployer.getSender().address, buildOnchainMetadata(jettonParams)),
+            await UsdTonMaster.fromInit(deployer.getSender().address, buildOnchainMetadata(jettonParams)),
         );
-        runecoinOwner = blockchain.openContract(await RuneCoinsOwner.fromInit(deployer.getSender().address));
+        runecoinOwner = blockchain.openContract(await RuneCoinOwner.fromInit(deployer.getSender().address));
 
         runecoin = blockchain.openContract(
             await Runecoin.fromInit(runecoinOwner.address, buildOnchainMetadata(runecoinParams)),
@@ -59,7 +59,7 @@ describe('UserFlow', () => {
             },
         );
         runecoinWallet = blockchain.openContract(
-            await RunecoinsWallet.fromInit(runecoin.address, deployer.getSender().address),
+            await RunecoinWallet.fromInit(runecoin.address, deployer.getSender().address),
         );
         console.log('runecoinWallet');
         console.log(runecoinWallet.address);
@@ -90,9 +90,9 @@ describe('UserFlow', () => {
             { value: toNano(0.1) },
             {
                 $$type: 'SetDeps',
-                positionsManagerAddress: manager.address,
+                managerAddress: manager.address,
                 poolAddress: pool.address,
-                stablecoinMasterAddress: stablecoinMaster.address,
+                usdTonAddress: stablecoinMaster.address,
                 runecoinAddress: runecoin.address,
             },
         );
@@ -120,9 +120,9 @@ describe('UserFlow', () => {
             { value: toNano(0.1) },
             {
                 $$type: 'SetDeps',
-                positionsManagerAddress: manager.address,
+                managerAddress: manager.address,
                 poolAddress: pool.address,
-                stablecoinMasterAddress: stablecoinMaster.address,
+                usdTonAddress: stablecoinMaster.address,
                 runecoinAddress: runecoin.address,
             },
         );
@@ -150,25 +150,25 @@ describe('UserFlow', () => {
             { value: toNano(0.1) },
             {
                 $$type: 'SetDeps',
-                positionsManagerAddress: manager.address,
+                managerAddress: manager.address,
                 poolAddress: pool.address,
-                stablecoinMasterAddress: stablecoinMaster.address,
+                usdTonAddress: stablecoinMaster.address,
                 runecoinAddress: runecoin.address,
             },
         );
 
-        await pool.send(
+        await manager.send(
             deployer.getSender(),
             { value: toNano(1) },
             {
-                $$type: 'PoolSettingsMsg',
+                $$type: 'SetPoolSettings',
                 liquidationRatio: toNano(1.2),
                 stabilityFeeRate: toNano('0.02'),
                 liquidatorIncentiveBps: toNano(1.05),
             },
         );
 
-        await pool.send(
+        await manager.send(
             deployer.getSender(),
             { value: toNano(1) },
             {
@@ -181,7 +181,7 @@ describe('UserFlow', () => {
             deployer.getSender(),
             { value: toNano(1) },
             {
-                $$type: 'GetRunecoins',
+                $$type: 'GetRunecoin',
                 amount: toNano(123),
                 user: deployer.getSender().address,
             },
@@ -190,28 +190,28 @@ describe('UserFlow', () => {
     it('deps set ok', async () => {
         const stablecoinDeps = await stablecoinMaster.getDeps();
         expect(stablecoinDeps.poolAddress.toString()).toEqual(pool.address.toString());
-        expect(stablecoinDeps.positionsManagerAddress.toString()).toEqual(manager.address.toString());
+        expect(stablecoinDeps.managerAddress.toString()).toEqual(manager.address.toString());
 
         const positionsManagerDeps = await manager.getDeps();
         expect(positionsManagerDeps.poolAddress.toString()).toEqual(pool.address.toString());
-        expect(positionsManagerDeps.stablecoinMasterAddress.toString()).toEqual(stablecoinMaster.address.toString());
+        expect(positionsManagerDeps.usdTonAddress.toString()).toEqual(stablecoinMaster.address.toString());
 
         const poolDeps = await pool.getDeps();
-        expect(poolDeps.stablecoinMasterAddress.toString()).toEqual(stablecoinMaster.address.toString());
-        expect(poolDeps.positionsManagerAddress.toString()).toEqual(manager.address.toString());
+        expect(poolDeps.usdTonAddress.toString()).toEqual(stablecoinMaster.address.toString());
+        expect(poolDeps.managerAddress.toString()).toEqual(manager.address.toString());
     });
 
     it('pool settings set ok', async () => {
-        const poolSettings = await pool.getPoolSettings();
+        const poolSettings = await manager.getPoolSettings();
         expect(poolSettings.liquidationRatio).toEqual(toNano(1.2));
         expect(poolSettings.liquidatorIncentiveBps).toEqual(toNano(1.05));
         expect(poolSettings.stabilityFeeRate).toEqual(toNano('0.02'));
     });
 
     it('initial price set ok', async () => {
-        const tonPrice = await pool.getTonPrice();
+        const tonPrice = await manager.getTonPrice();
         expect(tonPrice).toEqual(toNano(7));
-        const tonPriceWithHealthRate = await pool.getTonPriceWithSafetyMargin();
+        const tonPriceWithHealthRate = await manager.getTonPriceWithHealthRate();
         expect(tonPriceWithHealthRate).toEqual(5833333333n);
         ///???
     });
@@ -220,9 +220,9 @@ describe('UserFlow', () => {
         const collateralDepositAmount = toNano(1);
         const currentPositionId = await manager.getLastPositionId();
 
-        await pool.send(
+        await manager.send(
             deployer.getSender(),
-            { value: collateralDepositAmount + toNano(1) },
+            { value: collateralDepositAmount + toNano(2) },
             {
                 $$type: 'DepositCollateralUserMessage',
                 user: deployer.getSender().address,
@@ -262,7 +262,7 @@ describe('UserFlow', () => {
 
         const stablesBorrowed = toNano(2);
 
-        await pool.send(
+        await manager.send(
             deployer.getSender(),
             { value: toNano(1) },
             {
@@ -275,15 +275,13 @@ describe('UserFlow', () => {
         // TODO понять почему так не работает////////////////////////////////////////////////////////////////////////
         // const userStablecoinWalletAddress = await stablecoinMaster.getGetWalletAddress(deployer.getSender().address);
         // const userStableWallet = blockchain.openContract(
-        //     await UserStablecoinWallet.fromInit(stablecoinMaster.address, deployer.getSender().address),
+        //     await UsdTonWallet.fromInit(stablecoinMaster.address, deployer.getSender().address),
         // );
         // let userStableBalance = await userStableWallet.getGetBalance();
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         const userStablecoinWalletAddress = await stablecoinMaster.getGetWalletAddress(deployer.getSender().address);
-        const userStableWallet = blockchain.openContract(
-            await UserStablecoinWallet.fromAddress(userStablecoinWalletAddress),
-        );
+        const userStableWallet = blockchain.openContract(await UsdTonWallet.fromAddress(userStablecoinWalletAddress));
         let userStableBalance = await userStableWallet.getGetBalance();
 
         expect(userStableBalance).toEqual(stablesBorrowed);
@@ -299,11 +297,11 @@ describe('UserFlow', () => {
         console.log('balance before repay', userStableBalance);
 
         // user pays stables back
-        await pool.send(
+        await manager.send(
             deployer.getSender(),
             { value: toNano('1') },
             {
-                $$type: 'RepayStablecoinUserMessage',
+                $$type: 'BurnUsdTONUserMessage',
                 user: deployer.getSender().address,
                 amount: stablesBorrowed,
             },
@@ -325,7 +323,7 @@ describe('UserFlow', () => {
 
         const collateralToWithdraw = toNano('0.5');
 
-        await pool.send(
+        await manager.send(
             deployer.getSender(),
             { value: toNano('1') },
             {

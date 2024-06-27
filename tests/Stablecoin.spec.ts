@@ -2,12 +2,12 @@ import { toNano } from '@ton/core';
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import '@ton/test-utils';
 import { buildOnchainMetadata } from '../utils/helpers';
-import { StablecoinMaster } from '../wrappers/Stablecoin';
+import { UsdTonMaster } from '../wrappers/UsdTon';
 
 describe('Stablecoin', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
-    let stablecoin: SandboxContract<StablecoinMaster>;
+    let stablecoin: SandboxContract<UsdTonMaster>;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
@@ -20,7 +20,7 @@ describe('Stablecoin', () => {
         deployer = await blockchain.treasury('deployer');
 
         stablecoin = blockchain.openContract(
-            await StablecoinMaster.fromInit(deployer.getSender().address, buildOnchainMetadata(jettonParams)),
+            await UsdTonMaster.fromInit(deployer.getSender().address, buildOnchainMetadata(jettonParams)),
         );
 
         const deployResult = await stablecoin.send(

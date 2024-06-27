@@ -1,11 +1,11 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { buildOnchainMetadata, loadAddress, saveAddress, timer } from '../utils/helpers';
-import { RuneCoinsOwner } from '../wrappers/RunecoinsOwner';
+import { RuneCoinOwner } from '../wrappers/RunecoinOwner';
 
 export async function run(provider: NetworkProvider) {
     const runecoinsOwner = provider.open(
-        await RuneCoinsOwner.fromAddress(Address.parse(await loadAddress('runecoins_owner'))),
+        await RuneCoinOwner.fromAddress(Address.parse(await loadAddress('runecoins_owner'))),
     );
 
     const jettonParams = {
@@ -37,6 +37,7 @@ export async function run(provider: NetworkProvider) {
         totalAmount + amount,
         runecoinsOwner.getTotalAmount,
     );
+    
     const getAddress = await runecoinsOwner.getAddress();
     await saveAddress('runecoin', getAddress);
 

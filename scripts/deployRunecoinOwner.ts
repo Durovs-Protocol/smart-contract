@@ -1,10 +1,10 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { toNano } from '@ton/core';
 import { saveAddress } from '../utils/helpers';
-import { RuneCoinsOwner } from '../wrappers/RunecoinsOwner';
+import { RuneCoinOwner } from '../wrappers/RunecoinOwner';
 
 export async function run(provider: NetworkProvider) {
-    const runecoinsOwner = provider.open(await RuneCoinsOwner.fromInit(provider.sender().address!));
+    const runecoinsOwner = provider.open(await RuneCoinOwner.fromInit(provider.sender().address!));
 
     await runecoinsOwner.send(
         provider.sender(),
@@ -21,6 +21,6 @@ export async function run(provider: NetworkProvider) {
     await saveAddress('runecoins_owner', runecoinsOwner.address);
 
     console.log('=============================================================================');
-    console.log('RunecoinsOwner deployed successfully');
+    console.log('RunecoinOwner deployed successfully');
     console.log('=============================================================================');
 }

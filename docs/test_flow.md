@@ -7,13 +7,13 @@
 
     - `yarn deploy-pool`
     - `yarn deploy-manager`
-    - `yarn deploy-stablecoin`
+    - `yarn deploy-usdton`
     - `yarn deploy-runecoin-owner`
     - `yarn deploy-runecoin`
     - `yarn set-deps`
 
 3. `yarn set-settings` (Настройка параметров пула)
-4. `yarn set-price` (Установка цены тона - по факту метод updatePrice)
+4. `yarn update-price` (Установка цены тона)
 
 # User flow
 
@@ -28,7 +28,7 @@
 
 ### Путь обращения пользователя: **user => pool => manager => user_position(вычисления) => jetton master/pool(исполнение)**
 
-# Runecoins
+# Runecoin
 
 1. `yarn deploy-runes-owner` (Деплой контракта-владельца runecoins)
 2. `yarn send-runes-to-owner` (Деплой runecoin и минт 1000000 токенов на баланс владельца)

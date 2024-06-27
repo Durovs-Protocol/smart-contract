@@ -12,26 +12,25 @@ struct Message {
 }
 
 contract UserPosition  {
-
     const MinTonsForStorage: Int = ton("0.01");
-
     user: Address;
-    stablecoinMasterAddress: Address;
-    positionsManagerAddress: Address;
+    usdTonAddress: Address;
+    runecoinAddress: Address;
+
+    managerAddress: Address;
     poolAddress: Address;
-
-
-
     collateral: Int as coins = 0;
     debt: Int = 0;
     message: Message;
 
-    init(user: Address, stablecoinMasterAddress: Address, positionsManagerAddress: Address, poolAddress: Address) {
+    init(user: Address, usdTonAddress: Address, managerAddress: Address, poolAddress: Address, runecoinAddress: Address) {
         self.user = user; 
-        self.stablecoinMasterAddress = stablecoinMasterAddress;
-        self.positionsManagerAddress = positionsManagerAddress;
-        self.poolAddress = poolAddress;
+        self.usdTonAddress = usdTonAddress;
+        self.runecoinAddress = runecoinAddress;
 
+        self.managerAddress = managerAddress;
+        self.poolAddress = poolAddress;
+        dump("Position Created");
 
         self.message = Message{
             timestamp: 0,
@@ -39,43 +38,53 @@ contract UserPosition  {
         };
 
         // register this position in positionsManager
+
+
         send(SendParameters{
-            to: self.positionsManagerAddress, 
+            to: self.managerAddress, 
             // how much we should send to this contract? 
             // how to pay for storage for this contract later? 
             // we have no more writes in position address contract ever
-            mode: SendIgnoreErrors, 
             value: ton("0.1"), 
             bounce: true,
-            body: NewPositionIdMessage{
+            body: AddPositionId{
                 user: user
             }.toCell()
         });
     }
 
-
-    /*01 | Внесение обеспечения пользователем (from manager)'*/
+    //=============================================================================
+    // Actions
+    //=============================================================================
+    /*01 | Внесение залога */
     receive(msg: DepositCollateralMessage) {
-        require(sender() == self.positionsManagerAddress, "not from positionsManager");
+              dump(sender());
+              dump(self.managerAddress);
 
-        self.collateral = self.collateral + msg.amount;
-        self.setMessage("Collateral added");
+        dump(context().value);
+        require(sender() == self.managerAddress, "not from positionsManager");
+
+        dump(context().value);
 
         // pay excess to user
         send(SendParameters{
-            to: msg.user,
-            bounce: false,
-            value: 0,
-            mode: SendRemainingValue + SendIgnoreErrors
-        });
-        self.reply("Colleteral was added".asComment());
+                to: self.poolAddress,
+                value: 0,
+                mode: SendRemainingValue + SendBounceIfActionFail,
+                bounce: true,
+                body: DoDeposit {
+                    user: msg.user,
+                    amount: msg.amount,
+                }.toCell()
+            }
+        );
+                self.collateral = self.collateral + msg.amount;
+        self.setMessage("Collateral added");
     }
 
-    /*02 | Начисление USDTON пользователю (from manager)'*/
+    /*02 | Mint usdTON */
     receive(msg: WithdrawStablecoinMessage) {
-        require(sender() == self.positionsManagerAddress, "not from positionsManager");
-        dump("Начисление USDTON пользователю (from manager)'*/");
-
+        require(sender() == self.managerAddress, "not from positionsManager");
         let normalizedWithdrawDebt: Int = msg.amount * 1000000000 / msg.rate.debtAccumulatedRate;
         let debtAfterWithdraw: Int = self.debt + normalizedWithdrawDebt;
 
@@ -85,33 +94,9 @@ contract UserPosition  {
         //     return;
         // } 
         // dump("position healthy");
-        let stabilityFee: Int = msg.amount / 1000000000 * msg.settings.stabilityFeeRate;
-        dump(stabilityFee);
-        dump(msg.runecoinWalletAddress);
- 
-
-        send(SendParameters {
-                to: msg.runecoinWalletAddress,
-                value: ton("0.1"),
-                // mode: (SendRemainingValue + SendBounceIfActionFail),
-                bounce: false,
-                body: TokenTransferFromPositionManager {
-                    queryId: 0,
-                    amount: stabilityFee,
-                    destination: self.poolAddress,
-                    responseDestination: msg.user,
-                    deps: msg.deps,
-                    customPayload: createOffchainContent("custom"),
-                    forwardTonAmount: 0,
-                    forwardPayload: createOffchainContent("forward").asSlice()
-                }.toCell()
-            }
-        );
-
-        dump(stabilityFee);
 
         send(SendParameters{
-            to: self.stablecoinMasterAddress, 
+            to: self.usdTonAddress, 
             value: ton("0.1"),
             mode: (SendRemainingValue + SendIgnoreErrors), 
             bounce: true,
@@ -126,28 +111,45 @@ contract UserPosition  {
 
         // todo move this send after successfull stable mint notification
         send(SendParameters{
-            to: self.positionsManagerAddress, 
+            to: self.managerAddress, 
             value: 0,
             mode: SendRemainingValue + SendIgnoreErrors, 
             bounce: true,
-            body: IncreaseTotalStableMessage{
+            body: IncreaseTotalStable{
                 user: msg.user,
                 amount: msg.amount
             }.toCell()
         });
     }
+    /*02 |from stablecoinMaster'*/
+    receive(msg: StablecoinBurnedMessage) {
 
+        require(sender() == self.usdTonAddress, "not from stablecoin master");
 
-    /*03 | Погашение задолженности (from manager)'*/
-    receive(msg: RepayStablecoinMessage) {
+        // todo check if debt still more than repayment
 
-        require(sender() == self.positionsManagerAddress, "not from positionsManager");
+        self.debt = self.debt - msg.amount * 1000000000 / msg.rate.debtAccumulatedRate;
 
+        self.setMessage("you've paid stables back");
+
+        send(SendParameters{
+            to: self.managerAddress, 
+            value: 0,
+            mode: SendRemainingValue + SendIgnoreErrors,
+            bounce: true,
+            body: DecreaseTotalStable{
+                user: msg.user,
+                amount: msg.amount
+            }.toCell()
+        }); 
+        
+    }
+
+    /*03 | Burn usdTON */
+    receive(msg: BurnUsdTONMessage) {
+        require(sender() == self.managerAddress, "not from positionsManager");
         let amountToBurn: Int = msg.amount;
-
         // let factDebtInStables: Int = self.debt * msg.rate.debtAccumulatedRate / 1000000000;
-
-
         // dump("check healthy");
         // if (!self.isPositionHealthy(self.collateral, self.debt, msg.tonPriceWithHealthRate, msg.rate.debtAccumulatedRate)){
         //     self.unhealthyPositionHandler(msg.user);
@@ -164,11 +166,11 @@ contract UserPosition  {
         self.setMessage("stables are going to burn...");
 
         send(SendParameters{
-            to: self.stablecoinMasterAddress, 
+            to: self.usdTonAddress, 
             value: 0,
             mode: SendRemainingValue + SendIgnoreErrors, 
             bounce: true,
-            body: RepayBurnMessage{
+            body: BurnBurnMessage{
                 user: msg.user,
                 amount: amountToBurn,
                 rate: msg.rate,
@@ -177,33 +179,10 @@ contract UserPosition  {
         });
     }
 
-    /*02 | (from stablecoinMaster)'*/
-    receive(msg: StablecoinBurnedMessage) {
-
-        require(sender() == self.stablecoinMasterAddress, "not from stablecoin master");
-
-        // todo check if debt still more than repayment
-
-        self.debt = self.debt - msg.amount * 1000000000 / msg.rate.debtAccumulatedRate;
-
-        self.setMessage("you've paid stables back");
-
-        send(SendParameters{
-            to: self.positionsManagerAddress, 
-            value: 0,
-            mode: SendRemainingValue + SendIgnoreErrors,
-            bounce: true,
-            body: DecreaseTotalStableMessage{
-                user: msg.user,
-                amount: msg.amount
-            }.toCell()
-        }); 
-        
-    }
 
     /*04 | Возврат обеспечения (from positionsManager)'*/
     receive(msg: WithdrawCollateralMessage) {
-        require(sender() == self.positionsManagerAddress, "not from positions manager");
+        require(sender() == self.managerAddress, "not from positions manager");
 
         if (msg.amount  > self.collateral) {
             self.setMessage("withdrawal amount more than position has");
@@ -231,16 +210,20 @@ contract UserPosition  {
         self.setMessage("collateral sent back to yor wallet");
 
         send(SendParameters{
-            to: self.positionsManagerAddress, 
+            to: self.managerAddress, 
             value: 0,
             mode: SendRemainingValue + SendIgnoreErrors, 
             bounce: true,
-            body: DoWithdrawCollateralMessage{
+            body: DoWithdrawCollateral{
                 user: msg.user,
                 amount: msg.amount
             }.toCell()
         });
     }
+    //=============================================================================
+    // Helpers
+    //=============================================================================
+
     fun isPositionHealthy(collateral: Int, debt: Int, tonPriceWithHealthRate: Int, debtRate: Int): Bool {
         // todo rewrite healh calculation to loanToValue ratio
         dump("collateral");
@@ -251,18 +234,14 @@ contract UserPosition  {
         dump(tonPriceWithHealthRate);
         dump("debtRate"); 
         dump(debtRate);
-
         // 1000000000 * 0 / 1000000000 / 1000000000
-
         // todo normalize debt to stables
         let normalizedDebt: Int = debt * 1000000000 / debtRate;
         dump("isPositionHealthy.normalizedDebt");
         dump(normalizedDebt);
-
         let collateralPriceWithSafetyMargin: Int = collateral * tonPriceWithHealthRate / 1000000000;
         dump("isPositionHealthy.collateralPriceWithSafetyMargin");
         dump(collateralPriceWithSafetyMargin);
-
         return  collateralPriceWithSafetyMargin >= debt;
     }
 
@@ -278,7 +257,6 @@ contract UserPosition  {
             });
     }
 
-    //helpers
     fun setMessage(msg: String) {
         let updatedMessage: Message = Message{
             timestamp: now(),
@@ -287,7 +265,9 @@ contract UserPosition  {
         self.message = updatedMessage;
     }
 
-    // offchain interface
+    //=============================================================================
+    // Offchain interface
+    //=============================================================================
     get fun positionUser(): Address {
         return self.user;
     }

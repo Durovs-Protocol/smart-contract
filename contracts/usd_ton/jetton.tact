@@ -1,5 +1,6 @@
 import "@stdlib/ownable";
 import "../utils/messages.tact";
+import "./usd_ton_wallet.tact";
 @interface("org.ton.jetton.master")
 trait Jetton with OwnableTransferable {
     //
@@ -97,6 +98,6 @@ trait Jetton with OwnableTransferable {
     }
 
     virtual fun getJettonWalletInit(address: Address): StateInit {
-        return initOf UserStablecoinWallet(myAddress(), address);
+        return initOf UsdTonWallet(myAddress(), address);
     }
 }

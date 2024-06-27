@@ -2,15 +2,15 @@ import { toNano } from '@ton/core';
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import '@ton/test-utils';
 import { buildOnchainMetadata } from '../utils/helpers';
-import { Runecoin } from '../wrappers/Runecoins';
-import { RuneCoinsOwner } from '../wrappers/RunecoinsOwner';
-import { RunecoinsWallet } from '../wrappers/RunecoinsWallet';
+import { Runecoin } from '../wrappers/Runecoin';
+import { RuneCoinOwner } from '../wrappers/RunecoinOwner';
+import { RunecoinWallet } from '../wrappers/RunecoinWallet';
 
 describe('RunaCoinOwner', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
-    let runecoinOwner: SandboxContract<RuneCoinsOwner>;
-    let runecoinsWallet: SandboxContract<RunecoinsWallet>;
+    let runecoinOwner: SandboxContract<RuneCoinOwner>;
+    let runecoinsWallet: SandboxContract<RunecoinWallet>;
     let runecoin: SandboxContract<Runecoin>;
 
     let totalAmount: bigint;
@@ -25,13 +25,13 @@ describe('RunaCoinOwner', () => {
         };
         blockchain = await Blockchain.create();
         deployer = await blockchain.treasury('deployer');
-        runecoinOwner = blockchain.openContract(await RuneCoinsOwner.fromInit(deployer.getSender().address));
+        runecoinOwner = blockchain.openContract(await RuneCoinOwner.fromInit(deployer.getSender().address));
         runecoin = blockchain.openContract(
             await Runecoin.fromInit(runecoinOwner.address, buildOnchainMetadata(jettonParams)),
         );
 
         runecoinsWallet = blockchain.openContract(
-            await RunecoinsWallet.fromInit(runecoin.address, deployer.getSender().address),
+            await RunecoinWallet.fromInit(runecoin.address, deployer.getSender().address),
         );
 
         const deployOwner = await runecoinOwner.send(
@@ -88,7 +88,7 @@ describe('RunaCoinOwner', () => {
             deployer.getSender(),
             { value: toNano(1) },
             {
-                $$type: 'GetRunecoins',
+                $$type: 'GetRunecoin',
                 amount: userAmount,
                 user: deployer.getSender().address,
             },
