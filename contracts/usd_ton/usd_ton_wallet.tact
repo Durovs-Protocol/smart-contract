@@ -131,7 +131,7 @@ contract UsdTonWallet
         self.balance = (self.balance + jettonAmount);
     }
 
-    // stablecoin related method
+    // usdTon related method
 
     receive(msg: BurnBurnMessage){
         /* check if called by master

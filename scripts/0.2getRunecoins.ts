@@ -5,7 +5,7 @@ import { RuneCoinOwner } from '../wrappers/RunecoinOwner';
 
 export async function run(provider: NetworkProvider) {
     const runecoinsOwner = provider.open(
-        await RuneCoinOwner.fromAddress(Address.parse(await loadAddress('runecoins_owner'))),
+        await RuneCoinOwner.fromAddress(Address.parse(await loadAddress('runecoin_owner'))),
     );
     console.log('=============================================================================');
     console.log('04 | Покупка runecoin');

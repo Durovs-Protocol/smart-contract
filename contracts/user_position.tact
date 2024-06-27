@@ -13,6 +13,7 @@ struct Message {
 
 contract UserPosition  {
     const MinTonsForStorage: Int = ton("0.01");
+    const GasConsumption: Int = ton("0.02"); 
     user: Address;
     usdTonAddress: Address;
     runecoinAddress: Address;
@@ -30,22 +31,19 @@ contract UserPosition  {
 
         self.managerAddress = managerAddress;
         self.poolAddress = poolAddress;
-        dump("Position Created");
 
         self.message = Message{
             timestamp: 0,
             message: "Position Created"
         };
 
-        // register this position in positionsManager
-
-
         send(SendParameters{
             to: self.managerAddress, 
+            mode: SendIgnoreErrors,
             // how much we should send to this contract? 
             // how to pay for storage for this contract later? 
             // we have no more writes in position address contract ever
-            value: ton("0.1"), 
+            value: ton("0.01"), 
             bounce: true,
             body: AddPositionId{
                 user: user
@@ -53,24 +51,22 @@ contract UserPosition  {
         });
     }
 
+    // для теста 
+    bounced(msg: bounced<DoDeposit>){
+        send(SendParameters{to: self.user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
+    }
+
     //=============================================================================
     // Actions
     //=============================================================================
-    /*01 | Внесение залога */
     receive(msg: DepositCollateralMessage) {
-              dump(sender());
-              dump(self.managerAddress);
-
-        dump(context().value);
         require(sender() == self.managerAddress, "not from positionsManager");
+        let valueToSendForward: Int = (context().value - (self.MinTonsForStorage + self.GasConsumption));
 
-        dump(context().value);
-
-        // pay excess to user
         send(SendParameters{
                 to: self.poolAddress,
-                value: 0,
-                mode: SendRemainingValue + SendBounceIfActionFail,
+                value: valueToSendForward,
+                mode:  SendBounceIfActionFail,
                 bounce: true,
                 body: DoDeposit {
                     user: msg.user,
@@ -78,12 +74,12 @@ contract UserPosition  {
                 }.toCell()
             }
         );
-                self.collateral = self.collateral + msg.amount;
+        self.collateral = self.collateral + msg.amount;
         self.setMessage("Collateral added");
     }
 
     /*02 | Mint usdTON */
-    receive(msg: WithdrawStablecoinMessage) {
+    receive(msg: WithdrawUsdToncoinMessage) {
         require(sender() == self.managerAddress, "not from positionsManager");
         let normalizedWithdrawDebt: Int = msg.amount * 1000000000 / msg.rate.debtAccumulatedRate;
         let debtAfterWithdraw: Int = self.debt + normalizedWithdrawDebt;
@@ -107,7 +103,7 @@ contract UserPosition  {
         });
 
         self.debt = debtAfterWithdraw;
-        self.setMessage("Stablecoins sent");
+        self.setMessage("UsdToncoins sent");
 
         // todo move this send after successfull stable mint notification
         send(SendParameters{
@@ -115,16 +111,16 @@ contract UserPosition  {
             value: 0,
             mode: SendRemainingValue + SendIgnoreErrors, 
             bounce: true,
-            body: IncreaseTotalStable{
+            body: IncreaseTotalUsdTon{
                 user: msg.user,
                 amount: msg.amount
             }.toCell()
         });
     }
-    /*02 |from stablecoinMaster'*/
-    receive(msg: StablecoinBurnedMessage) {
+    /*02 |from usdTonMaster'*/
+    receive(msg: UsdToncoinBurnedMessage) {
 
-        require(sender() == self.usdTonAddress, "not from stablecoin master");
+        require(sender() == self.usdTonAddress, "not from usdTon master");
 
         // todo check if debt still more than repayment
 
@@ -137,7 +133,7 @@ contract UserPosition  {
             value: 0,
             mode: SendRemainingValue + SendIgnoreErrors,
             bounce: true,
-            body: DecreaseTotalStable{
+            body: DecreaseTotalUsdTon{
                 user: msg.user,
                 amount: msg.amount
             }.toCell()
@@ -149,7 +145,7 @@ contract UserPosition  {
     receive(msg: BurnUsdTONMessage) {
         require(sender() == self.managerAddress, "not from positionsManager");
         let amountToBurn: Int = msg.amount;
-        // let factDebtInStables: Int = self.debt * msg.rate.debtAccumulatedRate / 1000000000;
+        // let factDebtInUsdTons: Int = self.debt * msg.rate.debtAccumulatedRate / 1000000000;
         // dump("check healthy");
         // if (!self.isPositionHealthy(self.collateral, self.debt, msg.tonPriceWithHealthRate, msg.rate.debtAccumulatedRate)){
         //     self.unhealthyPositionHandler(msg.user);

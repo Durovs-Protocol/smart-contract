@@ -18,7 +18,7 @@ export async function run(provider: NetworkProvider) {
     );
 
     await provider.waitForDeploy(poolContract.address, 30);
-    await saveAddress('pool_contract', poolContract.address);
+    await saveAddress('pool', poolContract.address);
 
     console.log('=============================================================================');
     console.log('Pool deployed successfully');

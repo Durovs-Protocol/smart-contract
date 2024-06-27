@@ -5,7 +5,7 @@ import { RuneCoinOwner } from '../wrappers/RunecoinOwner';
 
 export async function run(provider: NetworkProvider) {
     const runecoinsOwner = provider.open(
-        await RuneCoinOwner.fromAddress(Address.parse(await loadAddress('runecoins_owner'))),
+        await RuneCoinOwner.fromAddress(Address.parse(await loadAddress('runecoin_owner'))),
     );
 
     const jettonParams = {
@@ -37,7 +37,7 @@ export async function run(provider: NetworkProvider) {
         totalAmount + amount,
         runecoinsOwner.getTotalAmount,
     );
-    
+
     const getAddress = await runecoinsOwner.getAddress();
     await saveAddress('runecoin', getAddress);
 

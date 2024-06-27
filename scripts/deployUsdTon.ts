@@ -11,9 +11,9 @@ export async function run(provider: NetworkProvider) {
         image: '',
     };
     const owner = provider.sender().address as Address;
-    const stablecoin = provider.open(await UsdTonMaster.fromInit(owner, buildOnchainMetadata(jettonParams)));
+    const usdTon = provider.open(await UsdTonMaster.fromInit(owner, buildOnchainMetadata(jettonParams)));
 
-    await stablecoin.send(
+    await usdTon.send(
         provider.sender(),
         {
             value: toNano('0.05'),
@@ -24,10 +24,10 @@ export async function run(provider: NetworkProvider) {
         },
     );
 
-    await provider.waitForDeploy(stablecoin.address, 30);
-    await saveAddress('stablecoin', stablecoin.address);
+    await provider.waitForDeploy(usdTon.address, 30);
+    await saveAddress('usdTon', usdTon.address);
     console.log('=============================================================================');
-    console.log('Stablecoin deployed successfully');
+    console.log('UsdToncoin deployed successfully');
     console.log('=============================================================================');
-    // run methods on `stablecoin`
+    // run methods on `usdTon`
 }

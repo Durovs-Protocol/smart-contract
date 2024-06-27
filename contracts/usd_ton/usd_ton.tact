@@ -46,11 +46,11 @@ contract UsdTonMaster with Jetton, Deployable {
         self.mint(sender(), msg.amount, sender());
     }
 
-    // stablecoin handlers
+    // usdTon handlers
 
     /*
         message came from userPosition
-        mint new stablecoins for to
+        mint new usdTons for to
         todo add 
     */
     receive(msg: MintMessage) {
@@ -101,7 +101,7 @@ contract UsdTonMaster with Jetton, Deployable {
             value: 0, 
             bounce: false,
             mode: SendRemainingValue + SendIgnoreErrors,
-            body: StablecoinBurnedMessage{ 
+            body: UsdToncoinBurnedMessage{ 
                 amount: msg.amount,
                 user: msg.user,
                 rate: msg.rate

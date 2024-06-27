@@ -6,31 +6,31 @@ import { UsdTonMaster } from '../wrappers/UsdTon';
 import { UsdTonWallet } from '../wrappers/UsdTonWallet';
 
 export async function run(provider: NetworkProvider) {
-    const stablecoin = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usd_ton'))));
+    const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const user = provider.sender();
 
     console.log('=============================================================================');
     console.log('02 | Пользователь минтит usdTON');
     console.log('=============================================================================');
-    const userStablecoinWalletAddress = await stablecoin.getGetWalletAddress(user.address as Address);
-    const stablesBorrowed = toNano(0.2);
+    const userUsdTonWalletAddress = await usdTon.getGetWalletAddress(user.address as Address);
+    const usdtonsBorrowed = toNano(0.2);
 
     await manager.send(
         user,
         { value: toNano(1) },
         {
-            $$type: 'WithdrawStablecoinUserMessage',
+            $$type: 'WithdrawUsdTonUserMessage',
             user: user.address as Address,
-            amount: stablesBorrowed,
+            amount: usdtonsBorrowed,
         },
     );
 
-    const userStableWallet = provider.open(await UsdTonWallet.fromAddress(userStablecoinWalletAddress));
-    await provider.waitForDeploy(userStableWallet.address, 20);
+    const userUsdTonWallet = provider.open(await UsdTonWallet.fromAddress(userUsdTonWalletAddress));
+    await provider.waitForDeploy(userUsdTonWalletAddress, 20);
 
-    const userStableBalance = await userStableWallet.getGetBalance();
-    await timer(`User stable balance`, 'Mint stablecoin', userStableBalance, userStableWallet.getGetBalance);
+    const userUsdTonBalance = await userUsdTonWallet.getGetBalance();
+    await timer(`User stable balance`, 'Mint usdTon', userUsdTonBalance, userUsdTonWallet.getGetBalance);
 
-    await saveAddress('user_stablecoin_wallet_address', userStablecoinWalletAddress);
+    await saveAddress('user_usd_ton_wallet', userUsdTonWalletAddress);
 }
