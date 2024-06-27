@@ -1,6 +1,6 @@
 import "../user_position.tact";
 import "./jetton.tact";
-import "./stablecoin_wallet.tact";
+import "./usd_ton_wallet.tact";
 import "../utils/messages.tact";
 import "@stdlib/deploy";
 
@@ -8,7 +8,7 @@ message Mint {
     amount: Int;
 }
 
-contract StablecoinMaster with Jetton, Deployable {
+contract UsdTonMaster with Jetton, Deployable {
     totalSupply: Int as coins;
     owner: Address;
     content: Cell?;
@@ -22,9 +22,9 @@ contract StablecoinMaster with Jetton, Deployable {
         self.mintable = true;
         self.content = content;
         self.deps = Deps{
-            stablecoinMasterAddress: newAddress(0, 0),
+            usdTonAddress: newAddress(0, 0),
             poolAddress: newAddress(0, 0),
-            positionsManagerAddress: newAddress(0, 0),
+            managerAddress: newAddress(0, 0),
             runecoinAddress: newAddress(0, 0)
         };
         self.message = "";
@@ -33,9 +33,9 @@ contract StablecoinMaster with Jetton, Deployable {
     receive (msg: SetDeps) {
         self.requireOwner();
         self.deps = Deps{
-            positionsManagerAddress: msg.positionsManagerAddress,
+            managerAddress: msg.managerAddress,
             poolAddress: msg.poolAddress,
-            stablecoinMasterAddress: msg.stablecoinMasterAddress,
+            usdTonAddress: msg.usdTonAddress,
             runecoinAddress:  msg.runecoinAddress,
         };
         self.reply("deps set".asComment());
@@ -66,7 +66,7 @@ contract StablecoinMaster with Jetton, Deployable {
         message came from userPosition
         send jetton.burn
     */
-    receive(msg: RepayBurnMessage) {
+    receive(msg: BurnBurnMessage) {
         // bug? different address calculation than in positions manager
         // let userPositionAddress: Address =  self._userPositionAddress(msg.user);
 
@@ -90,7 +90,7 @@ contract StablecoinMaster with Jetton, Deployable {
         decrease totalSupply
         call userPosition.stableBurned(user, amount, fees)
     */
-    receive(msg: RepayBurnNotification) {
+    receive(msg: BurnBurnNotification) {
         self.requireWallet(msg.user);
 
         // looks like huge bug here, explain later
@@ -120,7 +120,7 @@ contract StablecoinMaster with Jetton, Deployable {
     }
 
     fun _userPositionAddress(user: Address): Address {
-        let init: StateInit = initOf UserPosition(user, self.deps.stablecoinMasterAddress, self.deps.positionsManagerAddress, self.deps.runecoinAddress,);
+        let init: StateInit = initOf UserPosition(user, self.deps.usdTonAddress, self.deps.managerAddress, self.deps.poolAddress, self.deps.runecoinAddress);
         let userPositionAddress: Address = contractAddress(init);
         return userPositionAddress;
     }

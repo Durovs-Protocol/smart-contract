@@ -3,15 +3,14 @@ import { Address, toNano } from '@ton/core';
 import { loadAddress, timer } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { Pool } from '../wrappers/Pool';
-import { StablecoinMaster } from '../wrappers/Stablecoin';
+import { Runecoin } from '../wrappers/Runecoin';
+import { UsdTonMaster } from '../wrappers/UsdTon';
 
 export async function run(provider: NetworkProvider) {
-    const stablecoin = provider.open(
-        await StablecoinMaster.fromAddress(Address.parse(await loadAddress('stablecoin'))),
-    );
+    const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const poolContract = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool_contract'))));
-    const runeCoin = provider.open(await StablecoinMaster.fromAddress(Address.parse(await loadAddress('runecoin'))));
+    const runeCoin = provider.open(await Runecoin.fromAddress(Address.parse(await loadAddress('runecoin'))));
 
     async function setDeps(contract: any, name: string) {
         console.log(
@@ -28,20 +27,20 @@ export async function run(provider: NetworkProvider) {
             { value: toNano('0.1') },
             {
                 $$type: 'SetDeps',
-                positionsManagerAddress: manager.address,
+                managerAddress: manager.address,
                 poolAddress: poolContract.address,
-                stablecoinMasterAddress: stablecoin.address,
+                usdTonAddress: usdTon.address,
                 runecoinAddress: runeCoin.address,
             },
         );
 
         await timer(`manager address`, `Set deps in ${name}`, manager.address, managerAddress(contract));
         await timer(`pool address`, `Set deps in ${name}`, poolContract.address, poolAddress(contract));
-        await timer(`stable address`, `Set deps in ${name}`, stablecoin.address, stablecoinAddress(contract));
+        await timer(`stable address`, `Set deps in ${name}`, usdTon.address, usdTonAddress(contract));
         await timer(`runeCoin address`, `Set deps in ${name}`, runeCoin.address, runecoinAddress(contract));
     }
 
-    await setDeps(stablecoin, 'stablecoin');
+    await setDeps(usdTon, 'usdTon');
     await setDeps(manager, 'manager');
     await setDeps(poolContract, 'pool');
     console.log('=============================================================================');
@@ -52,7 +51,7 @@ export async function run(provider: NetworkProvider) {
 const managerAddress = function (contract: any) {
     return async function () {
         const deps = await contract.getDeps();
-        return deps.positionsManagerAddress.toString();
+        return deps.managerAddress.toString();
     };
 };
 const poolAddress = function (contract: any) {
@@ -61,10 +60,10 @@ const poolAddress = function (contract: any) {
         return deps.poolAddress.toString();
     };
 };
-const stablecoinAddress = function (contract: any) {
+const usdTonAddress = function (contract: any) {
     return async function () {
         const deps = await contract.getDeps();
-        return deps.stablecoinMasterAddress.toString();
+        return deps.usdTonAddress.toString();
     };
 };
 

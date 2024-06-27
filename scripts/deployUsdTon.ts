@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { buildOnchainMetadata, saveAddress } from '../utils/helpers';
-import { StablecoinMaster } from '../wrappers/Stablecoin';
+import { UsdTonMaster } from '../wrappers/UsdTon';
 
 export async function run(provider: NetworkProvider) {
     const jettonParams = {
@@ -11,7 +11,7 @@ export async function run(provider: NetworkProvider) {
         image: '',
     };
     const owner = provider.sender().address as Address;
-    const stablecoin = provider.open(await StablecoinMaster.fromInit(owner, buildOnchainMetadata(jettonParams)));
+    const stablecoin = provider.open(await UsdTonMaster.fromInit(owner, buildOnchainMetadata(jettonParams)));
 
     await stablecoin.send(
         provider.sender(),

@@ -1,6 +1,6 @@
 import "@stdlib/ownable";
 import "../utils/messages.tact";
-import "./runecoins_wallet.tact";
+import "./runecoin_wallet.tact";
 @interface("org.ton.jetton.master")
 trait Jetton with OwnableTransferable {
     //
@@ -98,6 +98,6 @@ trait Jetton with OwnableTransferable {
     }
 
     virtual fun getJettonWalletInit(address: Address): StateInit {
-        return initOf RunecoinsWallet(myAddress(), address);
+        return initOf RunecoinWallet(myAddress(), address);
     }
 }

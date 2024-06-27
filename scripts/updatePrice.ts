@@ -1,19 +1,19 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { loadAddress, timer } from '../utils/helpers';
-import { Pool } from '../wrappers/Pool';
+import { Manager } from '../wrappers/Manager';
 
 export async function run(provider: NetworkProvider) {
-    const poolContract = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool_contract'))));
+    const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const newTonPrice = toNano(7);
 
     let getCurrentTonPrice = async function () {
-        return await poolContract.getTonPrice();
+        return await manager.getTonPrice();
     };
 
-    await poolContract.send(
+    await manager.send(
         provider.sender(),
-        { value: toNano('0.3') },
+        { value: toNano('0.1') },
         {
             $$type: 'UpdateTonPriceMsg',
             price: newTonPrice,

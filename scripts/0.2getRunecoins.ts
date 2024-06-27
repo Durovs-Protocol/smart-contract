@@ -1,11 +1,11 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { loadAddress, timer } from '../utils/helpers';
-import { RuneCoinsOwner } from '../wrappers/RunecoinsOwner';
+import { RuneCoinOwner } from '../wrappers/RunecoinOwner';
 
 export async function run(provider: NetworkProvider) {
     const runecoinsOwner = provider.open(
-        await RuneCoinsOwner.fromAddress(Address.parse(await loadAddress('runecoins_owner'))),
+        await RuneCoinOwner.fromAddress(Address.parse(await loadAddress('runecoins_owner'))),
     );
     console.log('=============================================================================');
     console.log('04 | Покупка runecoin');
@@ -17,9 +17,9 @@ export async function run(provider: NetworkProvider) {
 
     await runecoinsOwner.send(
         user,
-        { value: toNano(0.6) },
+        { value: toNano(0.3) },
         {
-            $$type: 'GetRunecoins',
+            $$type: 'GetRunecoin',
             amount: amount,
             user: user.address as Address,
         },

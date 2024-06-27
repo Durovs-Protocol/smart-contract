@@ -1,5 +1,5 @@
 import "./jetton.tact";
-import "./runecoins_wallet.tact";
+import "./runecoin_wallet.tact";
 import "../utils/messages.tact";
 import "@stdlib/deploy";
 
@@ -33,7 +33,7 @@ contract Runecoin with Jetton, Deployable {
     }
 
 
-    receive(msg: RepayBurnMessage) {
+    receive(msg: BurnBurnMessage) {
         let winit: StateInit = self.getJettonWalletInit(msg.user);
         let walletAddress: Address = contractAddress(winit);
         send(SendParameters{
@@ -46,7 +46,7 @@ contract Runecoin with Jetton, Deployable {
     }
 
 
-    receive(msg: RepayBurnNotification) {
+    receive(msg: BurnBurnNotification) {
         send(SendParameters{
             to: msg.userPosition, 
             value: 0, 

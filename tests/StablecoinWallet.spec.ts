@@ -1,16 +1,16 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import '@ton/test-utils';
-import { UserStablecoinWallet } from '../wrappers/StablecoinWallet';
+import { UsdTonWallet } from '../wrappers/UsdTonWallet';
 
 describe('StablecoinWallet', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
-    let stablecoinWallet: SandboxContract<UserStablecoinWallet>;
+    let stablecoinWallet: SandboxContract<UsdTonWallet>;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
 
-        // stablecoinWallet = blockchain.openContract(await UserStablecoinWallet.fromInit());
+        // stablecoinWallet = blockchain.openContract(await UsdTonWallet.fromInit());
 
         deployer = await blockchain.treasury('deployer');
 

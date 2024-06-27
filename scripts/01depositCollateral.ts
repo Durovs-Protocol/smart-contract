@@ -2,14 +2,12 @@ import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { loadAddress, timer } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
-import { Pool } from '../wrappers/Pool';
 import { PositionAddressContract } from '../wrappers/PositionAddress';
 import { UserPosition } from '../wrappers/UserPosition';
 
 export async function run(provider: NetworkProvider) {
     const user = provider.sender();
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
-    const poolContract = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool_contract'))));
 
     // Получаем переменную текущей позиции обеспечения
     const userCollateral = async function () {
@@ -32,13 +30,13 @@ export async function run(provider: NetworkProvider) {
     console.log('01 | Пользователь вносит обеспечение, создается контракт пользовательской позиции');
     console.log('=============================================================================');
 
-    const collateralAmount = toNano(0.5);
+    const collateralAmount = toNano(0.1);
     const currentPositionId = await manager.getLastPositionId();
 
     // Отправляем в пулл средства через метод смарт-контракта пула: DepositCollateralUserMessage
-    await poolContract.send(
+    await manager.send(
         user,
-        { value: collateralAmount + toNano(0.5) },
+        { value: collateralAmount + toNano(0) },
         {
             $$type: 'DepositCollateralUserMessage',
             user: user.address as Address,

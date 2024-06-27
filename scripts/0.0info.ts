@@ -4,7 +4,7 @@ import { loadAddress } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { Pool } from '../wrappers/Pool';
 import { PositionAddressContract } from '../wrappers/PositionAddress';
-import { StablecoinMaster } from '../wrappers/Stablecoin';
+import { UsdTonMaster } from '../wrappers/UsdTon';
 import { UserPosition } from '../wrappers/UserPosition';
 
 export async function run(provider: NetworkProvider) {
@@ -12,9 +12,7 @@ export async function run(provider: NetworkProvider) {
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const lastPositionId = await manager.getLastPositionId();
     const positionAddressContractAddress = await manager.getUserPositionAddressById(lastPositionId);
-    const stablecoin = provider.open(
-        await StablecoinMaster.fromAddress(Address.parse(await loadAddress('stablecoin'))),
-    );
+    const stablecoin = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('stablecoin'))));
     const user = provider.sender().address as Address;
 
     const poolContract = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool_contract'))));

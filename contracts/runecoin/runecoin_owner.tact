@@ -1,17 +1,17 @@
 import "@stdlib/deploy";
-import "./runecoins_wallet.tact";
+import "./runecoin_wallet.tact";
 import "./runecoin.tact";
 import "../utils/helpers.tact";
 message SetBalance {
     amount: Int;
     content: Cell?;
 }
-message GetRunecoins {
+message GetRunecoin {
     amount: Int;
     user: Address;
 }
 
-contract RuneCoinsOwner with Deployable {
+contract RuneCoinOwner with Deployable {
     runecoinAddress: Address;
     owner: Address;
     totalCoins: Int;
@@ -35,13 +35,13 @@ contract RuneCoinsOwner with Deployable {
             }
         );
         self.totalCoins = msg.amount;
-        self.reply("Runecoins released".asComment());
+        self.reply("Runecoin released".asComment());
     }
 
     // user actions
     /*01 | Запрос на получение runecoin (from user)'*/
-    receive(msg: GetRunecoins){
-        let winit: StateInit = initOf RunecoinsWallet(self.runecoinAddress, myAddress());
+    receive(msg: GetRunecoin){
+        let winit: StateInit = initOf RunecoinWallet(self.runecoinAddress, myAddress());
         let walletAddress: Address = contractAddress(winit);
         send(SendParameters{
                 to: walletAddress,

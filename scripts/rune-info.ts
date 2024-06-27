@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address } from '@ton/core';
 import { loadAddress } from '../utils/helpers';
-import { RuneCoinsOwner } from '../wrappers/RunecoinsOwner';
+import { RuneCoinOwner } from '../wrappers/RunecoinOwner';
 
 export async function run(provider: NetworkProvider) {
     console.log('=============================================================================');
@@ -9,7 +9,7 @@ export async function run(provider: NetworkProvider) {
     console.log('=============================================================================');
 
     const runecoinOwner = provider.open(
-        await RuneCoinsOwner.fromAddress(Address.parse(await loadAddress('runecoins_owner'))),
+        await RuneCoinOwner.fromAddress(Address.parse(await loadAddress('runecoins_owner'))),
     );
 
     const totalAmount = await runecoinOwner.getTotalAmount();

@@ -1,17 +1,17 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { buildOnchainMetadata, loadAddress, saveAddress, timer } from '../utils/helpers';
-import { RuneCoinsOwner } from '../wrappers/RunecoinsOwner';
+import { RuneCoinOwner } from '../wrappers/RunecoinOwner';
 
 export async function run(provider: NetworkProvider) {
     const runecoinsOwner = provider.open(
-        await RuneCoinsOwner.fromAddress(Address.parse(await loadAddress('runecoins_owner'))),
+        await RuneCoinOwner.fromAddress(Address.parse(await loadAddress('runecoins_owner'))),
     );
 
     const jettonParams = {
-        name: 'runa2',
-        symbol: 'RN2',
-        description: 'runa2',
+        name: 'runa3',
+        symbol: 'RN3',
+        description: 'runa3',
         image: 'https://d391b93f5f62d9c15f67142e43841acc.ipfscdn.io/ipfs/bafybeighpd4rtwtnv3cumptlz4pmvi7z3iuo75mvyvdlthusdiuumfedbq/logo-dark.png',
     };
 
@@ -37,6 +37,7 @@ export async function run(provider: NetworkProvider) {
         totalAmount + amount,
         runecoinsOwner.getTotalAmount,
     );
+    
     const getAddress = await runecoinsOwner.getAddress();
     await saveAddress('runecoin', getAddress);
 
