@@ -5,7 +5,7 @@ import { Manager } from '../wrappers/Manager';
 
 export async function run(provider: NetworkProvider) {
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
-    const newTonPrice = toNano(7);
+    const newTonPrice = toNano(7.5);
 
     let getCurrentTonPrice = async function () {
         return await manager.getTonPrice();
@@ -19,5 +19,5 @@ export async function run(provider: NetworkProvider) {
             price: newTonPrice,
         },
     );
-    await timer(`ton price`, 'Настройка стоимости ton', newTonPrice, getCurrentTonPrice);
+    await timer(`ton price`, 'Настройка стоимости ton', newTonPrice, getCurrentTonPrice, true);
 }

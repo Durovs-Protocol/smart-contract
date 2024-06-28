@@ -70,27 +70,30 @@ export function cell(pram: string) {
     return beginCell().storeBit(1).storeUint(0, 32).storeStringTail(pram).endCell();
 }
 
-export async function timer(message: string, action: string, newVal: any, checkFunction: Function) {
+export async function timer(message: string, action: string, newVal: any, checkFunction: Function, showLogs: boolean = false) {
     let currentVal = await checkFunction();
-    console.log(`Started | ${message} | newVal: ${newVal}, currentVal: ${currentVal}`);
+
+    if(showLogs){
+        console.log(`Started | ${message} | newVal: ${newVal}, currentVal: ${currentVal}`);
+    }
     console.log('=============================================================================');
 
     let attempt = 1;
 
-    if (newVal == currentVal) {
+    if (newVal == currentVal && showLogs) {
         console.log(`Finished | The same value was received | ${newVal} | ${currentVal}`);
         console.log('=============================================================================');
         return;
     }
 
     while (newVal != currentVal) {
-        console.log(`${action} (attempts: ${attempt}) | newVal: ${newVal} | currentVal: ${currentVal}`);
+        console.log(`${action} (attempts: ${attempt})`);
         await delay(3000);
         currentVal = await checkFunction();
         attempt++;
     }
 
-    console.log(`Finished | ${message}:${currentVal}`);
+    console.log(`Finished`);
     console.log('=============================================================================');
 }
 

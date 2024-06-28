@@ -11,7 +11,6 @@
         "build-all": "rm -rf build && blueprint build manager && blueprint build pool  && blueprint build usdTon  && blueprint build userPosition && blueprint build usdTonWallet && blueprint build runecoinOwner  && blueprint build runecoin && blueprint build runecoinWallet",
         "test": "jest --verbose",
 
-
         "deploy-usdton": "yarn run-script deployUsdTon",
         "deploy-manager": "yarn run-script deployManager",
         "deploy-pool": "yarn run-script  deployPool",
@@ -24,16 +23,16 @@
         
         "deploy-and-set": "yarn deploy-usdton && yarn deploy-manager && yarn deploy-pool && yarn deploy-runecoin-owner && yarn deploy-runecoin  &&  yarn set-deps",
 
+        "deploy-runes-owner": "yarn run-script deployRunecoinOwner",
+        "send-runes-to-owner": "yarn run-script sendRunecoinToOwner",
+        "get-runes": "yarn run-script 0.2getRunecoins",
+        "rune-info": "yarn run-script rune-info",
+
         "deposit-collateral": "yarn run-script 01depositCollateral",
         "mint-usdton": "yarn run-script 02mint",
         "repay-usdton": "yarn run-script 03burn",
         "withdraw-collateral": "yarn run-script 04withdrawCollateral",
-        "get-info": "yarn run-script 0.0info",
-
-        "deploy-runes-owner": "yarn run-script deployRunecoinOwner",
-        "send-runes-to-owner": "yarn run-script sendRunecoinToOwner",
-        "get-runes": "yarn run-script 0.2getRunecoins",
-        "runes-info": "yarn run-script runes-info"
+        "get-info": "yarn run-script 0.0info"
     },
     "devDependencies": {
         "@ton/blueprint": "^0.19.0",

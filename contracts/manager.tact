@@ -7,6 +7,7 @@ import "./runecoin/runecoin_wallet.tact";
 contract Manager with Deployable, OwnableTransferable {
     const MinTonForStorage: Int = ton("0.01");
     const GasConsumption: Int = ton("0.01");
+
     deps: Deps;
     poolSettings: PoolSettings;
     owner: Address;
@@ -17,15 +18,18 @@ contract Manager with Deployable, OwnableTransferable {
     usdTonsIssued: Int as coins = 0;
     totalFeesCollected: Int as coins = 0;
     debtRate: DebtRate;
+    
     init(owner: Address){
         self.owner = owner;
         self.poolSettings = PoolSettings{liquidationRatio: 0, stabilityFeeRate: 0, liquidatorIncentiveBps: 0};
+        
         self.deps = Deps{
             managerAddress: newAddress(0, 0),
             poolAddress: newAddress(0, 0),
             usdTonAddress: newAddress(0, 0),
             runecoinAddress: newAddress(0, 0)
         };
+
         self.tonPrice = 0;
         self.tonPriceWithHealthRate = 0;
         self.debtRate = DebtRate{debtAccumulatedRate: 1000000000, lastAccumulationTime: (now() - 1000)};

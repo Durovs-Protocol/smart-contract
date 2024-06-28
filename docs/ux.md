@@ -2,18 +2,29 @@
 
 > Создать папку `deploy` если ее нет
 
+> Далее работа с core смарт-контрактами 
+
 1. `yarn build-all` (Запустит build всех контрактов: usdTon, manager, pool, deps, runes, runes-owner)
 2. `yarn deploy-and-set` (Деплой контрактов + установка зависимостей между контрактами)
-
     - `yarn deploy-pool`
     - `yarn deploy-manager`
     - `yarn deploy-usdton`
     - `yarn deploy-runecoin-owner`
     - `yarn deploy-runecoin`
-    - `yarn set-deps`
+    - Проверить выполнение: в папке вида `deploy/{contract_name}.address` должны лежать все адреса контрактов
+3. `yarn set-deps`: имея адреса контрактов: usdTon, manager, poolContract, runeCoin
+4. `yarn set-settings` (Настройка параметров пула)
+5. `yarn update-price` (Установка цены тона)
 
-3. `yarn set-settings` (Настройка параметров пула)
-4. `yarn update-price` (Установка цены тона)
+> Далее работа с Runa Coin
+
+1. `yarn deploy-runes-owner`
+2. 
+
+# Получение информации
+
+1. `yarn rune-info` - получает данные о состоянии хранилища владельца
+2. 
 
 # User flow
 

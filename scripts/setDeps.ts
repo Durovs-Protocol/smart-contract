@@ -34,10 +34,10 @@ export async function run(provider: NetworkProvider) {
             },
         );
 
-        await timer(`manager address`, `Set deps in ${name}`, manager.address, managerAddress(contract));
-        await timer(`pool address`, `Set deps in ${name}`, poolContract.address, poolAddress(contract));
-        await timer(`stable address`, `Set deps in ${name}`, usdTon.address, usdTonAddress(contract));
-        await timer(`runeCoin address`, `Set deps in ${name}`, runeCoin.address, runecoinAddress(contract));
+        await timer(`Setup manager address`, `Set deps in ${name}`, manager.address, managerAddress(contract));
+        await timer(`Setup pool address`, `Set deps in ${name}`, poolContract.address, poolAddress(contract));
+        await timer(`Setup stable address`, `Set deps in ${name}`, usdTon.address, usdTonAddress(contract));
+        await timer(`Setup runeCoin address`, `Set deps in ${name}`, runeCoin.address, runecoinAddress(contract));
     }
 
     // await setDeps(usdTon, 'usdTon');
