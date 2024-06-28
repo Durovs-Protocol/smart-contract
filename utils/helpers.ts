@@ -115,3 +115,9 @@ export async function saveAddress(name: string, address: Address, nameSuffix?: s
 export async function loadAddress(name: string, nameSuffix?: string) {
     return await fs.promises.readFile(getFilename(name, nameSuffix), 'utf8');
 }
+
+export function log(message: string){
+    console.log('\n\n=============================================================================');
+    console.log(message);
+    console.log('=============================================================================\n\n');
+}

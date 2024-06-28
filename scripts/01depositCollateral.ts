@@ -1,6 +1,6 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
-import { loadAddress, timer } from '../utils/helpers';
+import { loadAddress, timer, log } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { Pool } from '../wrappers/Pool';
 import { Runecoin } from '../wrappers/Runecoin';
@@ -24,9 +24,7 @@ export async function run(provider: NetworkProvider) {
         return state.collateral;
     };
 
-    console.log('=============================================================================');
-    console.log('01 | Пользователь вносит обеспечение, создается контракт пользовательской позиции');
-    console.log('=============================================================================');
+    log('01 | Пользователь вносит обеспечение, создается контракт пользовательской позиции');
 
     const collateralAmount = toNano(0.5);
     const currentPositionId = await manager.getLastPositionId();
