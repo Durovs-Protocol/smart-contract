@@ -6,20 +6,20 @@ import { UsdTonMaster } from '../wrappers/UsdTon';
 import { UsdTonWallet } from '../wrappers/UsdTonWallet';
 
 export async function run(provider: NetworkProvider) {
-    const stablecoin = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('stablecoin'))));
+    const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
 
-    const poolContract = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool_contract'))));
+    const poolContract = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool'))));
     const user = provider.sender();
 
     const stablesBorrowed = toNano(0.5);
-    const userStablecoinWalletAddress = await stablecoin.getGetWalletAddress(user.address as Address);
-    const userStableWallet = provider.open(await UsdTonWallet.fromAddress(userStablecoinWalletAddress));
+    const userUsdToncoinWalletAddress = await usdTon.getGetWalletAddress(user.address as Address);
+    const userUsdTonWallet = provider.open(await UsdTonWallet.fromAddress(userUsdToncoinWalletAddress));
 
     console.log('=============================================================================');
-    console.log('03 | Пользователь возвращает stablecoin');
+    console.log('03 | Пользователь возвращает usdTon');
     console.log('=============================================================================');
 
-    let userStableBalanceAfterBurn = await userStableWallet.getGetBalance();
+    let userUsdTonBalanceAfterBurn = await userUsdTonWallet.getGetBalance();
 
     await poolContract.send(
         user,
@@ -34,7 +34,7 @@ export async function run(provider: NetworkProvider) {
     await timer(
         'User stable balance',
         'Погашение задолжности',
-        userStableBalanceAfterBurn - stablesBorrowed,
-        userStableWallet.getGetBalance,
+        userUsdTonBalanceAfterBurn - stablesBorrowed,
+        userUsdTonWallet.getGetBalance,
     );
 }

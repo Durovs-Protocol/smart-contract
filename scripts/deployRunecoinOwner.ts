@@ -18,7 +18,7 @@ export async function run(provider: NetworkProvider) {
     );
 
     await provider.waitForDeploy(runecoinsOwner.address, 30);
-    await saveAddress('runecoins_owner', runecoinsOwner.address);
+    await saveAddress('runecoin_owner', runecoinsOwner.address);
 
     console.log('=============================================================================');
     console.log('RunecoinOwner deployed successfully');

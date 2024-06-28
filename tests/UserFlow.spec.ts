@@ -4,7 +4,6 @@ import '@ton/test-utils';
 import { buildOnchainMetadata } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { Pool } from '../wrappers/Pool';
-import { PositionAddressContract } from '../wrappers/PositionAddress';
 import { Runecoin } from '../wrappers/Runecoin';
 import { RuneCoinOwner } from '../wrappers/RunecoinOwner';
 import { RunecoinWallet } from '../wrappers/RunecoinWallet';
@@ -17,11 +16,12 @@ describe('UserFlow', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
     let pool: SandboxContract<Pool>;
-    let stablecoinMaster: SandboxContract<UsdTonMaster>;
+    let usdTon: SandboxContract<UsdTonMaster>;
     let manager: SandboxContract<Manager>;
     let runecoin: SandboxContract<Runecoin>;
     let runecoinOwner: SandboxContract<RuneCoinOwner>;
     let runecoinWallet: SandboxContract<RunecoinWallet>;
+    let userPosition: SandboxContract<UserPosition>;
 
     beforeAll(async () => {
         const jettonParams = {
@@ -36,10 +36,11 @@ describe('UserFlow', () => {
             description: 'rune',
             image: '',
         };
+
         blockchain = await Blockchain.create();
         deployer = await blockchain.treasury('deployer');
 
-        stablecoinMaster = blockchain.openContract(
+        usdTon = blockchain.openContract(
             await UsdTonMaster.fromInit(deployer.getSender().address, buildOnchainMetadata(jettonParams)),
         );
         runecoinOwner = blockchain.openContract(await RuneCoinOwner.fromInit(deployer.getSender().address));
@@ -47,6 +48,7 @@ describe('UserFlow', () => {
         runecoin = blockchain.openContract(
             await Runecoin.fromInit(runecoinOwner.address, buildOnchainMetadata(runecoinParams)),
         );
+
         await runecoinOwner.send(
             deployer.getSender(),
             {
@@ -67,6 +69,15 @@ describe('UserFlow', () => {
         pool = blockchain.openContract(await Pool.fromInit(deployer.getSender().address));
         manager = blockchain.openContract(await Manager.fromInit(deployer.getSender().address));
 
+        // userPosition = blockchain.openContract(
+        //     await UserPosition.fromInit(
+        //         deployer.getSender().address,
+        //         usdTon.address,
+        //         manager.address,
+        //         pool.address,
+        //         runecoin.address,
+        //     ),
+        // );
         const deployPool = await pool.send(
             deployer.getSender(),
             {
@@ -85,6 +96,18 @@ describe('UserFlow', () => {
             success: true,
         });
 
+        // const deployUserPosition = await userPosition.send(
+        //     deployer.getSender(),
+        //     {
+        //         value: toNano('0.05'),
+        //     },
+        //     {
+        //         $$type: 'Test',
+        //         amount: toNano('0.05'),
+        //         user: deployer.getSender().address!,
+        //     },
+        // );
+
         await pool.send(
             deployer.getSender(),
             { value: toNano(0.1) },
@@ -92,7 +115,7 @@ describe('UserFlow', () => {
                 $$type: 'SetDeps',
                 managerAddress: manager.address,
                 poolAddress: pool.address,
-                usdTonAddress: stablecoinMaster.address,
+                usdTonAddress: usdTon.address,
                 runecoinAddress: runecoin.address,
             },
         );
@@ -122,12 +145,12 @@ describe('UserFlow', () => {
                 $$type: 'SetDeps',
                 managerAddress: manager.address,
                 poolAddress: pool.address,
-                usdTonAddress: stablecoinMaster.address,
+                usdTonAddress: usdTon.address,
                 runecoinAddress: runecoin.address,
             },
         );
 
-        const deployStablecoin = await stablecoinMaster.send(
+        const deployUsdToncoin = await usdTon.send(
             deployer.getSender(),
             {
                 value: toNano('0.05'),
@@ -138,21 +161,21 @@ describe('UserFlow', () => {
             },
         );
 
-        expect(deployStablecoin.transactions).toHaveTransaction({
+        expect(deployUsdToncoin.transactions).toHaveTransaction({
             from: deployer.address,
-            to: stablecoinMaster.address,
+            to: usdTon.address,
             deploy: true,
             success: true,
         });
 
-        await stablecoinMaster.send(
+        await usdTon.send(
             deployer.getSender(),
             { value: toNano(0.1) },
             {
                 $$type: 'SetDeps',
                 managerAddress: manager.address,
                 poolAddress: pool.address,
-                usdTonAddress: stablecoinMaster.address,
+                usdTonAddress: usdTon.address,
                 runecoinAddress: runecoin.address,
             },
         );
@@ -188,16 +211,16 @@ describe('UserFlow', () => {
         );
     });
     it('deps set ok', async () => {
-        const stablecoinDeps = await stablecoinMaster.getDeps();
-        expect(stablecoinDeps.poolAddress.toString()).toEqual(pool.address.toString());
-        expect(stablecoinDeps.managerAddress.toString()).toEqual(manager.address.toString());
+        const usdTonDeps = await usdTon.getDeps();
+        expect(usdTonDeps.poolAddress.toString()).toEqual(pool.address.toString());
+        expect(usdTonDeps.managerAddress.toString()).toEqual(manager.address.toString());
 
         const positionsManagerDeps = await manager.getDeps();
         expect(positionsManagerDeps.poolAddress.toString()).toEqual(pool.address.toString());
-        expect(positionsManagerDeps.usdTonAddress.toString()).toEqual(stablecoinMaster.address.toString());
+        expect(positionsManagerDeps.usdTonAddress.toString()).toEqual(usdTon.address.toString());
 
         const poolDeps = await pool.getDeps();
-        expect(poolDeps.usdTonAddress.toString()).toEqual(stablecoinMaster.address.toString());
+        expect(poolDeps.usdTonAddress.toString()).toEqual(usdTon.address.toString());
         expect(poolDeps.managerAddress.toString()).toEqual(manager.address.toString());
     });
 
@@ -220,7 +243,7 @@ describe('UserFlow', () => {
         const collateralDepositAmount = toNano(1);
         const currentPositionId = await manager.getLastPositionId();
 
-        await manager.send(
+        const res = await manager.send(
             deployer.getSender(),
             { value: collateralDepositAmount + toNano(2) },
             {
@@ -230,33 +253,28 @@ describe('UserFlow', () => {
             },
         );
 
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //-----------------------------------////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
         const lastPositionId = await manager.getLastPositionId();
         expect(lastPositionId - currentPositionId).toEqual(1n);
 
-        // manager has address of userPositionAddress for new position
-        const userPositionAddressContractAddress = await manager.getUserPositionAddressById(lastPositionId);
-        expect(userPositionAddressContractAddress).toBeDefined();
-
-        // userPositionAdress stores userPosition contract address
-        const userPositionAddressContract = blockchain.openContract(
-            await PositionAddressContract.fromAddress(userPositionAddressContractAddress),
-        );
-        const userPositionContractAddress = await userPositionAddressContract.getPositionAddress();
-
-        // manager know userPositionAddress by user.address
-        const positionAddress = await manager.getUserPositionAddress(deployer.getSender().address);
-        expect(positionAddress.toString()).toEqual(userPositionContractAddress.toString());
-
         // userPosition contract has a state with deposited collateral stored
         const userPositionContract = blockchain.openContract(
-            await UserPosition.fromAddress(userPositionContractAddress),
+            await UserPosition.fromInit(
+                deployer.address,
+                usdTon.address,
+                manager.address,
+                pool.address,
+                runecoin.address,
+            ),
         );
         let positionState = await userPositionContract.getPositionState();
 
         expect(positionState.collateral).toEqual(collateralDepositAmount);
 
-        // -- user draw stablecoins
-        const initialTotalSupply = await stablecoinMaster.getTotalSupply();
+        // -- user draw usdTons
+        const initialTotalSupply = await usdTon.getTotalSupply();
 
         expect(initialTotalSupply).toEqual(0n);
 
@@ -266,35 +284,27 @@ describe('UserFlow', () => {
             deployer.getSender(),
             { value: toNano(1) },
             {
-                $$type: 'WithdrawStablecoinUserMessage',
+                $$type: 'WithdrawUsdTonUserMessage',
                 user: deployer.getSender().address,
                 amount: stablesBorrowed,
             },
         );
 
-        // TODO понять почему так не работает////////////////////////////////////////////////////////////////////////
-        // const userStablecoinWalletAddress = await stablecoinMaster.getGetWalletAddress(deployer.getSender().address);
-        // const userStableWallet = blockchain.openContract(
-        //     await UsdTonWallet.fromInit(stablecoinMaster.address, deployer.getSender().address),
-        // );
-        // let userStableBalance = await userStableWallet.getGetBalance();
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        const userUsdToncoinWalletAddress = await usdTon.getGetWalletAddress(deployer.getSender().address);
+        const userUsdTonWallet = blockchain.openContract(await UsdTonWallet.fromAddress(userUsdToncoinWalletAddress));
+        let userUsdTonBalance = await userUsdTonWallet.getGetBalance();
 
-        const userStablecoinWalletAddress = await stablecoinMaster.getGetWalletAddress(deployer.getSender().address);
-        const userStableWallet = blockchain.openContract(await UsdTonWallet.fromAddress(userStablecoinWalletAddress));
-        let userStableBalance = await userStableWallet.getGetBalance();
+        expect(userUsdTonBalance).toEqual(stablesBorrowed);
 
-        expect(userStableBalance).toEqual(stablesBorrowed);
-
-        const currentTotalSupply = await stablecoinMaster.getTotalSupply();
+        const currentTotalSupply = await usdTon.getTotalSupply();
         expect(currentTotalSupply).toEqual(stablesBorrowed);
 
         // position updated
         positionState = await userPositionContract.getPositionState();
         expect(positionState.debt).toEqual(stablesBorrowed);
 
-        userStableBalance = await userStableWallet.getGetBalance();
-        console.log('balance before repay', userStableBalance);
+        userUsdTonBalance = await userUsdTonWallet.getGetBalance();
+        console.log('balance before repay', userUsdTonBalance);
 
         // user pays stables back
         await manager.send(
@@ -310,10 +320,10 @@ describe('UserFlow', () => {
         let positionMessage = await userPositionContract.getMessage();
         console.log({ positionMessage });
 
-        userStableBalance = await userStableWallet.getGetBalance();
-        console.log('balance after repay', userStableBalance);
+        userUsdTonBalance = await userUsdTonWallet.getGetBalance();
+        console.log('balance after repay', userUsdTonBalance);
 
-        expect(userStableBalance).toEqual(0n);
+        expect(userUsdTonBalance).toEqual(0n);
 
         positionState = await userPositionContract.getPositionState();
         console.log({ positionState });

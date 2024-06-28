@@ -10,11 +10,11 @@ contract Manager with Deployable, OwnableTransferable {
     deps: Deps;
     poolSettings: PoolSettings;
     owner: Address;
-    lastPositionId: Int as uint32 = 0;
+    lastPositionId: Int as coins = 0;
     tonPrice: Int;
     tonPriceWithHealthRate: Int;
     totalCollateralAmount: Int as coins = 0;
-    stablecoinsIssued: Int as coins = 0;
+    usdTonsIssued: Int as coins = 0;
     totalFeesCollected: Int as coins = 0;
     debtRate: DebtRate;
     init(owner: Address){
@@ -66,20 +66,17 @@ contract Manager with Deployable, OwnableTransferable {
         self.reply("ton price updated".asComment());
     }
 
+    // для теста
+    bounced(msg: bounced<DepositCollateralMessage>){
+        send(SendParameters{to: self.owner, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
+        // ...
+    }
+
     //=============================================================================
     // User actions
     //=============================================================================
-
     /*01 | Внесение залога */
     receive(msg: DepositCollateralUserMessage){
-        dump(sender() == msg.user);
-        require(sender() == msg.user, "Invalid sender");
-        let ctx: Context = context();
-        require(ctx.value >= ((msg.amount + self.GasConsumption) + self.MinTonForStorage), "not enough tons sent");
-        let valueToSendForward: Int = ((context().value - self.MinTonForStorage) - self.GasConsumption);
-        dump(valueToSendForward);
-        dump(msg.amount);
-        dump(ctx.value);
         let init: StateInit = initOf UserPosition(msg.user,
             self.deps.usdTonAddress,
             self.deps.managerAddress,
@@ -87,10 +84,17 @@ contract Manager with Deployable, OwnableTransferable {
             self.deps.runecoinAddress
         );
         let userPosition: Address = contractAddress(init);
-        dump(userPosition);
+        require(sender() == msg.user, "Invalid sender");
+        let ctx: Context = context();
+        require(ctx.value >= ((msg.amount + self.GasConsumption) + self.MinTonForStorage), "not enough tons sent");
+
+        //TODO рассчитать газ для всех дальнейших операций сразу
+
+        let valueToSendForward: Int = ((context().value - self.MinTonForStorage) - self.GasConsumption);
         send(SendParameters{
-                to: self.deps.managerAddress,
+                to: userPosition,
                 value: valueToSendForward,
+                mode: SendBounceIfActionFail,
                 bounce: true,
                 body: DepositCollateralMessage{
                     user: msg.user,
@@ -98,36 +102,28 @@ contract Manager with Deployable, OwnableTransferable {
                     settings: self.poolSettings,
                     rate: self.debtRate,
                     tonPriceWithHealthRate: self.tonPriceWithHealthRate
-                }.toCell()
+                }.toCell(),
+                code: init.code,
+                data: init.data
             }
         );
         self.totalCollateralAmount = (self.totalCollateralAmount + msg.amount);
     }
 
     receive(msg: AddPositionId){
-        dump(msg.user);
         self.lastPositionId = (self.lastPositionId + 1);
-        let init: StateInit = initOf PositionAddressContract(self.lastPositionId, myAddress());
-        let positionAddress: Address = contractAddress(init);
-        send(SendParameters{
-                to: positionAddress,
-                value: 0,
-                bounce: true,
-                body: SetPositionAddressMessage{user: msg.user, position: sender()}.toCell(),
-                code: init.code,
-                data: init.data
-            }
+        send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendBounceIfActionFail)}
         );
     }
 
     /*02 | Mint usdTON */
-    receive(msg: WithdrawStablecoinUserMessage){
+    receive(msg: WithdrawUsdTonUserMessage){
         send(SendParameters{
                 to: self._userPositionAddress(msg.user),
                 value: 0,
                 mode: (SendRemainingValue + SendBounceIfActionFail),
                 bounce: true,
-                body: WithdrawStablecoinMessage{
+                body: WithdrawUsdToncoinMessage{
                     user: msg.user,
                     amount: msg.amount,
                     settings: self.poolSettings,
@@ -137,8 +133,8 @@ contract Manager with Deployable, OwnableTransferable {
         );
     }
 
-    receive(msg: IncreaseTotalStable){
-        self.stablecoinsIssued = (self.stablecoinsIssued + msg.amount);
+    receive(msg: IncreaseTotalUsdTon){
+        self.usdTonsIssued = (self.usdTonsIssued + msg.amount);
         // pay excess back to user
         send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
     }
@@ -161,8 +157,8 @@ contract Manager with Deployable, OwnableTransferable {
         );
     }
 
-    receive(msg: DecreaseTotalStable){
-        self.stablecoinsIssued = (self.stablecoinsIssued - msg.amount);
+    receive(msg: DecreaseTotalUsdTon){
+        self.usdTonsIssued = (self.usdTonsIssued - msg.amount);
         // pay excess
         send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
     }
@@ -289,11 +285,6 @@ contract Manager with Deployable, OwnableTransferable {
         return self._userPositionAddress(user);
     }
 
-    get fun userPositionAddressById(id: Int): Address {
-        let init: StateInit = initOf PositionAddressContract(id, myAddress());
-        return contractAddress(init);
-    }
-
     get fun deps(): Deps {
         return self.deps;
     }
@@ -314,49 +305,11 @@ contract Manager with Deployable, OwnableTransferable {
         return self.debtRate;
     }
 
-    get fun stablecoinsIssued(): Int {
-        return self.stablecoinsIssued;
+    get fun usdTonsIssued(): Int {
+        return self.usdTonsIssued;
     }
 
     get fun totalCollateralAmount(): Int {
         return self.totalCollateralAmount;
-    }
-}
-
-//=============================================================================
-// PositionAddressContract
-// this contract stores positionaddress by position id
-// for liquidators mostly
-//=============================================================================
-
-contract PositionAddressContract with Deployable {
-    id: Int as uint32;
-    positionAddress: Address;
-    managerAddress: Address;
-    init(id: Int, manager: Address){
-        let ctx: Context = context();
-        self.id = id;
-        self.positionAddress = newAddress(0, 0);
-        self.managerAddress = manager;
-    }
-
-    /*
-        message came from userPosition
-        set position address
-        now we can determine this contract address by positionId 
-        and get positionAddress by getter
-    */
-    receive(msg: SetPositionAddressMessage){
-        require(sender() == self.managerAddress, "Invalid sender");
-        require(self.positionAddress == newAddress(0, 0), "Already set");
-        self.positionAddress = msg.position;
-        // dump("pay excess");
-        // // pay excess to user
-        // send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendBounceIfActionFail)}
-        // );
-    }
-
-    get fun positionAddress(): Address {
-        return self.positionAddress;
     }
 }

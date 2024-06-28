@@ -21,7 +21,7 @@ message WithdrawCollateralMessage {
     rate: DebtRate;
     tonPriceWithHealthRate: Int as coins;
 }
-message WithdrawStablecoinMessage {
+message WithdrawUsdToncoinMessage {
     user: Address;
     amount: Int as uint64;
     settings: PoolSettings;
@@ -42,16 +42,16 @@ message DoDeposit {
     user: Address;
     amount: Int as uint64;
 }
-message IncreaseTotalStable {
+message IncreaseTotalUsdTon {
     user: Address;
     amount: Int as uint64;
 }
-message DecreaseTotalStable {
+message DecreaseTotalUsdTon {
     user: Address;
     amount: Int as uint64;
 }
 
-// stablecoinMaster messages
+// usdTonMaster messages
 
 struct JettonData {
     totalSupply: Int;
@@ -66,7 +66,6 @@ struct JettonWalletData {
     master: Address;
     walletCode: Cell;
 }
-
 // userPosition messages
 
 message SetUserPositionDependecyMessage {
@@ -85,7 +84,7 @@ message SetPositionAddressMessage {
     position: Address;
 }
 
-// stablecoinMaster messages
+// usdTonMaster messages
 
 message MintMessage {
     user: Address;
@@ -103,7 +102,7 @@ message BurnBurnNotification {
     rate: DebtRate;
     userPosition: Address;
 }
-message StablecoinBurnedMessage {
+message UsdToncoinBurnedMessage {
     user: Address;
     amount: Int as coins;
     rate: DebtRate;
@@ -118,7 +117,6 @@ message TokenTransferFromPositionManager {
     forwardPayload: Slice as remaining;
     deps: Deps;
 }
-
 // jetton messages
 
 message(0xf8a7ea5) TokenTransfer {
@@ -191,7 +189,7 @@ message DepositCollateralUserMessage {
     user: Address;
     amount: Int as coins;
 }
-message WithdrawStablecoinUserMessage {
+message WithdrawUsdTonUserMessage {
     user: Address;
     amount: Int as coins;
 }

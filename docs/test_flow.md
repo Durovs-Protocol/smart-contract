@@ -2,7 +2,7 @@
 
 > Создать папку `deploy` если ее нет
 
-1. `yarn build-all` (Запустит build всех контрактов: stablecoin, manager, pool, deps, runes, runes-owner)
+1. `yarn build-all` (Запустит build всех контрактов: usdTon, manager, pool, deps, runes, runes-owner)
 2. `yarn deploy-and-set` (Деплой контрактов + установка зависимостей между контрактами)
 
     - `yarn deploy-pool`
@@ -20,8 +20,8 @@
 1. `yarn deposit-collateral` (Внесение обеспечения (Для проверки баланса использовать скрипт info(в случае ошибки Exit code: -256 )))
     - collateral: 2, debt:0
 2. `yarn get-runes` (Получение runecoins пользователем)
-3. `yarn mint-stablecoin` (Перечесление stablecoin пользователю)
-4. `yarn repay-stablecoin` (Возврат стейблкоина пользователем)
+3. `yarn mint-usdton` (Перечесление usdTon пользователю)
+4. `yarn repay-usdTon` (Возврат стейблкоина пользователем)
 5. `yarn withdraw-collateral` (Возврат обеспечения пользователю)
 
 `yarn get-info` (Получение информации о позиции пользователя)

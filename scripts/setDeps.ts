@@ -9,7 +9,7 @@ import { UsdTonMaster } from '../wrappers/UsdTon';
 export async function run(provider: NetworkProvider) {
     const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
-    const poolContract = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool_contract'))));
+    const poolContract = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool'))));
     const runeCoin = provider.open(await Runecoin.fromAddress(Address.parse(await loadAddress('runecoin'))));
 
     async function setDeps(contract: any, name: string) {
@@ -40,7 +40,7 @@ export async function run(provider: NetworkProvider) {
         await timer(`runeCoin address`, `Set deps in ${name}`, runeCoin.address, runecoinAddress(contract));
     }
 
-    await setDeps(usdTon, 'usdTon');
+    // await setDeps(usdTon, 'usdTon');
     await setDeps(manager, 'manager');
     await setDeps(poolContract, 'pool');
     console.log('=============================================================================');

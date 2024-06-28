@@ -52,7 +52,7 @@ contract Runecoin with Jetton, Deployable {
             value: 0, 
             bounce: false,
             mode: SendRemainingValue + SendIgnoreErrors,
-            body: StablecoinBurnedMessage{ 
+            body: UsdToncoinBurnedMessage{ 
                 amount: msg.amount,
                 user: msg.user,
                 rate: msg.rate

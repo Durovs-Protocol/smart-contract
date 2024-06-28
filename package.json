@@ -25,14 +25,14 @@
         "deploy-and-set": "yarn deploy-usdton && yarn deploy-manager && yarn deploy-pool && yarn deploy-runecoin-owner && yarn deploy-runecoin  &&  yarn set-deps",
 
         "deposit-collateral": "yarn run-script 01depositCollateral",
-        "mint-stablecoin": "yarn run-script 02mintStablecoin",
-        "repay-stablecoin": "yarn run-script 03repayStablecoin",
+        "mint-usdton": "yarn run-script 02mint",
+        "repay-usdton": "yarn run-script 03burn",
         "withdraw-collateral": "yarn run-script 04withdrawCollateral",
         "get-info": "yarn run-script 0.0info",
 
         "deploy-runes-owner": "yarn run-script deployRunecoinOwner",
         "send-runes-to-owner": "yarn run-script sendRunecoinToOwner",
-        "get-runes": "yarn run-script 0.2getRunecoin",
+        "get-runes": "yarn run-script 0.2getRunecoins",
         "runes-info": "yarn run-script runes-info"
     },
     "devDependencies": {
