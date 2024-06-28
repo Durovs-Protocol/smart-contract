@@ -11,14 +11,16 @@ export async function run(provider: NetworkProvider) {
 
     const user = provider.sender();
 
-    const balance = user.send(
-        user,
-        { value: toNano(2) },
-        {
-            $$type: 'DepositCollateralUserMessage',
-            user: user.address as Address,
-            amount: collateralAmount,
-        },
-    );
-    log(balance);
+    // TODO: сделать вывод баланса кошелька пользователя в TON
+
+    // const balance = user.send(
+    //     user,
+    //     { value: toNano(2) },
+    //     {
+    //         $$type: 'DepositCollateralUserMessage',
+    //         user: user.address as Address,
+    //         amount: collateralAmount,
+    //     },
+    // );
+    // log(balance);
 }

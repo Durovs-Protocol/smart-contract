@@ -28,14 +28,14 @@
 
 # User flow
 
-> `yarn get-info` (Получение информации о позиции пользователя) - использовать после сброки, деплоя и запуска yarn deposit-collateral
+> `yarn get-info` (Получение информации о позиции пользователя) - использовать после сброки, деплоя и запуска yarn add-supply
 
-1. `yarn deposit-collateral` (Внесение обеспечения (Для проверки баланса использовать скрипт `yarn get-info`(в случае ошибки Exit code: -256 )))
+1. `yarn add-supply` (Внесение обеспечения (Для проверки баланса использовать скрипт `yarn get-info`(в случае ошибки Exit code: -256 )))
     - collateral: 2, debt:0
 2. `yarn mint` (Перечесление usdTon пользователю)
 3. `yarn get-runes` (Получение runecoins пользователем)
 4. `yarn burn` (Возврат стейблкоина пользователем)
-5. `yarn withdraw-collateral` (Возврат обеспечения пользователю)
+5. `yarn withdrawal-supply` (Возврат обеспечения пользователю)
 
 ### Путь обращения пользователя: **user => pool => manager => user_position(вычисления) => jetton master/pool(исполнение)**
 

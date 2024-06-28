@@ -44,10 +44,10 @@ npm manifest:
           "update-price": "yarn run-script  updatePrice",
           "deploy-and-set": "yarn deploy-usdton && yarn deploy-manager && yarn deploy-pool && yarn set-deps",
   
-          "deposit-collateral": "yarn run-script 01depositCollateral",
+          "add-supply": "yarn run-script 01depositCollateral",
           "mint-stablecoin": "yarn run-script 02mintUsdToncoin",
           "repay-stablecoin": "yarn run-script 03repayUsdToncoin",
-          "withdraw-collateral": "yarn run-script 04withdrawCollateral",
+          "withdrawal-supply": "yarn run-script 04withdrawCollateral",
           "get-info": "yarn run-script 0info",
   
           "deploy-runecoin-owner": "yarn run-script deployRunaCoinOwner",

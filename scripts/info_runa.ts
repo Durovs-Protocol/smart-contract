@@ -1,5 +1,5 @@
 import { NetworkProvider } from '@ton/blueprint';
-import { Address } from '@ton/core';
+import { Address, fromNano } from '@ton/core';
 import { loadAddress } from '../utils/helpers';
 import { RuneCoinOwner } from '../wrappers/RunecoinOwner';
 
@@ -13,5 +13,5 @@ export async function run(provider: NetworkProvider) {
     );
 
     const totalAmount = await runecoinOwner.getTotalAmount();
-    console.log('В хранилище владельца: ', totalAmount);
+    console.log('В хранилище владельца: ', fromNano(totalAmount).toString());
 }

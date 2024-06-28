@@ -46,7 +46,7 @@ export async function run(provider: NetworkProvider) {
     }
 
     const userBalanceBefore = await userCollateral();
-    console.log(`userBalanceBefore | ${userBalanceBefore}`);
+    console.log(`Supply Balance before | ${userBalanceBefore}`);
 
     const userBalanceAfter = userBalanceBefore + collateralAmount;
     await timer(`User balance`, 'Внесение обеспечения', userBalanceAfter, userCollateral);

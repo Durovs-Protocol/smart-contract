@@ -11,12 +11,12 @@
         "build-all": "rm -rf build && blueprint build manager && blueprint build pool  && blueprint build usdTon  && blueprint build userPosition && blueprint build usdTonWallet && blueprint build runecoinOwner  && blueprint build runecoin && blueprint build runecoinWallet",
         "test": "jest --verbose",
 
-        "deploy-usdton": "yarn run-script deployUsdTon",
-        "deploy-manager": "yarn run-script deployManager",
-        "deploy-pool": "yarn run-script  deployPool",
-        "deploy-runecoin-owner": "yarn run-script  deployRunecoinOwner",
-        "deploy-runecoin": "yarn run-script  sendRunecoinToOwner",
-        "set-deps": "yarn run-script  setDeps",
+        "deploy-usdton":            "yarn run-script deploy_usd_ton",
+        "deploy-manager":           "yarn run-script deploy_manager",
+        "deploy-pool":              "yarn run-script deployPool",
+        "deploy-runecoin-owner":    "yarn run-script deployRunecoinOwner",
+        "deploy-runecoin":          "yarn run-script sendRunecoinToOwner",
+        "set-deps":                 "yarn run-script setDeps",
 
         "deploy-and-set": "yarn deploy-usdton && yarn deploy-manager && yarn deploy-pool && yarn deploy-runecoin-owner && yarn deploy-runecoin  &&  yarn set-deps",
 
@@ -26,16 +26,16 @@
         "deploy-runes-owner": "yarn run-script deployRunecoinOwner",
         "send-runes-to-owner": "yarn run-script sendRunecoinToOwner",
         "get-runes": "yarn run-script 0.2getRunecoins",
-        "rune-info": "yarn run-script rune-info",
 
-        "deposit-collateral": "yarn run-script 01depositCollateral",
-        "mint": "yarn run-script 02mint",
-        "burn": "yarn run-script 03burn",
-        "withdraw-collateral": "yarn run-script 04withdrawCollateral",
+        "add-supply": "yarn run-script 01_add_supply",
+        "mint": "yarn run-script 02_mint",
+        "burn": "yarn run-script 03_burn",
+        "withdrawal-supply": "yarn run-script 04_withdrawal_supply",
 
 
-        "get-info": "yarn run-script 0.0info",
-        "info-user": "yarn run-script info_user"
+        "info-runa":            "yarn run-script info_runa",
+        "info-user":            "yarn run-script info_user",
+        "info-user-position":   "yarn run-script info_user_position"
     },
     "devDependencies": {
         "@ton/blueprint": "^0.19.0",
