@@ -7,8 +7,8 @@
         "run-script": "npx blueprint run --testnet --mnemonic ",
 
         "action": "blueprint run",
-        "build": "blueprint build",
-        "build-all": "rm -rf build && blueprint build manager && blueprint build pool  && blueprint build usdTon  && blueprint build userPosition && blueprint build usdTonWallet && blueprint build runecoinOwner  && blueprint build runecoin && blueprint build runecoinWallet",
+        "blueprint-build": "blueprint build",
+        "build": "rm -rf build && blueprint build manager && blueprint build pool  && blueprint build usdTon  && blueprint build userPosition && blueprint build usdTonWallet && blueprint build runecoinOwner  && blueprint build runecoin && blueprint build runecoinWallet",
         "test": "jest --verbose",
 
         "deploy-usdton":            "yarn run-script deploy_usd_ton",
@@ -16,14 +16,12 @@
         "deploy-pool":              "yarn run-script deployPool",
         "deploy-runecoin-owner":    "yarn run-script deployRunecoinOwner",
         "deploy-runecoin":          "yarn run-script sendRunecoinToOwner",
-        "set-deps":                 "yarn run-script setDeps",
 
-        "deploy-and-set": "yarn deploy-usdton && yarn deploy-manager && yarn deploy-pool && yarn deploy-runecoin-owner && yarn deploy-runecoin  &&  yarn set-deps",
+        "deploy":   "yarn deploy-usdton && yarn deploy-manager && yarn deploy-pool && yarn deploy-runecoin-owner && yarn deploy-runecoin",
 
-        "set-settings": "yarn run-script  setSettings",
-        "update-price": "yarn run-script  updatePrice",
+        "update-price":         "yarn run-script  updatePrice",
+        "setup":    "yarn run-script setDeps && yarn run-script  setSettings && yarn update-price",
 
-        "deploy-runes-owner":   "yarn run-script deployRunecoinOwner",
         "send-runes-to-owner":  "yarn run-script sendRunecoinToOwner",
         "get-runes":            "yarn run-script 0.2getRunecoins",
 

@@ -8,6 +8,7 @@ message Mint {
     amount: Int;
 }
 
+
 contract UsdTonMaster with Jetton, Deployable {
     totalSupply: Int as coins;
     owner: Address;

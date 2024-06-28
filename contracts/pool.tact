@@ -38,6 +38,7 @@ contract Pool with Deployable, OwnableTransferable {
     // Actions
     //=============================================================================
 
+
     /*01 | Пополнение пула, возврат остатка тон пользователю */
     receive(msg: DoDeposit){
         let ctx: Context = context();

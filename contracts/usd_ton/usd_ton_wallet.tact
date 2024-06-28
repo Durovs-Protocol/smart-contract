@@ -13,7 +13,6 @@ contract UsdTonWallet
         self.owner = owner;
         self.master = master;
     }
-
     receive(msg: TokenTransfer){
         // Check sender
         let ctx: Context = context();

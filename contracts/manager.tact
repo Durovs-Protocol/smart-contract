@@ -122,6 +122,7 @@ contract Manager with Deployable, OwnableTransferable {
         );
     }
 
+
     /*02 | Mint usdTON */
     receive(msg: MintUsdTonMessage){
         send(SendParameters{

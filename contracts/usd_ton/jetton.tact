@@ -15,7 +15,6 @@ trait Jetton with OwnableTransferable {
     //
     // Receivers
     //
-
     receive(msg: TokenUpdateContent){
         // Allow changing content only by owner
         self.requireOwner();
