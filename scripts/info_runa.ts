@@ -11,5 +11,5 @@ export async function run(provider: NetworkProvider) {
     );
 
     const totalAmount = await runecoinOwner.getTotalAmount();
-    console.log('В хранилище владельца: ', numberFormat(Number(fromNano(totalAmount))));
+    console.log('В хранилище владельца: ', numberFormat(fromNano(totalAmount)));
 }

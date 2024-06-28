@@ -97,9 +97,9 @@ export async function timer(message: string, action: string, newVal: any, checkF
     console.log('=============================================================================');
 }
 
-export function numberFormat(val: number) {
+export function numberFormat(val: String) {
     return new Intl.NumberFormat().format(
-        val,
+        Number(val),
       );
 }
 
