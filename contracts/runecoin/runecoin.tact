@@ -33,7 +33,7 @@ contract Runecoin with Jetton, Deployable {
     }
 
 
-    receive(msg: BurnBurnMessage) {
+    receive(msg: BurnMessage) {
         let winit: StateInit = self.getJettonWalletInit(msg.user);
         let walletAddress: Address = contractAddress(winit);
         send(SendParameters{
@@ -45,14 +45,14 @@ contract Runecoin with Jetton, Deployable {
         });
     }
 
-
-    receive(msg: BurnBurnNotification) {
+//TODO remove this code
+    receive(msg: BurnNotification) {
         send(SendParameters{
             to: msg.userPosition, 
             value: 0, 
             bounce: false,
             mode: SendRemainingValue + SendIgnoreErrors,
-            body: UsdToncoinBurnedMessage{ 
+            body: UsdTonWereBurned{ 
                 amount: msg.amount,
                 user: msg.user,
                 rate: msg.rate

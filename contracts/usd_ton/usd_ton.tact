@@ -55,23 +55,34 @@ contract UsdTonMaster with Jetton, Deployable {
     */
     receive(msg: MintMessage) {
       let userPositionAddress: Address = self._userPositionAddress(msg.user);
-      
-      // todo check if message from userPosition
-      //require(sender() == userPositionAddress, "invalid sender");
+    //TODO проверка отправителя
+    //require(sender() == userPositionAddress, "invalid sender");
+
 
       self.mint(msg.user, msg.amount, msg.user);
+
+        send(SendParameters{
+            to: self.deps.managerAddress, 
+            value: 0,
+            mode: SendRemainingValue + SendIgnoreErrors, 
+            bounce: true,
+            body: IncreaseTotalUsdTon{
+                user: msg.user,
+                amount: msg.amount
+            }.toCell()
+        });
     }
 
     /*
         message came from userPosition
         send jetton.burn
     */
-    receive(msg: BurnBurnMessage) {
+    receive(msg: BurnMessage) {
         // bug? different address calculation than in positions manager
-        // let userPositionAddress: Address =  self._userPositionAddress(msg.user);
+        let userPositionAddress: Address =  self._userPositionAddress(msg.user);
 
-        // todo enable this line
-       //require(sender() == userPositionAddress, "invalid sender");
+        //TODO проверка отправителя
+        //    require(sender() == userPositionAddress, "invalid sender");
 
         let winit: StateInit = self.getJettonWalletInit(msg.user);
         let walletAddress: Address = contractAddress(winit);
@@ -90,18 +101,18 @@ contract UsdTonMaster with Jetton, Deployable {
         decrease totalSupply
         call userPosition.stableBurned(user, amount, fees)
     */
-    receive(msg: BurnBurnNotification) {
+    receive(msg: BurnNotification) {
         self.requireWallet(msg.user);
 
         // looks like huge bug here, explain later
-        // let userPositionAddress: Address =  self._userPositionAddress(msg.user);
+        let userPositionAddress: Address =  self._userPositionAddress(msg.user);
 
         send(SendParameters{
             to: msg.userPosition, 
             value: 0, 
             bounce: false,
             mode: SendRemainingValue + SendIgnoreErrors,
-            body: UsdToncoinBurnedMessage{ 
+            body: UsdTonWereBurned{ 
                 amount: msg.amount,
                 user: msg.user,
                 rate: msg.rate

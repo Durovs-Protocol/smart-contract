@@ -133,7 +133,7 @@ contract UsdTonWallet
 
     // usdTon related method
 
-    receive(msg: BurnBurnMessage){
+    receive(msg: BurnMessage){
         /* check if called by master
         if balance >= amount
         decrease balance
@@ -154,7 +154,7 @@ contract UsdTonWallet
                 value: 0,
                 mode: (SendRemainingValue + SendIgnoreErrors),
                 bounce: true,
-                body: BurnBurnNotification{
+                body: BurnNotification{
                     amount: msg.amount,
                     user: msg.user,
                     rate: msg.rate,

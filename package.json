@@ -25,8 +25,8 @@
         "deploy-and-set": "yarn deploy-usdton && yarn deploy-manager && yarn deploy-pool && yarn deploy-runecoin-owner && yarn deploy-runecoin  &&  yarn set-deps",
 
         "deposit-collateral": "yarn run-script 01depositCollateral",
-        "mint-usdton": "yarn run-script 02mint",
-        "repay-usdton": "yarn run-script 03burn",
+        "mint": "yarn run-script 02mint",
+        "burn": "yarn run-script 03burn",
         "withdraw-collateral": "yarn run-script 04withdrawCollateral",
         "get-info": "yarn run-script 0.0info",
 

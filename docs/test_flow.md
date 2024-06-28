@@ -19,9 +19,9 @@
 
 1. `yarn deposit-collateral` (Внесение обеспечения (Для проверки баланса использовать скрипт info(в случае ошибки Exit code: -256 )))
     - collateral: 2, debt:0
-2. `yarn get-runes` (Получение runecoins пользователем)
-3. `yarn mint-usdton` (Перечесление usdTon пользователю)
-4. `yarn repay-usdTon` (Возврат стейблкоина пользователем)
+2. `yarn mint` (Перечесление usdTon пользователю)
+3. `yarn get-runes` (Получение runecoins пользователем)
+4. `yarn burn` (Возврат стейблкоина пользователем)
 5. `yarn withdraw-collateral` (Возврат обеспечения пользователю)
 
 `yarn get-info` (Получение информации о позиции пользователя)
