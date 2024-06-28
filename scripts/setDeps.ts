@@ -1,6 +1,6 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
-import { loadAddress, timer } from '../utils/helpers';
+import { loadAddress, timer, log } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { Pool } from '../wrappers/Pool';
 import { Runecoin } from '../wrappers/Runecoin';
@@ -43,9 +43,7 @@ export async function run(provider: NetworkProvider) {
     await setDeps(usdTon, 'usdTon');
     await setDeps(manager, 'manager');
     await setDeps(poolContract, 'pool');
-    console.log('=============================================================================');
-    console.log('Deps installed successfully');
-    console.log('=============================================================================');
+    log('Deps installed successfully');
 }
 
 const managerAddress = function (contract: any) {

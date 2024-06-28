@@ -75,7 +75,7 @@ contract Manager with Deployable, OwnableTransferable {
         send(SendParameters{to: self.owner, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
     }
 
-    bounced(msg: bounced<WithdrawUsdTonUserMessage>){
+    bounced(msg: bounced<MintUsdTonMessage>){
         send(SendParameters{to: self.owner, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
     }
 
@@ -123,7 +123,7 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     /*02 | Mint usdTON */
-    receive(msg: WithdrawUsdTonUserMessage){
+    receive(msg: MintUsdTonMessage){
         send(SendParameters{
                 to: self._userPositionAddress(msg.user),
                 value: 0,

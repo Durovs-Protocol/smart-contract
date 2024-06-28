@@ -97,6 +97,12 @@ export async function timer(message: string, action: string, newVal: any, checkF
     console.log('=============================================================================');
 }
 
+export function numberFormat(val: number) {
+    return new Intl.NumberFormat().format(
+        val,
+      );
+}
+
 function delay(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }

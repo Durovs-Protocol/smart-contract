@@ -284,7 +284,7 @@ describe('UserFlow', () => {
             deployer.getSender(),
             { value: toNano(1) },
             {
-                $$type: 'WithdrawUsdTonUserMessage',
+                $$type: 'MintUsdTonMessage',
                 user: deployer.getSender().address,
                 amount: stablesBorrowed,
             },

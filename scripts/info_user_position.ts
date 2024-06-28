@@ -25,14 +25,14 @@ export async function run(provider: NetworkProvider) {
 
     log('Wallet dependencies');
 
-    const managerDeps = await manager.getDeps();
-    console.log('managerDeps', managerDeps);
+    // const managerDeps = await manager.getDeps();
+    // console.log('managerDeps', managerDeps);
 
-    const usdTonDeps = await usdTon.getDeps();
-    console.log('usdTonDeps', usdTonDeps);
+    // const usdTonDeps = await usdTon.getDeps();
+    // console.log('usdTonDeps', usdTonDeps);
 
-    const poolContractDeps = await pool.getDeps();
-    console.log('poolContractDeps', poolContractDeps);
+    // const poolContractDeps = await pool.getDeps();
+    // console.log('poolContractDeps', poolContractDeps);
 
-    console.log('=============================================================================\n\n');
+    // console.log('=============================================================================\n\n');
 }

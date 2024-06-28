@@ -1,25 +1,32 @@
 import { NetworkProvider } from '@ton/blueprint';
-import { Address, toNano } from '@ton/core';
-import { loadAddress, timer } from '../utils/helpers';
+import { Address, toNano, fromNano } from '@ton/core';
+import { loadAddress, timer, log } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { UsdTonMaster } from '../wrappers/UsdTon';
 import { UsdTonWallet } from '../wrappers/UsdTonWallet';
+import { UserPosition } from '../wrappers/UserPosition';
 
 export async function run(provider: NetworkProvider) {
     const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
-
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const user = provider.sender();
 
     const stablesBorrowed = toNano(0.2);
-    const userUsdToncoinWalletAddress = await usdTon.getGetWalletAddress(user.address as Address);
-    const userUsdTonWallet = provider.open(await UsdTonWallet.fromAddress(userUsdToncoinWalletAddress));
 
-    console.log('=============================================================================');
-    console.log('03 | Пользователь возвращает usdTon');
-    console.log('=============================================================================');
+    const getDebtBalance = async function (){
+        const userPositionAddress = await manager.getUserPositionAddress(user.address as Address);
+        const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
+        const userPositionState = await userPosition.getPositionState();
+        return userPositionState.debt;
+    }
 
-    let userUsdTonBalanceAfterBurn = await userUsdTonWallet.getGetBalance();
+    // Альтернатива брать с баланса usdTONWallet
+    // const userUsdToncoinWalletAddress = await usdTon.getGetWalletAddress(user.address as Address);
+    // const userUsdTonWallet = provider.open(await UsdTonWallet.fromAddress(userUsdToncoinWalletAddress));
+
+    log('03 | Пользователь возвращает usdTon | Balance: ' + fromNano(await getDebtBalance().toString()))
+
+    let userUsdTonBalanceAfterBurn = getDebtBalance; // await userUsdTonWallet.getGetBalance();
 
     await manager.send(
         user,
@@ -30,11 +37,12 @@ export async function run(provider: NetworkProvider) {
             amount: stablesBorrowed,
         },
     );
-
+    const balance = (await getDebtBalance()) - stablesBorrowed;
     await timer(
         'User stable balance',
         'Погашение задолжности',
-        userUsdTonBalanceAfterBurn - stablesBorrowed,
-        userUsdTonWallet.getGetBalance,
+        fromNano(balance.toString()),
+        getDebtBalance,
+        true
     );
 }

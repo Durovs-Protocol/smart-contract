@@ -189,7 +189,7 @@ message DepositCollateralUserMessage {
     user: Address;
     amount: Int as coins;
 }
-message WithdrawUsdTonUserMessage {
+message MintUsdTonMessage {
     user: Address;
     amount: Int as coins;
 }

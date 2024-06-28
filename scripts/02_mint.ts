@@ -1,5 +1,5 @@
 import { NetworkProvider } from '@ton/blueprint';
-import { Address, toNano } from '@ton/core';
+import { Address, toNano, fromNano } from '@ton/core';
 import { loadAddress, saveAddress, timer, log } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { UsdTonMaster } from '../wrappers/UsdTon';
@@ -11,16 +11,16 @@ export async function run(provider: NetworkProvider) {
     const user = provider.sender();
 
     const userUsdTonWalletAddress = await usdTon.getGetWalletAddress(user.address as Address);
-    const usdtonsBorrowed = toNano(0.2);
+    const usdtonsBorrowed = toNano(0.01);
     console.log(userUsdTonWalletAddress);
 
-    log('02 | Пользователь минтит usdTON: ' + usdtonsBorrowed);
+    log('02 | Пользователь минтит usdTON: ' + fromNano(usdtonsBorrowed).toString());
 
     await manager.send(
         user,
         { value: toNano(1) },
         {
-            $$type: 'WithdrawUsdTonUserMessage',
+            $$type: 'MintUsdTonMessage',
             user: user.address as Address,
             amount: usdtonsBorrowed,
         },
