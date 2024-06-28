@@ -23,14 +23,14 @@
         "set-settings": "yarn run-script  setSettings",
         "update-price": "yarn run-script  updatePrice",
 
-        "deploy-runes-owner": "yarn run-script deployRunecoinOwner",
-        "send-runes-to-owner": "yarn run-script sendRunecoinToOwner",
-        "get-runes": "yarn run-script 0.2getRunecoins",
+        "deploy-runes-owner":   "yarn run-script deployRunecoinOwner",
+        "send-runes-to-owner":  "yarn run-script sendRunecoinToOwner",
+        "get-runes":            "yarn run-script 0.2getRunecoins",
 
-        "add-supply": "yarn run-script 01_add_supply",
-        "mint": "yarn run-script 02_mint",
-        "burn": "yarn run-script 03_burn",
-        "withdrawal-supply": "yarn run-script 04_withdrawal_supply",
+        "add-supply":           "yarn run-script 01_add_supply",
+        "mint":                 "yarn run-script 02_mint",
+        "burn":                 "yarn run-script 03_burn",
+        "withdrawal-supply":    "yarn run-script 04_withdrawal_supply",
 
 
         "info-runa":            "yarn run-script info_runa",
