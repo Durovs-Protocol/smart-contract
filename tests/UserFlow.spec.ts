@@ -243,7 +243,7 @@ describe('UserFlow', () => {
         const collateralDepositAmount = toNano(1);
         const currentPositionId = await manager.getLastPositionId();
 
-        const res = await manager.send(
+        await manager.send(
             deployer.getSender(),
             { value: collateralDepositAmount + toNano(2) },
             {

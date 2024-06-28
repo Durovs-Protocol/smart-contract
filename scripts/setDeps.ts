@@ -40,7 +40,7 @@ export async function run(provider: NetworkProvider) {
         await timer(`Setup runeCoin address`, `Set deps in ${name}`, runeCoin.address, runecoinAddress(contract));
     }
 
-    // await setDeps(usdTon, 'usdTon');
+    await setDeps(usdTon, 'usdTon');
     await setDeps(manager, 'manager');
     await setDeps(poolContract, 'pool');
     console.log('=============================================================================');

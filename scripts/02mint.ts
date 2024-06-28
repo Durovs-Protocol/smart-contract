@@ -15,6 +15,7 @@ export async function run(provider: NetworkProvider) {
     console.log('=============================================================================');
     const userUsdTonWalletAddress = await usdTon.getGetWalletAddress(user.address as Address);
     const usdtonsBorrowed = toNano(0.2);
+    console.log(userUsdTonWalletAddress);
 
     await manager.send(
         user,
@@ -27,7 +28,7 @@ export async function run(provider: NetworkProvider) {
     );
 
     const userUsdTonWallet = provider.open(await UsdTonWallet.fromAddress(userUsdTonWalletAddress));
-    await provider.waitForDeploy(userUsdTonWalletAddress, 20);
+    await provider.waitForDeploy(userUsdTonWalletAddress, 30);
 
     const userUsdTonBalance = await userUsdTonWallet.getGetBalance();
     await timer(`User stable balance`, 'Mint usdTon', userUsdTonBalance, userUsdTonWallet.getGetBalance);

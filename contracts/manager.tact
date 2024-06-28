@@ -73,7 +73,10 @@ contract Manager with Deployable, OwnableTransferable {
     // для теста
     bounced(msg: bounced<DepositCollateralMessage>){
         send(SendParameters{to: self.owner, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
-        // ...
+    }
+
+    bounced(msg: bounced<WithdrawUsdTonUserMessage>){
+        send(SendParameters{to: self.owner, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
     }
 
     //=============================================================================
@@ -91,7 +94,6 @@ contract Manager with Deployable, OwnableTransferable {
         require(sender() == msg.user, "Invalid sender");
         let ctx: Context = context();
         require(ctx.value >= ((msg.amount + self.GasConsumption) + self.MinTonForStorage), "not enough tons sent");
-
         //TODO рассчитать газ для всех дальнейших операций сразу
 
         let valueToSendForward: Int = ((context().value - self.MinTonForStorage) - self.GasConsumption);
@@ -127,7 +129,7 @@ contract Manager with Deployable, OwnableTransferable {
                 value: 0,
                 mode: (SendRemainingValue + SendBounceIfActionFail),
                 bounce: true,
-                body: WithdrawUsdToncoinMessage{
+                body: WithdrawUsdTonMessage{
                     user: msg.user,
                     amount: msg.amount,
                     settings: self.poolSettings,
@@ -139,8 +141,8 @@ contract Manager with Deployable, OwnableTransferable {
 
     receive(msg: IncreaseTotalUsdTon){
         self.usdTonsIssued = (self.usdTonsIssued + msg.amount);
-        // pay excess back to user
-        send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
+        self.reply("usdTON where minted".asComment());
+        // self.payBack(msg.user);
     }
 
     /*03 | Burn usdTON */
@@ -163,8 +165,8 @@ contract Manager with Deployable, OwnableTransferable {
 
     receive(msg: DecreaseTotalUsdTon){
         self.usdTonsIssued = (self.usdTonsIssued - msg.amount);
-        // pay excess
-        send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
+        self.reply("usdTON where burned".asComment());
+        // self.payBack(msg.user);
     }
 
     /*04 | Возврат залога */
@@ -276,6 +278,10 @@ contract Manager with Deployable, OwnableTransferable {
             self.deps.runecoinAddress
         );
         return contractAddress(init);
+    }
+
+    fun payBack(user: Address) {
+        send(SendParameters{to: user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
     }
     //=============================================================================
     // Offchain interface

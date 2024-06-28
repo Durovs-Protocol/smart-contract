@@ -29,8 +29,8 @@
         "rune-info": "yarn run-script rune-info",
 
         "deposit-collateral": "yarn run-script 01depositCollateral",
-        "mint-usdton": "yarn run-script 02mint",
-        "repay-usdton": "yarn run-script 03burn",
+        "mint": "yarn run-script 02mint",
+        "burn": "yarn run-script 03burn",
         "withdraw-collateral": "yarn run-script 04withdrawCollateral",
         "get-info": "yarn run-script 0.0info"
     },

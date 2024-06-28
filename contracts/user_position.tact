@@ -79,10 +79,15 @@ contract UserPosition  {
     }
 
     /*02 | Mint usdTON */
-    receive(msg: WithdrawUsdToncoinMessage) {
-        require(sender() == self.managerAddress, "not from positionsManager");
+    receive(msg: WithdrawUsdTonMessage) {
+        require(sender() == self.managerAddress, "not from position Manager");
+        dump(msg.amount);
+
         let normalizedWithdrawDebt: Int = msg.amount * 1000000000 / msg.rate.debtAccumulatedRate;
+        dump(normalizedWithdrawDebt);
+
         let debtAfterWithdraw: Int = self.debt + normalizedWithdrawDebt;
+        dump(debtAfterWithdraw);
 
         // dump("check healthy");
         // if (!self.isPositionHealthy(self.collateral, debtAfterWithdraw, msg.tonPriceWithHealthRate, msg.rate.debtAccumulatedRate)){
@@ -93,7 +98,7 @@ contract UserPosition  {
 
         send(SendParameters{
             to: self.usdTonAddress, 
-            value: ton("0.1"),
+            value: 0,
             mode: (SendRemainingValue + SendIgnoreErrors), 
             bounce: true,
             body: MintMessage{
@@ -105,26 +110,18 @@ contract UserPosition  {
         self.debt = debtAfterWithdraw;
         self.setMessage("UsdToncoins sent");
 
-        // todo move this send after successfull stable mint notification
-        send(SendParameters{
-            to: self.managerAddress, 
-            value: 0,
-            mode: SendRemainingValue + SendIgnoreErrors, 
-            bounce: true,
-            body: IncreaseTotalUsdTon{
-                user: msg.user,
-                amount: msg.amount
-            }.toCell()
-        });
     }
     /*02 |from usdTonMaster'*/
-    receive(msg: UsdToncoinBurnedMessage) {
+    receive(msg: UsdTonWereBurned) {
 
-        require(sender() == self.usdTonAddress, "not from usdTon master");
+        require(sender() == self.usdTonAddress, "not from usdTon");
 
         // todo check if debt still more than repayment
-
         self.debt = self.debt - msg.amount * 1000000000 / msg.rate.debtAccumulatedRate;
+        dump(msg.rate.debtAccumulatedRate);
+        dump(self.debt);
+        dump(msg.amount);
+
 
         self.setMessage("you've paid stables back");
 
@@ -133,17 +130,16 @@ contract UserPosition  {
             value: 0,
             mode: SendRemainingValue + SendIgnoreErrors,
             bounce: true,
-            body: DecreaseTotalUsdTon{
+            body: DecreaseTotalUsdTon {
                 user: msg.user,
                 amount: msg.amount
             }.toCell()
-        }); 
-        
+        });
     }
 
     /*03 | Burn usdTON */
     receive(msg: BurnUsdTONMessage) {
-        require(sender() == self.managerAddress, "not from positionsManager");
+        require(sender() == self.managerAddress, "not from position manager");
         let amountToBurn: Int = msg.amount;
         // let factDebtInUsdTons: Int = self.debt * msg.rate.debtAccumulatedRate / 1000000000;
         // dump("check healthy");
@@ -166,7 +162,7 @@ contract UserPosition  {
             value: 0,
             mode: SendRemainingValue + SendIgnoreErrors, 
             bounce: true,
-            body: BurnBurnMessage{
+            body: BurnMessage{
                 user: msg.user,
                 amount: amountToBurn,
                 rate: msg.rate,

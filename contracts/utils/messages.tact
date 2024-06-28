@@ -21,7 +21,7 @@ message WithdrawCollateralMessage {
     rate: DebtRate;
     tonPriceWithHealthRate: Int as coins;
 }
-message WithdrawUsdToncoinMessage {
+message WithdrawUsdTonMessage {
     user: Address;
     amount: Int as uint64;
     settings: PoolSettings;
@@ -90,19 +90,19 @@ message MintMessage {
     user: Address;
     amount: Int as coins;
 }
-message BurnBurnMessage {
+message BurnMessage {
     user: Address;
     amount: Int as coins;
     rate: DebtRate;
     userPosition: Address;
 }
-message BurnBurnNotification {
+message BurnNotification {
     user: Address;
     amount: Int as coins;
     rate: DebtRate;
     userPosition: Address;
 }
-message UsdToncoinBurnedMessage {
+message UsdTonWereBurned {
     user: Address;
     amount: Int as coins;
     rate: DebtRate;
