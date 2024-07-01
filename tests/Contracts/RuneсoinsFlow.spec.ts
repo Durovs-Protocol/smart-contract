@@ -1,10 +1,10 @@
 import { toNano } from '@ton/core';
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import '@ton/test-utils';
-import { buildOnchainMetadata } from '../utils/helpers';
-import { Runecoin } from '../wrappers/Runecoin';
-import { RuneCoinOwner } from '../wrappers/RunecoinOwner';
-import { RunecoinWallet } from '../wrappers/RunecoinWallet';
+import { buildOnchainMetadata } from '../../utils/helpers';
+import { Runecoin } from '../../wrappers/Runecoin';
+import { RuneCoinOwner } from '../../wrappers/RunecoinOwner';
+import { RunecoinWallet } from '../../wrappers/RunecoinWallet';
 
 describe('RunaCoinOwner', () => {
     let blockchain: Blockchain;
