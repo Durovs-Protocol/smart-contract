@@ -46,7 +46,7 @@ contract Manager with Deployable, OwnableTransferable {
             usdTonAddress: msg.usdTonAddress,
             runecoinAddress: msg.runecoinAddress
         };
-        self.reply("deps set".asComment());
+        self.reply("Dependencies set".asComment());
     }
 
     receive(msg: SetPoolSettings){
@@ -56,7 +56,7 @@ contract Manager with Deployable, OwnableTransferable {
             stabilityFeeRate: msg.stabilityFeeRate,
             liquidatorIncentiveBps: msg.liquidatorIncentiveBps
         };
-        self.reply("pool settings updated".asComment());
+        self.reply("Pool settings updated".asComment());
     }
 
     //=============================================================================
@@ -67,7 +67,7 @@ contract Manager with Deployable, OwnableTransferable {
         self.requireOwner();
         self.tonPriceWithHealthRate = msg.price * 1000000000 / self.poolSettings.liquidationRatio;
         self.tonPrice = msg.price;
-        self.reply("ton price updated".asComment());
+        self.reply("Ton price updated".asComment());
     }
 
     // для теста
@@ -142,7 +142,7 @@ contract Manager with Deployable, OwnableTransferable {
 
     receive(msg: IncreaseTotalUsdTon){
         self.usdTonsIssued = (self.usdTonsIssued + msg.amount);
-        self.reply("usdTON where minted".asComment());
+        self.reply("usdTON minted".asComment());
         // self.payBack(msg.user);
     }
 
@@ -166,7 +166,7 @@ contract Manager with Deployable, OwnableTransferable {
 
     receive(msg: DecreaseTotalUsdTon){
         self.usdTonsIssued = (self.usdTonsIssued - msg.amount);
-        self.reply("usdTON where burned".asComment());
+        self.reply("usdTON burned".asComment());
         // self.payBack(msg.user);
     }
 
