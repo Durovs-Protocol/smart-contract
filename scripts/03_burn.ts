@@ -11,9 +11,9 @@ export async function run(provider: NetworkProvider) {
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const user = provider.sender();
 
-    const stablesBorrowed = toNano(0.2);
+    const stablesBorrowed = toNano(0.1);
 
-    const getDebtBalance = async function (){
+    const getDebtBalance = async function () {
         const userPositionAddress = await manager.getUserPositionAddress(user.address as Address);
         const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
         const userPositionState = await userPosition.getPositionState();
@@ -24,9 +24,11 @@ export async function run(provider: NetworkProvider) {
     // const userUsdToncoinWalletAddress = await usdTon.getGetWalletAddress(user.address as Address);
     // const userUsdTonWallet = provider.open(await UsdTonWallet.fromAddress(userUsdToncoinWalletAddress));
 
-    log('03 | Пользователь возвращает usdTon | Balance: ' + fromNano(await getDebtBalance().toString()))
+    const currentDebt = await getDebtBalance();// TODO: сделать проверку на текущий баланс - если долга нет - дальше не пускать
 
-    let userUsdTonBalanceAfterBurn = getDebtBalance; // await userUsdTonWallet.getGetBalance();
+    log('03 | Пользователь возвращает usdTon | Balance: ') // TODO: вывести текущий долг
+
+    // let userUsdTonBalanceAfterBurn = getDebtBalance; // await userUsdTonWallet.getGetBalance();
 
     await manager.send(
         user,
@@ -37,11 +39,11 @@ export async function run(provider: NetworkProvider) {
             amount: stablesBorrowed,
         },
     );
-    const balance = (await getDebtBalance()) - stablesBorrowed;
+    const balance = await getDebtBalance() - stablesBorrowed;
     await timer(
         'User stable balance',
         'Погашение задолжности',
-        fromNano(balance.toString()),
+        balance,
         getDebtBalance,
         true
     );

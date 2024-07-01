@@ -24,7 +24,7 @@ export async function run(provider: NetworkProvider) {
         return state.collateral;
     };
 
-    log('01 | Пользователь вносит обеспечение, создается контракт пользовательской позиции');
+    log('01 | Пользователь вносит обеспечение, создается/обновляется контракт пользовательской позиции');
 
     const collateralAmount = toNano(1);
     const currentPositionId = await manager.getLastPositionId();

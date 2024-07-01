@@ -25,7 +25,7 @@ export async function run(provider: NetworkProvider) {
     );
 
     await provider.waitForDeploy(usdTon.address, 30);
-    await saveAddress('usd_ton', usdTon.address);
+    await saveAddress('usdTon', usdTon.address);
     console.log('=============================================================================');
     console.log('UsdToncoin deployed successfully');
     console.log('=============================================================================');
