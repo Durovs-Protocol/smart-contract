@@ -33,6 +33,8 @@ message BurnUsdTONMessage {
     settings: PoolSettings;
     rate: DebtRate;
     tonPriceWithHealthRate: Int as coins;
+    runecoinWallet: Address;
+    deps: Deps;
 }
 message DoWithdrawCollateral {
     user: Address;
@@ -50,7 +52,6 @@ message DecreaseTotalUsdTon {
     user: Address;
     amount: Int as uint64;
 }
-
 // usdTonMaster messages
 
 struct JettonData {
@@ -66,6 +67,7 @@ struct JettonWalletData {
     master: Address;
     walletCode: Cell;
 }
+
 // userPosition messages
 
 message SetUserPositionDependecyMessage {
@@ -83,7 +85,6 @@ message SetPositionAddressMessage {
     user: Address;
     position: Address;
 }
-
 // usdTonMaster messages
 
 message MintMessage {
@@ -117,6 +118,7 @@ message TokenTransferFromPositionManager {
     forwardPayload: Slice as remaining;
     deps: Deps;
 }
+
 // jetton messages
 
 message(0xf8a7ea5) TokenTransfer {

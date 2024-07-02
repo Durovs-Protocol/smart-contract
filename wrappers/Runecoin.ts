@@ -1,1 +1,1 @@
-export * from '../build/RunecoinOwner/tact_Runecoin';
+export * from '../build/Runecoin/tact_Runecoin';

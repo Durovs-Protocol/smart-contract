@@ -111,7 +111,59 @@ contract UserPosition  {
         self.setMessage("UsdToncoins sent");
 
     }
-    /*02 |from usdTonMaster'*/
+
+    /*03 | Burn usdTON */
+    receive(msg: BurnUsdTONMessage) {
+        require(sender() == self.managerAddress, "not from position manager");
+        let amountToBurn: Int = msg.amount;
+        // let factDebtInUsdTons: Int = self.debt * msg.rate.debtAccumulatedRate / 1000000000;
+        // dump("check healthy");
+        // if (!self.isPositionHealthy(self.collateral, self.debt, msg.tonPriceWithHealthRate, msg.rate.debtAccumulatedRate)){
+        //     self.unhealthyPositionHandler(msg.user);
+        //     return;
+        // } 
+        // dump("position healthy");
+
+        // todo add bounced handler in sender to pay ctx.value back to sender
+        if (self.debt < msg.amount) {
+            self.setMessage("Your debt is less than you want to repay, charge sent back");
+            amountToBurn = self.debt;
+        }
+
+        self.setMessage("stables are going to burn...");
+
+        // send(SendParameters {
+        //         to: msg.runecoinWallet,
+        //         value: ton("0.1"),
+        //         mode: SendBounceIfActionFail,
+        //         bounce: true,
+        //         body: TokenTransfer{
+        //             queryId: 0,
+        //             amount: msg.amount * 2 / 100,
+        //             destination: self.poolAddress,
+        //             responseDestination: myAddress(),
+
+        //             customPayload: createOffchainContent("custom"),
+        //             forwardTonAmount: 0,
+        //             forwardPayload: createOffchainContent("forward").asSlice()
+        //         }.toCell()
+        //     }
+        // );
+
+        send(SendParameters{
+            to: self.usdTonAddress, 
+            value: 0,
+            mode: SendRemainingValue + SendIgnoreErrors, 
+            bounce: true,
+            body: BurnMessage{
+                user: msg.user,
+                amount: amountToBurn,
+                rate: msg.rate,
+                userPosition: myAddress()
+            }.toCell()
+        });
+    }
+    /*03 |from usdTonMaster'*/
     receive(msg: UsdTonWereBurned) {
 
         require(sender() == self.usdTonAddress, "not from usdTon");
@@ -136,41 +188,6 @@ contract UserPosition  {
             }.toCell()
         });
     }
-
-    /*03 | Burn usdTON */
-    receive(msg: BurnUsdTONMessage) {
-        require(sender() == self.managerAddress, "not from position manager");
-        let amountToBurn: Int = msg.amount;
-        // let factDebtInUsdTons: Int = self.debt * msg.rate.debtAccumulatedRate / 1000000000;
-        // dump("check healthy");
-        // if (!self.isPositionHealthy(self.collateral, self.debt, msg.tonPriceWithHealthRate, msg.rate.debtAccumulatedRate)){
-        //     self.unhealthyPositionHandler(msg.user);
-        //     return;
-        // } 
-        // dump("position healthy");
-
-        // todo add bounced handler in sender to pay ctx.value back to sender
-        if (self.debt < msg.amount) {
-            self.setMessage("Your debt is less than you want to repay, charge sent back");
-            amountToBurn = self.debt;
-        }
-
-        self.setMessage("stables are going to burn...");
-
-        send(SendParameters{
-            to: self.usdTonAddress, 
-            value: 0,
-            mode: SendRemainingValue + SendIgnoreErrors, 
-            bounce: true,
-            body: BurnMessage{
-                user: msg.user,
-                amount: amountToBurn,
-                rate: msg.rate,
-                userPosition: myAddress()
-            }.toCell()
-        });
-    }
-
 
     /*04 | Возврат обеспечения (from positionsManager)'*/
     receive(msg: WithdrawCollateralMessage) {

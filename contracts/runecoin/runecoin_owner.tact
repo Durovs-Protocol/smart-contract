@@ -15,6 +15,8 @@ contract RuneCoinOwner with Deployable {
     runecoinAddress: Address;
     owner: Address;
     totalCoins: Int;
+    const MinTonForStorage: Int = ton("0.01");
+    const GasConsumption: Int = ton("0.01");
     init(owner: Address){
         self.owner = owner;
         self.totalCoins = 0;
@@ -25,9 +27,11 @@ contract RuneCoinOwner with Deployable {
         let init: StateInit = initOf Runecoin(myAddress(), msg.content);
         let address: Address = contractAddress(init);
         self.runecoinAddress = address;
+        let ctx: Context = context();
+        let remainingValue: Int = (ctx.value - ((msg.amount + self.MinTonForStorage) + self.GasConsumption));
         send(SendParameters{
                 to: address,
-                value: ton("0.5"),
+                value: (ctx.value - self.MinTonForStorage),
                 mode: SendBounceIfActionFail,
                 code: init.code,
                 data: init.data,
@@ -47,7 +51,7 @@ contract RuneCoinOwner with Deployable {
                 to: walletAddress,
                 value: ton("0.3"),
                 mode: SendBounceIfActionFail,
-                bounce: false,
+                bounce: true,
                 body: TokenTransfer{
                     queryId: 0,
                     amount: msg.amount,
@@ -69,6 +73,12 @@ contract RuneCoinOwner with Deployable {
 
     get fun address(): Address {
         return self.runecoinAddress;
+    }
+    // для проверки решения проблемы с адресами
+    get fun runeInfo(user: Address): Address {
+        let winit: StateInit = initOf RunecoinWallet(self.runecoinAddress, user);
+        let walletAddress: Address = contractAddress(winit);
+        return walletAddress;
     }
 
     get fun owner(): Address {
