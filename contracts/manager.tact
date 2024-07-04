@@ -87,7 +87,6 @@ contract Manager with Deployable, OwnableTransferable {
         require(sender() == msg.user, "Invalid sender");
         let ctx: Context = context();
         require(ctx.value >= ((msg.amount + self.GasConsumption) + self.MinTonForStorage), "not enough tons sent");
-
         //TODO рассчитать газ для всех дальнейших операций сразу
 
         let valueToSendForward: Int = ((context().value - self.MinTonForStorage) - self.GasConsumption);

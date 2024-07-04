@@ -1,1 +1,1 @@
-export const tonPrice: number = 5;
+export const tonPrice: number = 7.5;
