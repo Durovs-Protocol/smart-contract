@@ -55,7 +55,6 @@ contract Runecoin with Jetton, Deployable {
             body: UsdTonWereBurned{ 
                 amount: msg.amount,
                 user: msg.user,
-                rate: msg.rate
             }.toCell()
         });
     }

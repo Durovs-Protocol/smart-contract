@@ -38,15 +38,6 @@ contract Pool with Deployable, OwnableTransferable {
     // Actions
     //=============================================================================
 
-
-    /*01 | Пополнение пула, возврат остатка тон пользователю */
-    receive(msg: DoDeposit){
-        let ctx: Context = context();
-        let remainingValue: Int = (ctx.value - ((msg.amount + self.MinTonForStorage) + self.GasConsumption));
-        send(SendParameters{to: msg.user, bounce: false, value: remainingValue, mode: SendIgnoreErrors});
-        self.reply("Colleteral was added".asComment());
-    }
-
     /*04 | Возврат залога от user position */
     receive(msg: DoWithdrawCollateral){
         send(SendParameters{
@@ -56,6 +47,11 @@ contract Pool with Deployable, OwnableTransferable {
                 mode: (SendRemainingValue + SendIgnoreErrors)
             }
         );
+    }
+
+    // вывод всех средств с пула на кошелек владельца пула, после тестов удалить
+    receive(msg: TestWithdrawal){
+        send(SendParameters{to: self.owner, bounce: false, value: 0, mode: (SendRemainingBalance + SendIgnoreErrors)});
     }
 
     //=============================================================================

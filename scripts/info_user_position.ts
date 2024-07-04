@@ -19,9 +19,12 @@ export async function run(provider: NetworkProvider) {
     const state = await userPosition.getPositionState();
 
 
-    console.log('Supply         in TON:', fromNano(state.collateral).toString());
-    console.log('Borrow         usdTON:', fromNano(state.debt).toString());
-    console.log('User Position address:', userPosition.address.toString());
+    console.log('Supply         in TON:',   fromNano(state.collateral).toString());
+    console.log('Borrow         usdTON:',   fromNano(state.debt).toString());
+    console.log('User Position address:',   userPosition.address.toString());
+    console.log('Manager address:      ',   manager.address.toString());
+    console.log('Pool address:         ',   pool.address.toString());
+    console.log('usdTon address:       ',   usdTon.address.toString());
 
     log('Wallet dependencies');
 

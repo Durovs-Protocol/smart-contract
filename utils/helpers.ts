@@ -70,7 +70,14 @@ export function cell(pram: string) {
     return beginCell().storeBit(1).storeUint(0, 32).storeStringTail(pram).endCell();
 }
 
-export async function timer(message: string, action: string, newVal: any, checkFunction: Function, showLogs: boolean = false) {
+export async function timer(
+    message: string, 
+    action: string, 
+    newVal: any, 
+    checkFunction: Function, 
+    showLogs: boolean = false, 
+    maxAttempts: number = 60) {
+
     let currentVal = await checkFunction();
 
     if(showLogs){
@@ -91,6 +98,10 @@ export async function timer(message: string, action: string, newVal: any, checkF
         await delay(3000);
         currentVal = await checkFunction();
         attempt++;
+        if(maxAttempts < attempt){
+            log('Attemps limit');
+            return;
+        }
     }
 
     console.log(`Finished`);

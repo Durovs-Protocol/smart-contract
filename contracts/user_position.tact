@@ -13,11 +13,10 @@ struct Message {
 
 contract UserPosition  {
     const MinTonsForStorage: Int = ton("0.01");
-    const GasConsumption: Int = ton("0.02"); 
+    const GasConsumption: Int = ton("0.02");
     user: Address;
     usdTonAddress: Address;
     runecoinAddress: Address;
-
     managerAddress: Address;
     poolAddress: Address;
     collateral: Int as coins = 0;
@@ -51,55 +50,45 @@ contract UserPosition  {
         });
     }
 
-    // для теста 
-    bounced(msg: bounced<DoDeposit>){
-        send(SendParameters{to: self.user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
-    }
 
     //=============================================================================
     // Actions
     //=============================================================================
     receive(msg: DepositCollateralMessage) {
         require(sender() == self.managerAddress, "not from positionsManager");
-        let valueToSendForward: Int = (context().value - (self.MinTonsForStorage + self.GasConsumption));
 
-        send(SendParameters{
-                to: self.poolAddress,
-                value: valueToSendForward,
-                mode:  SendBounceIfActionFail,
-                bounce: true,
-                body: DoDeposit {
-                    user: msg.user,
-                    amount: msg.amount,
-                }.toCell()
-            }
-        );
+        let ctx: Context = context();
+        let remainingValue: Int = (ctx.value - ((msg.amount + self.MinTonsForStorage) + self.GasConsumption));
+
+        send(SendParameters{to: msg.user, bounce: false, value: remainingValue, mode: SendIgnoreErrors});
+
         self.collateral = self.collateral + msg.amount;
         self.setMessage("Collateral added");
+        self.reply("Colleteral was added".asComment());
     }
 
+
+
     /*02 | Mint usdTON */
-    receive(msg: WithdrawUsdTonMessage) {
+    receive(msg: MintUsdTon) {
         require(sender() == self.managerAddress, "not from position Manager");
-        dump(msg.amount);
 
-        let normalizedWithdrawDebt: Int = msg.amount * 1000000000 / msg.rate.debtAccumulatedRate;
-        dump(normalizedWithdrawDebt);
 
-        let debtAfterWithdraw: Int = self.debt + normalizedWithdrawDebt;
-        dump(debtAfterWithdraw);
 
-        // dump("check healthy");
-        // if (!self.isPositionHealthy(self.collateral, debtAfterWithdraw, msg.tonPriceWithHealthRate, msg.rate.debtAccumulatedRate)){
-        //     self.unhealthyPositionHandler(msg.user);
-        //     return;
-        // } 
-        // dump("position healthy");
+        let debtAfterWithdraw: Int = msg.amount;
+
+
+
+        if (!self.isPositionHealthy(self.collateral, debtAfterWithdraw, msg.tonPriceWithHealthRate, msg.settings)){
+            self.unhealthyPositionHandler(msg.user);
+            return;
+        } 
+
 
         send(SendParameters{
             to: self.usdTonAddress, 
             value: 0,
-            mode: (SendRemainingValue + SendIgnoreErrors), 
+            mode: (SendRemainingValue + SendBounceIfActionFail), 
             bounce: true,
             body: MintMessage{
                 user: msg.user,
@@ -116,13 +105,6 @@ contract UserPosition  {
     receive(msg: BurnUsdTONMessage) {
         require(sender() == self.managerAddress, "not from position manager");
         let amountToBurn: Int = msg.amount;
-        // let factDebtInUsdTons: Int = self.debt * msg.rate.debtAccumulatedRate / 1000000000;
-        // dump("check healthy");
-        // if (!self.isPositionHealthy(self.collateral, self.debt, msg.tonPriceWithHealthRate, msg.rate.debtAccumulatedRate)){
-        //     self.unhealthyPositionHandler(msg.user);
-        //     return;
-        // } 
-        // dump("position healthy");
 
         // todo add bounced handler in sender to pay ctx.value back to sender
         if (self.debt < msg.amount) {
@@ -158,7 +140,6 @@ contract UserPosition  {
             body: BurnMessage{
                 user: msg.user,
                 amount: amountToBurn,
-                rate: msg.rate,
                 userPosition: myAddress()
             }.toCell()
         });
@@ -169,13 +150,13 @@ contract UserPosition  {
         require(sender() == self.usdTonAddress, "not from usdTon");
 
         // todo check if debt still more than repayment
-        self.debt = self.debt - msg.amount * 1000000000 / msg.rate.debtAccumulatedRate;
-        dump(msg.rate.debtAccumulatedRate);
-        dump(self.debt);
-        dump(msg.amount);
+        self.debt = self.debt - msg.amount;
 
-
-        self.setMessage("you've paid stables back");
+        if (self.message.message == "liquidationProcess") {
+            self.setMessage("position liquidated");
+        } else {
+            self.setMessage("you've paid stables back");
+        }
 
         send(SendParameters{
             to: self.managerAddress, 
@@ -189,7 +170,7 @@ contract UserPosition  {
         });
     }
 
-    /*04 | Возврат обеспечения (from positionsManager)'*/
+    /*04 | Возврат обеспечения (from manager)'*/
     receive(msg: WithdrawCollateralMessage) {
         require(sender() == self.managerAddress, "not from positions manager");
 
@@ -229,40 +210,78 @@ contract UserPosition  {
             }.toCell()
         });
     }
+    /*05 | Ликвидация (from manager)'*/
+    receive(msg: PositionLiquidation) {
+        require(sender() == self.managerAddress, "not from positions manager");
+
+
+        if (self.isPositionHealthy(self.collateral, self.debt, msg.tonPriceWithHealthRate, msg.settings)) {
+            send(SendParameters{
+                to: sender(),
+                bounce: false,
+                value: 0,
+                mode: SendRemainingValue + SendIgnoreErrors,
+                body: "liquidation error: Position is healthy".asComment()
+            });
+            return;
+        }
+
+
+        let tonForBurn: Int = (self.debt / msg.tonPrice) * 1000000000;
+        // тон нужно для покупки тех usdton что взял пользователь
+        let accountBalance: Int = myBalance() - (self.MinTonsForStorage + self.GasConsumption);
+        // TODO расчет того можно ли вообще покрыть позицию + уплатить проценты
+        let liquidationAmount: Int = self.debt;
+
+        self.setMessage("liquidationProcess");
+
+        send(SendParameters {
+            to: self.usdTonAddress, 
+            value: 0,
+            mode: SendRemainingValue, 
+            bounce: true,
+            body: DexMessage{
+                user: myAddress(),
+                amount: liquidationAmount
+            }.toCell()
+        });
+    }
+
+    receive(msg: DexNotification) {
+        // сжигание купленных токенов с кошелька позиции
+        send(SendParameters {
+            to: self.usdTonAddress, 
+            value: 0,
+            mode: SendRemainingValue, 
+            body: BurnMessage {
+                user: myAddress(),
+                amount: msg.amount,
+                userPosition: myAddress()
+            }.toCell()
+        });
+
+        //отправка остатков ton с контракта в пул
+        // TODO Перевести в runecoin
+        send(SendParameters{to: self.poolAddress, bounce: false, value: 0, mode: (SendRemainingBalance + SendIgnoreErrors)});
+    }
     //=============================================================================
     // Helpers
     //=============================================================================
 
-    fun isPositionHealthy(collateral: Int, debt: Int, tonPriceWithHealthRate: Int, debtRate: Int): Bool {
-        // todo rewrite healh calculation to loanToValue ratio
-        dump("collateral");
-        dump(collateral);
-        dump("debt");
-        dump(debt);
-        dump("tonPriceWithHealthRate");
-        dump(tonPriceWithHealthRate);
-        dump("debtRate"); 
-        dump(debtRate);
-        // 1000000000 * 0 / 1000000000 / 1000000000
-        // todo normalize debt to stables
-        let normalizedDebt: Int = debt * 1000000000 / debtRate;
-        dump("isPositionHealthy.normalizedDebt");
-        dump(normalizedDebt);
+    fun isPositionHealthy(collateral: Int, debt: Int, tonPriceWithHealthRate: Int, settings: PoolSettings): Bool {
         let collateralPriceWithSafetyMargin: Int = collateral * tonPriceWithHealthRate / 1000000000;
-        dump("isPositionHealthy.collateralPriceWithSafetyMargin");
-        dump(collateralPriceWithSafetyMargin);
-        return  collateralPriceWithSafetyMargin >= debt;
+        return  collateralPriceWithSafetyMargin > debt;
     }
 
     fun unhealthyPositionHandler(user: Address) {
             self.setMessage("position is not healthy");
-            dump("position is not healthy");
             // pay excess to user
             send(SendParameters{
                 to: user,
                 bounce: false,
                 value: 0,
-                mode: SendRemainingValue + SendIgnoreErrors
+                mode: SendRemainingValue + SendIgnoreErrors,
+                body: "position is not healthy".asComment()
             });
     }
 

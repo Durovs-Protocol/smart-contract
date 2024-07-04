@@ -1520,6 +1520,11 @@ diff@^4.0.1:
   resolved "https://registry.yarnpkg.com/diff/-/diff-4.0.2.tgz#60f3aecb89d5fae520c11aa19efc2bb982aade7d"
   integrity sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==
 
+dollars@0.0.x:
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/dollars/-/dollars-0.0.9.tgz#cebf5c42878750d35d2a44ffe1d804a3b33729fd"
+  integrity sha512-fr74IseCpTiVF/EJ1G35ZTvFkDdRDeFn+SaTKbboXlC0aRLKL9dbfokDFITG8YsA/Zg6lH8cITEK3/O07dyo8Q==
+
 dot-case@^3.0.4:
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/dot-case/-/dot-case-3.0.4.tgz#9b2b670d00a431667a8a75ba29cd1b98809ce751"
@@ -1636,6 +1641,11 @@ expect@^29.0.0, expect@^29.7.0:
     jest-message-util "^29.7.0"
     jest-util "^29.7.0"
 
+extendible@0.1.x:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/extendible/-/extendible-0.1.1.tgz#e2a37ed87129fb4f9533e8a8d7506230a539c905"
+  integrity sha512-AglckQA0TJV8/ZmhQcNmaaFcFFPXFIoZbfuoQOlGDK7Jh/roWotYzJ7ik1FBBCHBr8n7CgTR8lXXPAN8Rfb7rw==
+
 external-editor@^3.0.3:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/external-editor/-/external-editor-3.1.0.tgz#cb03f740befae03ea4d283caed2741a83f335495"
@@ -1678,6 +1688,11 @@ find-up@^4.0.0, find-up@^4.1.0:
   dependencies:
     locate-path "^5.0.0"
     path-exists "^4.0.0"
+
+fn.name@1.0.x:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/fn.name/-/fn.name-1.0.1.tgz#8015ad149c1011a116cdb89eba4cc11d9039add8"
+  integrity sha512-zoMlizL11rxhD4sPlENcswTk6NG/7mYHynp84laWhnfqVFhoR5728Alhr68qb0Wl+TgTL60YerkxZzE14+jGpg==
 
 follow-redirects@^1.14.7, follow-redirects@^1.14.9, follow-redirects@^1.15.6:
   version "1.15.6"
@@ -3173,6 +3188,15 @@ strip-json-comments@^3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-3.1.1.tgz#31f1281b3832630434831c310c01cccda8cbe006"
   integrity sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==
+
+supply@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/supply/-/supply-0.0.4.tgz#c46221fb9f6059bf562f6a97771b3276d6bbedfe"
+  integrity sha512-3Do26U+h7m1rPLsrVACGuiNkumuxyEsrGvVlKB+7qvO4UF23F2Gm8TqY42w6R1EH6+gk+eS5z8m0NhrXXnKZKA==
+  dependencies:
+    dollars "0.0.x"
+    extendible "0.1.x"
+    fn.name "1.0.x"
 
 supports-color@^5.3.0:
   version "5.5.0"

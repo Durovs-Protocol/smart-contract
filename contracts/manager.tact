@@ -16,10 +16,9 @@ contract Manager with Deployable, OwnableTransferable {
     totalCollateralAmount: Int as coins = 0;
     usdTonsIssued: Int as coins = 0;
     totalFeesCollected: Int as coins = 0;
-    debtRate: DebtRate;
     init(owner: Address){
         self.owner = owner;
-        self.poolSettings = PoolSettings{liquidationRatio: 0, stabilityFeeRate: 0, liquidatorIncentiveBps: 0};
+        self.poolSettings = PoolSettings{liquidationRatio: 0, stabilityFeeRate: 0};
         self.deps = Deps{
             managerAddress: newAddress(0, 0),
             poolAddress: newAddress(0, 0),
@@ -28,7 +27,6 @@ contract Manager with Deployable, OwnableTransferable {
         };
         self.tonPrice = 0;
         self.tonPriceWithHealthRate = 0;
-        self.debtRate = DebtRate{debtAccumulatedRate: 1000000000, lastAccumulationTime: (now() - 1000)};
     }
 
     //=============================================================================
@@ -42,17 +40,16 @@ contract Manager with Deployable, OwnableTransferable {
             usdTonAddress: msg.usdTonAddress,
             runecoinAddress: msg.runecoinAddress
         };
-        self.reply("deps set".asComment());
+        self.reply("Dependencies set".asComment());
     }
 
     receive(msg: SetPoolSettings){
         self.requireOwner();
         self.poolSettings = PoolSettings{
             liquidationRatio: msg.liquidationRatio,
-            stabilityFeeRate: msg.stabilityFeeRate,
-            liquidatorIncentiveBps: msg.liquidatorIncentiveBps
+            stabilityFeeRate: msg.stabilityFeeRate
         };
-        self.reply("pool settings updated".asComment());
+        self.reply("Pool settings updated".asComment());
     }
 
     //=============================================================================
@@ -63,7 +60,7 @@ contract Manager with Deployable, OwnableTransferable {
         self.requireOwner();
         self.tonPriceWithHealthRate = msg.price * 1000000000 / self.poolSettings.liquidationRatio;
         self.tonPrice = msg.price;
-        self.reply("ton price updated".asComment());
+        self.reply("Ton price updated".asComment());
     }
 
     // для теста
@@ -103,7 +100,6 @@ contract Manager with Deployable, OwnableTransferable {
                     user: msg.user,
                     amount: msg.amount,
                     settings: self.poolSettings,
-                    rate: self.debtRate,
                     tonPriceWithHealthRate: self.tonPriceWithHealthRate
                 }.toCell(),
                 code: init.code,
@@ -126,11 +122,11 @@ contract Manager with Deployable, OwnableTransferable {
                 value: 0,
                 mode: (SendRemainingValue + SendBounceIfActionFail),
                 bounce: true,
-                body: WithdrawUsdTonMessage{
+                body: MintUsdTon{
                     user: msg.user,
                     amount: msg.amount,
                     settings: self.poolSettings,
-                    rate: self.debtRate
+                    tonPriceWithHealthRate: self.tonPriceWithHealthRate
                 }.toCell()
             }
         );
@@ -138,8 +134,14 @@ contract Manager with Deployable, OwnableTransferable {
 
     receive(msg: IncreaseTotalUsdTon){
         self.usdTonsIssued = (self.usdTonsIssued + msg.amount);
-        self.reply("usdTON where minted".asComment());
-        // self.payBack(msg.user);
+        send(SendParameters{
+                to: msg.user,
+                bounce: false,
+                value: 0,
+                mode: (SendRemainingValue + SendIgnoreErrors),
+                body: "usdTON minted".asComment()
+            }
+        );
     }
 
     /*03 | Burn usdTON */
@@ -155,7 +157,6 @@ contract Manager with Deployable, OwnableTransferable {
                     user: msg.user,
                     amount: msg.amount,
                     settings: self.poolSettings,
-                    rate: self.debtRate,
                     tonPriceWithHealthRate: self.tonPriceWithHealthRate,
                     runecoinWallet: walletAddress,
                     deps: self.deps
@@ -166,8 +167,14 @@ contract Manager with Deployable, OwnableTransferable {
 
     receive(msg: DecreaseTotalUsdTon){
         self.usdTonsIssued = (self.usdTonsIssued - msg.amount);
-        self.reply("usdTON where burned".asComment());
-        // self.payBack(msg.user);
+        send(SendParameters{
+                to: msg.user,
+                bounce: false,
+                value: 0,
+                mode: (SendRemainingValue + SendIgnoreErrors),
+                body: "usdTON burned".asComment()
+            }
+        );
     }
 
     /*04 | Возврат залога */
@@ -182,8 +189,24 @@ contract Manager with Deployable, OwnableTransferable {
                     user: msg.user,
                     amount: msg.amount,
                     settings: self.poolSettings,
-                    rate: self.debtRate,
                     tonPriceWithHealthRate: self.tonPriceWithHealthRate
+                }.toCell()
+            }
+        );
+    }
+
+    receive(msg: PositionLiquidationInspectorMessage){
+        require(sender() == self.owner, "invalid sender");
+        send(SendParameters{
+                to: self._userPositionAddress(msg.user),
+                value: 0,
+                mode: (SendRemainingValue + SendBounceIfActionFail),
+                bounce: true,
+                body: PositionLiquidation{
+                    settings: self.poolSettings,
+                    user: msg.user,
+                    tonPriceWithHealthRate: self.tonPriceWithHealthRate,
+                    tonPrice: self.tonPrice
                 }.toCell()
             }
         );
@@ -291,10 +314,6 @@ contract Manager with Deployable, OwnableTransferable {
         return self.tonPriceWithHealthRate;
     }
 
-    get fun debtRate(): DebtRate {
-        return self.debtRate;
-    }
-
     get fun usdTonsIssued(): Int {
         return self.usdTonsIssued;
     }
@@ -303,9 +322,14 @@ contract Manager with Deployable, OwnableTransferable {
         return self.totalCollateralAmount;
     }
     //  для проверки ршения проблемы с адресами
+
     get fun runeInfo(user: Address): Address {
         let winit: StateInit = initOf RunecoinWallet(self.deps.runecoinAddress, user);
         let walletAddress: Address = contractAddress(winit);
         return walletAddress;
+    }
+
+    get fun totalIssued(): Int {
+        return self.usdTonsIssued;
     }
 }

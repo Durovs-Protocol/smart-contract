@@ -195,12 +195,7 @@ contract RunecoinWallet
                 value: 0,
                 mode: (SendRemainingValue + SendIgnoreErrors),
                 bounce: true,
-                body: BurnNotification{
-                    amount: msg.amount,
-                    user: msg.user,
-                    rate: msg.rate,
-                    userPosition: msg.userPosition
-                }.toCell()
+                body: BurnNotification{amount: msg.amount, user: msg.user, userPosition: msg.userPosition}.toCell()
             }
         );
     }

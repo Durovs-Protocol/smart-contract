@@ -1,21 +1,29 @@
-import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { toNano } from '@ton/core';
-import { UserPosition } from '../wrappers/UserPosition';
+import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import '@ton/test-utils';
+import { buildOnchainMetadata } from '../../utils/helpers';
+import { UsdTonMaster } from '../../wrappers/UsdTon';
 
-describe('UserPosition', () => {
+describe('UsdToncoin', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
-    let userPosition: SandboxContract<UserPosition>;
+    let usdTon: SandboxContract<UsdTonMaster>;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
-
-        userPosition = blockchain.openContract(await UserPosition.fromInit());
-
+        const jettonParams = {
+            name: 'yt0.2',
+            symbol: 'yt0.2',
+            description: 'v0.2',
+            image: '',
+        };
         deployer = await blockchain.treasury('deployer');
 
-        const deployResult = await userPosition.send(
+        usdTon = blockchain.openContract(
+            await UsdTonMaster.fromInit(deployer.getSender().address, buildOnchainMetadata(jettonParams)),
+        );
+
+        const deployResult = await usdTon.send(
             deployer.getSender(),
             {
                 value: toNano('0.05'),
@@ -23,12 +31,12 @@ describe('UserPosition', () => {
             {
                 $$type: 'Deploy',
                 queryId: 0n,
-            }
+            },
         );
 
         expect(deployResult.transactions).toHaveTransaction({
             from: deployer.address,
-            to: userPosition.address,
+            to: usdTon.address,
             deploy: true,
             success: true,
         });
@@ -36,6 +44,6 @@ describe('UserPosition', () => {
 
     it('should deploy', async () => {
         // the check is done inside beforeEach
-        // blockchain and userPosition are ready to use
+        // blockchain and usdTon are ready to use
     });
 });

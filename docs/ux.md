@@ -26,7 +26,7 @@
 
 # Получение информации
 
-1. `yarn info-rune` - получает данные о состоянии хранилища владельца
+1. `yarn rune-info` - получает данные о состоянии хранилища владельца
 
 # User flow
 
@@ -47,6 +47,18 @@
 2. `yarn send-runes-to-owner` (Деплой runecoin и минт 1000000 токенов на баланс владельца)
 3. `yarn get-runes` (Получение runecoins пользователем)
 
-### Дополнительный RPC
+# Ликвидация
 
+> Мы заложили 1 TON, если lr 1.15, а TON стоит 7.5, то позиция будет считаться здоровой до ~6 USDTON, чтобы провалить проверку обновляем цену TON до 5 (utils/test_data/tonPrice) и запускаем yarn update-price
+
+1. `yarn add-supply` Внесение обеспечения
+    - collateral: 1, debt:0
+2. `yarn mint` Перечесление usdTon пользователю
+    - debt:5
+3. `yarn update-price` Обновить цену
+4. `yarn liquidation` Запуск ликвидации
+
+### RPC
+
+https://testnet.toncenter.com/api/v2/jsonRPC
 https://ton.access.orbs.network/4410c0ff5Bd3F8B62C092Ab4D238bEE463E64410/1/testnet/toncenter-api-v2/jsonRPC

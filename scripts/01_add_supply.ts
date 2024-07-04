@@ -1,6 +1,6 @@
 import { NetworkProvider } from '@ton/blueprint';
-import { Address, toNano, fromNano } from '@ton/core';
-import { loadAddress, timer, log, numberFormat } from '../utils/helpers';
+import { Address, fromNano, toNano } from '@ton/core';
+import { loadAddress, log, numberFormat, timer } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { Pool } from '../wrappers/Pool';
 import { Runecoin } from '../wrappers/Runecoin';
@@ -24,7 +24,7 @@ export async function run(provider: NetworkProvider) {
         return state.collateral;
     };
 
-    log('01 | Пользователь вносит обеспечение, создается контракт пользовательской позиции');
+    log('01 | Пользователь вносит обеспечение, создается/обновляется контракт пользовательской позиции');
 
     const collateralAmount = toNano(1);
     const currentPositionId = await manager.getLastPositionId();
@@ -32,7 +32,7 @@ export async function run(provider: NetworkProvider) {
     // Отправляем в пулл средства через метод смарт-контракта менеджера: DepositCollateralUserMessage
     await manager.send(
         user,
-        { value: collateralAmount + toNano(2) },
+        { value: collateralAmount + toNano(0.5) },
         {
             $$type: 'DepositCollateralUserMessage',
             user: user.address as Address,
@@ -45,7 +45,7 @@ export async function run(provider: NetworkProvider) {
         await timer(`Position Id`, 'Внесение обеспечения', currentPositionId + 1n, manager.getLastPositionId);
     }
 
-    const userBalanceBefore = await userCollateral() ;
+    const userBalanceBefore = await userCollateral();
     console.log(`Supply Balance before | ${numberFormat(fromNano(userBalanceBefore.toString()))}`);
 
     const userBalanceAfter = userBalanceBefore + collateralAmount;

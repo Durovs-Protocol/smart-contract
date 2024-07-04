@@ -28,7 +28,6 @@ contract RuneCoinOwner with Deployable {
         let address: Address = contractAddress(init);
         self.runecoinAddress = address;
         let ctx: Context = context();
-        let remainingValue: Int = (ctx.value - ((msg.amount + self.MinTonForStorage) + self.GasConsumption));
         send(SendParameters{
                 to: address,
                 value: (ctx.value - self.MinTonForStorage),
@@ -75,6 +74,7 @@ contract RuneCoinOwner with Deployable {
         return self.runecoinAddress;
     }
     // для проверки решения проблемы с адресами
+
     get fun runeInfo(user: Address): Address {
         let winit: StateInit = initOf RunecoinWallet(self.runecoinAddress, user);
         let walletAddress: Address = contractAddress(winit);
