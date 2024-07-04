@@ -175,40 +175,29 @@ contract UserPosition  {
         require(sender() == self.managerAddress, "not from positions manager");
 
         if (msg.amount  > self.collateral) {
-            self.setMessage("withdrawal amount more than position has");
-            // pay excess to user
             send(SendParameters{
                 to: msg.user,
                 bounce: false,
                 value: 0,
-                mode: SendRemainingValue + SendIgnoreErrors
+                mode: SendRemainingValue + SendIgnoreErrors,
+                body: "withdrawal amount more than position has".asComment()
             });
             return;
         }
 
         let collateralAfterWithdraw: Int = self.collateral - msg.amount;
 
-        // dump("check healthy");
-        // if (!self.isPositionHealthy(collateralAfterWithdraw, self.debt, msg.tonPriceWithHealthRate, msg.rate.debtAccumulatedRate)){
-        //     self.unhealthyPositionHandler(msg.user);
-        //     return;
-        // } 
-        // dump("position healthy");
-        
+
+        if (!self.isPositionHealthy(collateralAfterWithdraw, self.debt, msg.tonPriceWithHealthRate, msg.settings)) {
+            self.unhealthyPositionHandler(msg.user);
+            return;
+        }
+
+        send(SendParameters{to: msg.user, bounce: false, value: msg.amount, mode:  SendIgnoreErrors + SendPayGasSeparately });
 
         self.collateral = collateralAfterWithdraw;
         self.setMessage("collateral sent back to yor wallet");
 
-        send(SendParameters{
-            to: self.managerAddress, 
-            value: 0,
-            mode: SendRemainingValue + SendIgnoreErrors, 
-            bounce: true,
-            body: DoWithdrawCollateral{
-                user: msg.user,
-                amount: msg.amount
-            }.toCell()
-        });
     }
     /*05 | Ликвидация (from manager)'*/
     receive(msg: PositionLiquidation) {
@@ -270,7 +259,7 @@ contract UserPosition  {
 
     fun isPositionHealthy(collateral: Int, debt: Int, tonPriceWithHealthRate: Int, settings: PoolSettings): Bool {
         let collateralPriceWithSafetyMargin: Int = collateral * tonPriceWithHealthRate / 1000000000;
-        return  collateralPriceWithSafetyMargin > debt;
+        return  collateralPriceWithSafetyMargin >= debt;
     }
 
     fun unhealthyPositionHandler(user: Address) {

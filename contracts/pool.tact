@@ -38,17 +38,6 @@ contract Pool with Deployable, OwnableTransferable {
     // Actions
     //=============================================================================
 
-    /*04 | Возврат залога от user position */
-    receive(msg: DoWithdrawCollateral){
-        send(SendParameters{
-                to: msg.user,
-                bounce: false,
-                value: msg.amount,
-                mode: (SendRemainingValue + SendIgnoreErrors)
-            }
-        );
-    }
-
     // вывод всех средств с пула на кошелек владельца пула, после тестов удалить
     receive(msg: TestWithdrawal){
         send(SendParameters{to: self.owner, bounce: false, value: 0, mode: (SendRemainingBalance + SendIgnoreErrors)});

@@ -87,6 +87,7 @@ contract Manager with Deployable, OwnableTransferable {
         require(sender() == msg.user, "Invalid sender");
         let ctx: Context = context();
         require(ctx.value >= ((msg.amount + self.GasConsumption) + self.MinTonForStorage), "not enough tons sent");
+
         //TODO рассчитать газ для всех дальнейших операций сразу
 
         let valueToSendForward: Int = ((context().value - self.MinTonForStorage) - self.GasConsumption);
@@ -207,21 +208,6 @@ contract Manager with Deployable, OwnableTransferable {
                     tonPriceWithHealthRate: self.tonPriceWithHealthRate,
                     tonPrice: self.tonPrice
                 }.toCell()
-            }
-        );
-    }
-
-    /* проверка что адрес требующий возврат залога является владельцем позиции которая отправила запрос */
-    receive(msg: DoWithdrawCollateral){
-        self.onlyUserPosition(msg.user);
-        require((self.totalCollateralAmount - msg.amount) >= 0, "not enough collateral on contract");
-        self.totalCollateralAmount = (self.totalCollateralAmount - msg.amount);
-        send(SendParameters{
-                to: self.deps.poolAddress,
-                value: 0,
-                mode: (SendRemainingValue + SendBounceIfActionFail),
-                bounce: true,
-                body: msg.toCell()
             }
         );
     }

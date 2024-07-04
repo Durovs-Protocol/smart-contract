@@ -10,7 +10,7 @@ export async function run(provider: NetworkProvider) {
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const user = provider.sender();
 
-    const stablesBorrowed = toNano(3.5);
+    const stablesBorrowed = toNano(1.5);
 
     const getDebtBalance = async function () {
         const userPositionAddress = await manager.getUserPositionAddress(user.address as Address);
