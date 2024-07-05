@@ -18,7 +18,7 @@ contract Manager with Deployable, OwnableTransferable {
     totalFeesCollected: Int as coins = 0;
     init(owner: Address){
         self.owner = owner;
-        self.poolSettings = PoolSettings{liquidationRatio: 0, stabilityFeeRate: 0};
+        self.poolSettings = PoolSettings{liquidationRatio: 0, stabilityFeeRate: 0, liquidationFee: 0};
         self.deps = Deps{
             managerAddress: newAddress(0, 0),
             poolAddress: newAddress(0, 0),
@@ -47,7 +47,8 @@ contract Manager with Deployable, OwnableTransferable {
         self.requireOwner();
         self.poolSettings = PoolSettings{
             liquidationRatio: msg.liquidationRatio,
-            stabilityFeeRate: msg.stabilityFeeRate
+            stabilityFeeRate: msg.stabilityFeeRate,
+            liquidationFee: msg.liquidationFee
         };
         self.reply("Pool settings updated".asComment());
     }
@@ -206,7 +207,8 @@ contract Manager with Deployable, OwnableTransferable {
                     settings: self.poolSettings,
                     user: msg.user,
                     tonPriceWithHealthRate: self.tonPriceWithHealthRate,
-                    tonPrice: self.tonPrice
+                    tonPrice: self.tonPrice,
+                    runePrice: self.tonPrice,
                 }.toCell()
             }
         );

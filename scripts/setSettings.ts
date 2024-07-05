@@ -21,6 +21,7 @@ export async function run(provider: NetworkProvider) {
             $$type: 'SetPoolSettings',
             liquidationRatio: newLiquidationRatio,
             stabilityFeeRate: toNano('0.02'),
+            liquidationFee: toNano('0.15'),
         },
     );
 

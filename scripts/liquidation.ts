@@ -9,10 +9,9 @@ export async function run(provider: NetworkProvider) {
     const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const user = provider.sender();
-
+    const userPositionAddress = await manager.getUserPositionAddress(user.address as Address);
+    const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
     const getMessage = async function () {
-        const userPositionAddress = await manager.getUserPositionAddress(user.address as Address);
-        const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
         const message = await userPosition.getMessage();
         return message.message;
     };
@@ -32,7 +31,9 @@ export async function run(provider: NetworkProvider) {
             user: user.address as Address,
         },
     );
-    await timer('Position liquidation', '-', 'position liquidated', getMessage, true);
+    await timer('Position liquidation', 'Ликвидация позиции', 'position liquidated', getMessage, true);
     console.log('total supply after', await usdTon.getTotalSupply()); // 5000000000n
     console.log('total issued after', await manager.getTotalIssued()); // 0n
+
+    console.log(await userPosition.getComment());
 }

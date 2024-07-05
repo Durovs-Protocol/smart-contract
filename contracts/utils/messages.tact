@@ -1,6 +1,7 @@
 struct PoolSettings {
     liquidationRatio: Int;
     stabilityFeeRate: Int;
+    liquidationFee: Int;
 }
 message DepositCollateralMessage {
     user: Address;
@@ -38,6 +39,7 @@ message DecreaseTotalUsdTon {
     user: Address;
     amount: Int as uint64;
 }
+
 // usdTonMaster messages
 
 struct JettonData {
@@ -53,7 +55,6 @@ struct JettonWalletData {
     master: Address;
     walletCode: Cell;
 }
-
 // userPosition messages
 
 message SetUserPositionDependecyMessage {
@@ -71,6 +72,7 @@ message SetPositionAddressMessage {
     user: Address;
     position: Address;
 }
+
 // usdTonMaster messages
 
 message MintMessage {
@@ -80,6 +82,11 @@ message MintMessage {
 message DexMessage {
     user: Address;
     amount: Int as coins;
+}
+message RuneDexNotification {
+    amount: Int as coins;
+    user: Address;
+    wallet: Address;
 }
 message DexNotification {
     user: Address;
@@ -107,6 +114,7 @@ message PositionLiquidation {
     user: Address;
     tonPriceWithHealthRate: Int as coins;
     tonPrice: Int as coins;
+    runePrice: Int as coins;
 }
 message TokenTransferFromPositionManager {
     queryId: Int as uint64;
@@ -118,7 +126,6 @@ message TokenTransferFromPositionManager {
     forwardPayload: Slice as remaining;
     deps: Deps;
 }
-
 // jetton messages
 
 message(0xf8a7ea5) TokenTransfer {
@@ -182,6 +189,7 @@ struct Deps {
 message SetPoolSettings {
     liquidationRatio: Int;
     stabilityFeeRate: Int; // 1000000000625 = X**1.000000000627 every second = 2%/yr., look at ./math/math.tact
+    liquidationFee: Int;
 }
 message UpdateTonPriceMsg {
     price: Int as coins;

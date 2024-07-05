@@ -31,7 +31,7 @@ contract Pool with Deployable, OwnableTransferable {
             usdTonAddress: msg.usdTonAddress,
             runecoinAddress: msg.runecoinAddress
         };
-        self.reply("deps set".asComment());
+        self.reply("Dependencies set".asComment());
     }
 
     //=============================================================================

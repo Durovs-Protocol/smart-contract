@@ -40,11 +40,11 @@ export async function run(provider: NetworkProvider) {
     console.log(`currentPositionId | ${currentPositionId}`);
     if (currentPositionId <= 0) {
         await timer(`Position Id`, 'Внесение обеспечения', currentPositionId + 1n, manager.getLastPositionId);
+    } else {
+        const userBalanceBefore = await userCollateral();
+        console.log(`Supply Balance before | ${numberFormat(fromNano(userBalanceBefore.toString()))}`);
+
+        const userBalanceAfter = userBalanceBefore + collateralAmount;
+        await timer(`User balance`, 'Внесение обеспечения', userBalanceAfter, userCollateral);
     }
-
-    const userBalanceBefore = await userCollateral();
-    console.log(`Supply Balance before | ${numberFormat(fromNano(userBalanceBefore.toString()))}`);
-
-    const userBalanceAfter = userBalanceBefore + collateralAmount;
-    await timer(`User balance`, 'Внесение обеспечения', userBalanceAfter, userCollateral);
 }

@@ -29,8 +29,9 @@ export async function run(provider: NetworkProvider) {
     const userUsdTonWallet = provider.open(await UsdTonWallet.fromAddress(userUsdTonWalletAddress));
     await provider.waitForDeploy(userUsdTonWalletAddress, 30);
 
-    const userUsdTonBalance = await userUsdTonWallet.getGetBalance();
-    await timer(`User stable balance`, 'Mint usdTon', userUsdTonBalance, userUsdTonWallet.getGetBalance);
+    // const userUsdTonBalance = await userUsdTonWallet.getGetBalance();
+    await timer(`User stable balance`, 'Mint usdTon', usdtonsBorrowed, userUsdTonWallet.getGetBalance);
 
     await saveAddress('user_usd_ton_wallet', userUsdTonWalletAddress);
+    //проверять в обозревателе транзакций
 }

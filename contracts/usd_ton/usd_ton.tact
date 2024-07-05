@@ -39,7 +39,7 @@ contract UsdTonMaster with Jetton, Deployable {
             usdTonAddress: msg.usdTonAddress,
             runecoinAddress:  msg.runecoinAddress,
         };
-        self.reply("deps set".asComment());
+        self.reply("dDependencies set".asComment());
     }
 
     receive(msg: Mint) {
@@ -97,7 +97,7 @@ contract UsdTonMaster with Jetton, Deployable {
                 data: winit.data
             }
         );
-        // оповещение об успешной покупке и передача оставшегося тон назад, в контракт position
+        // оповещение об успешной покупке
         send(SendParameters{
             to: msg.user, 
             value: ton("0.1"),
@@ -139,7 +139,7 @@ contract UsdTonMaster with Jetton, Deployable {
     */
     receive(msg: BurnNotification) {
         self.requireWallet(msg.user);
-
+        self.totalSupply = (self.totalSupply - msg.amount);
         // looks like huge bug here, explain later
         // let userPositionAddress: Address =  self._userPositionAddress(msg.user);
 
