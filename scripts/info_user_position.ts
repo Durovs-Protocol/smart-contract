@@ -2,16 +2,12 @@ import { NetworkProvider } from '@ton/blueprint';
 import { Address, fromNano } from '@ton/core';
 import { loadAddress, log } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
-import { Pool } from '../wrappers/Pool';
-import { UsdTonMaster } from '../wrappers/UsdTon';
 import { UserPosition } from '../wrappers/UserPosition';
 
 export async function run(provider: NetworkProvider) {
-    log('User info');
+    log('User position info');
 
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
-    const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
-    const pool = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool'))));
 
     const user = provider.sender().address as Address;
     const userPositionAddress = await manager.getUserPositionAddress(user);
@@ -22,9 +18,6 @@ export async function run(provider: NetworkProvider) {
     console.log('Supply         in TON:',   fromNano(state.collateral).toString());
     console.log('Borrow         usdTON:',   fromNano(state.debt).toString());
     console.log('User Position address:',   userPosition.address.toString());
-    console.log('Manager address:      ',   manager.address.toString());
-    console.log('Pool address:         ',   pool.address.toString());
-    console.log('usdTon address:       ',   usdTon.address.toString());
 
     log('Wallet dependencies');
 

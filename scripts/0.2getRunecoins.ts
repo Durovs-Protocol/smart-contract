@@ -1,15 +1,13 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
-import { loadAddress, timer } from '../utils/helpers';
+import { loadAddress, timer, log } from '../utils/helpers';
 import { RuneCoinOwner } from '../wrappers/RunecoinOwner';
 
 export async function run(provider: NetworkProvider) {
     const runecoinsOwner = provider.open(
         await RuneCoinOwner.fromAddress(Address.parse(await loadAddress('runecoin_owner'))),
     );
-    console.log('=============================================================================');
-    console.log('04 | Покупка runecoin');
-    console.log('=============================================================================');
+    log('04 | Покупка runecoin');
 
     const amount = toNano(123);
     const user = provider.sender();

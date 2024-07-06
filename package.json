@@ -29,8 +29,7 @@
         "withdrawal-supply": "yarn run-script 04_withdrawal_supply",
         "liquidation": "yarn run-script liquidation",
 
-        "info-runa": "yarn run-script info_runa",
-        "info-user": "yarn run-script info_user",
+        "info-system": "yarn run-script info_system",
         "info-user-position": "yarn run-script info_user_position"
     },
     "devDependencies": {

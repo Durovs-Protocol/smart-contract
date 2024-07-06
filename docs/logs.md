@@ -6,7 +6,7 @@
     - UQBBl-nmyXbVBrm5cVEcYWc1lXL2clCek9WW3XRo-nYRiWqh
     - EQBBl-nmyXbVBrm5cVEcYWc1lXL2clCek9WW3XRo-nYRiTdk
 - `usdTON`:
-    - EQAru6ULuK_z9eSomnGfnrJTaJ4Jo1odUnHlZlYJ534JKkkf
+    - EQD_5uNFHWjroPFmrw9w2YcNNPIEkY5w2Md-9FB0t5ZLjEhH
 - `Manager`:
     - EQDi_mL_15pTjxBtR9jOa2d693ZOHzY8s9LMmBzJw_M7KAdr
 - `Pool`:
@@ -16,14 +16,14 @@
 - `Runecoin`:
     - EQAMgUf6nTQHeCpjrdA5MIu0v4w32bQnkSHEBwxKtGY26mop
 - `User Position`:
+    - EQCSQV0VSYwqsRz9tGZwgUkKOLLBpAZnYeoMOEq8Tc24HrRO
 
 Добавляем Supply: 1 TON
 
-User: 2.746 TON => - 1.085 TON
-- User Position address: 0.0122356 TON
-- Manager: 0.008145349
-- Pool: 1.014 TON
-- На оплату газа: 0,050619051 TON
+User: 4.813 TON => - 1.154 TON
+- User Position address: 1.011 TON
+- Manager: 0.00874797
+- На оплату газа: 0.13425203 TON
 
 Минтим: 0.01 usdTON
 

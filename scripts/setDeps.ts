@@ -5,6 +5,7 @@ import { Manager } from '../wrappers/Manager';
 import { Pool } from '../wrappers/Pool';
 import { Runecoin } from '../wrappers/Runecoin';
 import { UsdTonMaster } from '../wrappers/UsdTon';
+import { sendValue } from '../utils/test_data';
 
 export async function run(provider: NetworkProvider) {
     const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
@@ -13,18 +14,10 @@ export async function run(provider: NetworkProvider) {
     const runeCoin = provider.open(await Runecoin.fromAddress(Address.parse(await loadAddress('runecoin'))));
 
     async function setDeps(contract: any, name: string) {
-        console.log(
-            `--------------------------------------------------------------------------------------------------------`,
-        );
-        console.log(
-            `======${name.toUpperCase()}=============================================================================`,
-        );
-        console.log(
-            `--------------------------------------------------------------------------------------------------------`,
-        );
+        log(name.toUpperCase())
         await contract.send(
             provider.sender(),
-            { value: toNano('0.1') },
+            { value: toNano(sendValue) },
             {
                 $$type: 'SetDeps',
                 managerAddress: manager.address,

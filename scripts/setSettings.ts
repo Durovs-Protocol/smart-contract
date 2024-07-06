@@ -1,6 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { loadAddress, timer } from '../utils/helpers';
+import { liquidationRatio, sendValue, stabilityFeeRate, liquidationFee } from '../utils/test_data';
 import { Manager } from '../wrappers/Manager';
 
 export async function run(provider: NetworkProvider) {
@@ -12,16 +13,16 @@ export async function run(provider: NetworkProvider) {
         return liquidationRatio;
     };
 
-    const newLiquidationRatio = toNano(1.15);
+    const newLiquidationRatio = toNano(liquidationRatio);
 
     await managerContract.send(
         provider.sender(),
-        { value: toNano('0.1') },
+        { value: toNano(sendValue) },
         {
             $$type: 'SetPoolSettings',
             liquidationRatio: newLiquidationRatio,
-            stabilityFeeRate: toNano('0.02'),
-            liquidationFee: toNano('0.15'),
+            stabilityFeeRate: toNano(stabilityFeeRate),
+            liquidationFee: toNano(liquidationFee),
         },
     );
 

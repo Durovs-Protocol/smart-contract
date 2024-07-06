@@ -1,6 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, fromNano, toNano } from '@ton/core';
 import { loadAddress, log, numberFormat, timer } from '../utils/helpers';
+import { addSupplyAmount, sendValue } from '../utils/test_data';
 import { Manager } from '../wrappers/Manager';
 import { UserPosition } from '../wrappers/UserPosition';
 
@@ -23,13 +24,13 @@ export async function run(provider: NetworkProvider) {
 
     log('01 | Пользователь вносит обеспечение, создается/обновляется контракт пользовательской позиции');
 
-    const collateralAmount = toNano(1);
+    const collateralAmount = toNano(addSupplyAmount);
     const currentPositionId = await manager.getLastPositionId();
 
     // Отправляем в пулл средства через метод смарт-контракта менеджера: DepositCollateralUserMessage
     await manager.send(
         user,
-        { value: collateralAmount + toNano(0.5) },
+        { value: collateralAmount + toNano(sendValue) },
         {
             $$type: 'DepositCollateralUserMessage',
             user: user.address as Address,
