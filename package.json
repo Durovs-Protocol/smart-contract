@@ -11,23 +11,23 @@
         
         "deploy-usdton": "yarn run-script deploy_usd_ton",
         "deploy-manager": "yarn run-script deploy_manager",
-        "deploy-pool": "yarn run-script deployPool",
-        "deploy-runes-owner": "yarn run-script deployRunecoinOwner",
-        "deploy-runecoin": "yarn run-script sendRunecoinToOwner",
+        "deploy-pool": "yarn run-script deploy_pool",
+        "deploy-runes-owner": "yarn run-script deploy_runecoin_owner",
+        "deploy-runecoin": "yarn run-script deploy_send_runecoin_to_owner",
         
         "deploy": "yarn deploy-usdton && yarn deploy-manager && yarn deploy-pool && yarn deploy-runes-owner && yarn deploy-runecoin",
         
-        "set-deps": "yarn run-script setDeps",
-        "set-settings": "yarn run-script setSettings",
-        "update-price": "yarn run-script updatePrice",
-        "setup": "yarn run-script setDeps && yarn run-script setSettings && yarn update-price",
+        "set-deps": "yarn run-script set_deps",
+        "set-settings": "yarn run-script set_settings",
+        "set-price": "yarn run-script set_price",
+        "setup": "yarn set-deps && yarn set-settings && yarn set-price",
 
-        "get-runes": "yarn run-script 0.2getRunecoins",
-        "add-supply": "yarn run-script 01_add_supply",
-        "mint": "yarn run-script 02_mint",
-        "burn": "yarn run-script 03_burn",
-        "withdrawal-supply": "yarn run-script 04_withdrawal_supply",
-        "liquidation": "yarn run-script 05_liquidation",
+        "get-runes": "yarn run-script get_runecoins",
+        "add-supply": "yarn run-script add_supply",
+        "mint": "yarn run-script mint",
+        "burn": "yarn run-script burn",
+        "withdrawal-supply": "yarn run-script withdrawal_supply",
+        "liquidation": "yarn run-script liquidation",
 
         "info-system": "yarn run-script info_system",
         "info-user": "yarn run-script info_user"
