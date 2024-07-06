@@ -11,6 +11,7 @@ export async function run(provider: NetworkProvider) {
     const user = provider.sender();
     const userPositionAddress = await manager.getUserPositionAddress(user.address as Address);
     const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
+    
     const getMessage = async function () {
         const message = await userPosition.getMessage();
         return message.message;

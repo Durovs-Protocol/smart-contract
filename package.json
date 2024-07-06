@@ -27,10 +27,10 @@
         "mint": "yarn run-script 02_mint",
         "burn": "yarn run-script 03_burn",
         "withdrawal-supply": "yarn run-script 04_withdrawal_supply",
-        "liquidation": "yarn run-script liquidation",
+        "liquidation": "yarn run-script 05_liquidation",
 
         "info-system": "yarn run-script info_system",
-        "info-user-position": "yarn run-script info_user_position"
+        "info-user": "yarn run-script info_user"
     },
     "devDependencies": {
         "@ton/blueprint": "^0.19.0",
