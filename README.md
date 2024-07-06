@@ -2,13 +2,13 @@
 
 Документация:
 
-1. [Весь UX](/docs/ux.md)
+1. [Примеры](/docs/examples.md)
+2. [Контроль цены](/docs/price_control.md)
+3. [Описание текущего функционала](/docs/contracts.md)
 
-2. [Примеры](/docs/examples.md)
-3. [Контроль цены](/docs/price_control.md)
-4. [Описание текущего функционала](/docs/contracts.md)
+## User Flow
 
-## Дорожная карта
+> Подробнее [по ссылке](/docs/ux.md)
 
 ### Этап 1
 

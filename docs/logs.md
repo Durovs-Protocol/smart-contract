@@ -1,10 +1,21 @@
 Логи:
 
-После деплоя контрактов: 3.831 TON
-- User Wallet: UQBBl-nmyXbVBrm5cVEcYWc1lXL2clCek9WW3XRo-nYRiWqh
-- User Position address: EQBWQwn6KLEP46gl1yvt-WosqqALTUAyi9fiVdKTBnOMr8uD
-- Manager: EQDcIwnBr4DKEb2rt9LTzEFfQQcXsWvgkEXr0IYsq539lzAW
-- Pool: kQB2WlnfEoaqN2SKDGsDR_GDYkbA_H8JFt9cmCGWtkXwdXuJ
+До деплоя: 7.118 TON
+После деплоя контрактов: 5.967 TON
+- `User Wallet`:
+    - UQBBl-nmyXbVBrm5cVEcYWc1lXL2clCek9WW3XRo-nYRiWqh
+    - EQBBl-nmyXbVBrm5cVEcYWc1lXL2clCek9WW3XRo-nYRiTdk
+- `usdTON`:
+    - EQAru6ULuK_z9eSomnGfnrJTaJ4Jo1odUnHlZlYJ534JKkkf
+- `Manager`:
+    - EQDi_mL_15pTjxBtR9jOa2d693ZOHzY8s9LMmBzJw_M7KAdr
+- `Pool`:
+    - EQAIZm8leBIUn4vWw_myDLBFKk6BZ4qw0AOpVElgeC2eaYLc
+- `RunecoinOwner`:
+    - EQCa7Rdqf1xEbplL9rTDuXjOqjACBlkfnFiWGA2gjfBCDiHC
+- `Runecoin`:
+    - EQAMgUf6nTQHeCpjrdA5MIu0v4w32bQnkSHEBwxKtGY26mop
+- `User Position`:
 
 Добавляем Supply: 1 TON
 

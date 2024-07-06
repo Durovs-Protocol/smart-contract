@@ -16,15 +16,15 @@ export async function run(provider: NetworkProvider) {
     // для проверки решения проблемы с адресами
     const usersRuneWalletFromOwnerContract = await runecoinOwner.getRuneInfo(provider.sender().address!);
     const runesAddress = await runecoinOwner.getAddress();
-    console.log(usersRuneWalletFromOwnerContract);
-    console.log(runesAddress);
-    console.log('runecoinOwner');
+
+    log('Runecoin Owner: ' + usersRuneWalletFromOwnerContract + '\nRunecoinAddress: ' + runesAddress);
+
+
     const usersRuneWalletFromManagerContract = await manager.getRuneInfo(provider.sender().address!);
     const runesAddressFromManager = await manager.getDeps();
-    console.log(usersRuneWalletFromManagerContract);
-    console.log(runesAddressFromManager.runecoinAddress);
-    console.log('Manager');
+
+    log('Manager: ' + usersRuneWalletFromManagerContract + '\nRunesAddressFromManager: ' + runesAddressFromManager.runecoinAddress);
 
     const totalAmount = await runecoinOwner.getTotalAmount();
-    console.log('В хранилище владельца: ', numberFormat(fromNano(totalAmount)));
+    log('В хранилище владельца: ' + numberFormat(fromNano(totalAmount)));
 }
