@@ -2,15 +2,16 @@
 
 > Создать папку `deploy` если ее нет
 
-> Далее работа с core смарт-контрактами 
+> Далее работа с core смарт-контрактами
 
 1. `yarn build` (Запустит build всех контрактов: usdTon, manager, pool, deps, runes, runes-owner)
 
 2. `yarn deploy` (Деплой контрактов + установка зависимостей между контрактами)
+
     - `yarn deploy-pool`
     - `yarn deploy-manager`
     - `yarn deploy-usdton`
-    - `yarn deploy-runecoin-owner`
+    - `yarn deploy-runes-owner`
     - `yarn deploy-runecoin`
     - Проверить выполнение: в папке вида `deploy/{contract_name}.address` должны лежать все адреса контрактов
 
@@ -22,7 +23,6 @@
 > Далее работа с Runa Coin
 
 1. `yarn deploy-runes-owner`
-2. 
 
 # Получение информации
 
@@ -47,6 +47,18 @@
 2. `yarn send-runes-to-owner` (Деплой runecoin и минт 1000000 токенов на баланс владельца)
 3. `yarn get-runes` (Получение runecoins пользователем)
 
-### Дополнительный RPC
+# Ликвидация
 
+> Мы заложили 1 TON, если lr 1.15, а TON стоит 7.5, то позиция будет считаться здоровой до ~6 USDTON, чтобы провалить проверку обновляем цену TON до 5 (utils/test_data/tonPrice) и запускаем yarn update-price
+
+1. `yarn add-supply` Внесение обеспечения
+    - collateral: 1, debt:0
+2. `yarn mint` Перечесление usdTon пользователю
+    - debt:5
+3. `yarn update-price` Обновить цену
+4. `yarn liquidation` Запуск ликвидации
+
+### RPC
+
+https://testnet.toncenter.com/api/v2/jsonRPC
 https://ton.access.orbs.network/4410c0ff5Bd3F8B62C092Ab4D238bEE463E64410/1/testnet/toncenter-api-v2/jsonRPC

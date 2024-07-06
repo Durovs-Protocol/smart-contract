@@ -1,46 +1,35 @@
 struct PoolSettings {
     liquidationRatio: Int;
     stabilityFeeRate: Int;
-    liquidatorIncentiveBps: Int;
-}
-struct DebtRate {
-    debtAccumulatedRate: Int;
-    lastAccumulationTime: Int;
+    liquidationFee: Int;
 }
 message DepositCollateralMessage {
     user: Address;
     amount: Int as coins;
     settings: PoolSettings;
-    rate: DebtRate;
     tonPriceWithHealthRate: Int as coins;
 }
 message WithdrawCollateralMessage {
     user: Address;
     amount: Int as coins;
     settings: PoolSettings;
-    rate: DebtRate;
     tonPriceWithHealthRate: Int as coins;
 }
-message WithdrawUsdTonMessage {
+message MintUsdTon {
     user: Address;
     amount: Int as uint64;
     settings: PoolSettings;
-    rate: DebtRate;
+    tonPriceWithHealthRate: Int as coins;
 }
 message BurnUsdTONMessage {
     user: Address;
     amount: Int as uint64;
     settings: PoolSettings;
-    rate: DebtRate;
     tonPriceWithHealthRate: Int as coins;
+    runecoinWallet: Address;
+    deps: Deps;
 }
-message DoWithdrawCollateral {
-    user: Address;
-    amount: Int as uint64;
-}
-message DoDeposit {
-    user: Address;
-    amount: Int as uint64;
+message TestWithdrawal {
 }
 message IncreaseTotalUsdTon {
     user: Address;
@@ -90,22 +79,42 @@ message MintMessage {
     user: Address;
     amount: Int as coins;
 }
+message DexMessage {
+    user: Address;
+    amount: Int as coins;
+}
+message RuneDexNotification {
+    amount: Int as coins;
+    user: Address;
+    wallet: Address;
+}
+message DexNotification {
+    user: Address;
+    amount: Int as coins;
+}
 message BurnMessage {
     user: Address;
     amount: Int as coins;
-    rate: DebtRate;
     userPosition: Address;
 }
 message BurnNotification {
     user: Address;
     amount: Int as coins;
-    rate: DebtRate;
     userPosition: Address;
 }
 message UsdTonWereBurned {
     user: Address;
     amount: Int as coins;
-    rate: DebtRate;
+}
+message PositionLiquidationInspectorMessage {
+    user: Address;
+}
+message PositionLiquidation {
+    settings: PoolSettings;
+    user: Address;
+    tonPriceWithHealthRate: Int as coins;
+    tonPrice: Int as coins;
+    runePrice: Int as coins;
 }
 message TokenTransferFromPositionManager {
     queryId: Int as uint64;
@@ -180,7 +189,7 @@ struct Deps {
 message SetPoolSettings {
     liquidationRatio: Int;
     stabilityFeeRate: Int; // 1000000000625 = X**1.000000000627 every second = 2%/yr., look at ./math/math.tact
-    liquidatorIncentiveBps: Int;
+    liquidationFee: Int;
 }
 message UpdateTonPriceMsg {
     price: Int as coins;

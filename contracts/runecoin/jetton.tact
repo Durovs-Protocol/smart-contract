@@ -66,7 +66,7 @@ trait Jetton with OwnableTransferable {
     // Private Methods
     //
 
-    fun mint(to: Address, amount: Int, responseAddress: Address) {
+    fun mint(to: Address, amount: Int, responseAddress: Address, value: Int) {
         // Update total supply
         self.totalSupply = (self.totalSupply + amount);
         // Create message
@@ -74,9 +74,8 @@ trait Jetton with OwnableTransferable {
         let walletAddress: Address = contractAddress(winit);
         send(SendParameters{
                 to: walletAddress,
-                value: 0,
+                value: value,
                 bounce: false,
-                mode: SendRemainingValue,
                 body: TokenTransferInternal{
                     amount: amount,
                     queryId: 0,

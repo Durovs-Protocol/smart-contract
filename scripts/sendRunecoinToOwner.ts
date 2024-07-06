@@ -9,9 +9,9 @@ export async function run(provider: NetworkProvider) {
     );
 
     const jettonParams = {
-        name: 'runa3',
-        symbol: 'RN3',
-        description: 'runa3',
+        name: 'runa5',
+        symbol: 'RN5',
+        description: '5',
         image: 'https://d391b93f5f62d9c15f67142e43841acc.ipfscdn.io/ipfs/bafybeighpd4rtwtnv3cumptlz4pmvi7z3iuo75mvyvdlthusdiuumfedbq/logo-dark.png',
     };
 

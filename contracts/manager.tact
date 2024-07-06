@@ -7,7 +7,6 @@ import "./runecoin/runecoin_wallet.tact";
 contract Manager with Deployable, OwnableTransferable {
     const MinTonForStorage: Int = ton("0.01");
     const GasConsumption: Int = ton("0.01");
-
     deps: Deps;
     poolSettings: PoolSettings;
     owner: Address;
@@ -17,22 +16,17 @@ contract Manager with Deployable, OwnableTransferable {
     totalCollateralAmount: Int as coins = 0;
     usdTonsIssued: Int as coins = 0;
     totalFeesCollected: Int as coins = 0;
-    debtRate: DebtRate;
-    
     init(owner: Address){
         self.owner = owner;
-        self.poolSettings = PoolSettings{liquidationRatio: 0, stabilityFeeRate: 0, liquidatorIncentiveBps: 0};
-        
+        self.poolSettings = PoolSettings{liquidationRatio: 0, stabilityFeeRate: 0, liquidationFee: 0};
         self.deps = Deps{
             managerAddress: newAddress(0, 0),
             poolAddress: newAddress(0, 0),
             usdTonAddress: newAddress(0, 0),
             runecoinAddress: newAddress(0, 0)
         };
-
         self.tonPrice = 0;
         self.tonPriceWithHealthRate = 0;
-        self.debtRate = DebtRate{debtAccumulatedRate: 1000000000, lastAccumulationTime: (now() - 1000)};
     }
 
     //=============================================================================
@@ -54,7 +48,7 @@ contract Manager with Deployable, OwnableTransferable {
         self.poolSettings = PoolSettings{
             liquidationRatio: msg.liquidationRatio,
             stabilityFeeRate: msg.stabilityFeeRate,
-            liquidatorIncentiveBps: msg.liquidatorIncentiveBps
+            liquidationFee: msg.liquidationFee
         };
         self.reply("Pool settings updated".asComment());
     }
@@ -94,6 +88,7 @@ contract Manager with Deployable, OwnableTransferable {
         require(sender() == msg.user, "Invalid sender");
         let ctx: Context = context();
         require(ctx.value >= ((msg.amount + self.GasConsumption) + self.MinTonForStorage), "not enough tons sent");
+
         //TODO рассчитать газ для всех дальнейших операций сразу
 
         let valueToSendForward: Int = ((context().value - self.MinTonForStorage) - self.GasConsumption);
@@ -106,7 +101,6 @@ contract Manager with Deployable, OwnableTransferable {
                     user: msg.user,
                     amount: msg.amount,
                     settings: self.poolSettings,
-                    rate: self.debtRate,
                     tonPriceWithHealthRate: self.tonPriceWithHealthRate
                 }.toCell(),
                 code: init.code,
@@ -122,7 +116,6 @@ contract Manager with Deployable, OwnableTransferable {
         );
     }
 
-
     /*02 | Mint usdTON */
     receive(msg: MintUsdTonMessage){
         send(SendParameters{
@@ -130,11 +123,11 @@ contract Manager with Deployable, OwnableTransferable {
                 value: 0,
                 mode: (SendRemainingValue + SendBounceIfActionFail),
                 bounce: true,
-                body: WithdrawUsdTonMessage{
+                body: MintUsdTon{
                     user: msg.user,
                     amount: msg.amount,
                     settings: self.poolSettings,
-                    rate: self.debtRate
+                    tonPriceWithHealthRate: self.tonPriceWithHealthRate
                 }.toCell()
             }
         );
@@ -142,12 +135,20 @@ contract Manager with Deployable, OwnableTransferable {
 
     receive(msg: IncreaseTotalUsdTon){
         self.usdTonsIssued = (self.usdTonsIssued + msg.amount);
-        self.reply("usdTON minted".asComment());
-        // self.payBack(msg.user);
+        send(SendParameters{
+                to: msg.user,
+                bounce: false,
+                value: 0,
+                mode: (SendRemainingValue + SendIgnoreErrors),
+                body: "usdTON minted".asComment()
+            }
+        );
     }
 
     /*03 | Burn usdTON */
     receive(msg: BurnUsdTONUserMessage){
+        let winit: StateInit = initOf RunecoinWallet(self.deps.runecoinAddress, msg.user);
+        let walletAddress: Address = contractAddress(winit);
         send(SendParameters{
                 to: self._userPositionAddress(msg.user),
                 value: 0,
@@ -157,8 +158,9 @@ contract Manager with Deployable, OwnableTransferable {
                     user: msg.user,
                     amount: msg.amount,
                     settings: self.poolSettings,
-                    rate: self.debtRate,
-                    tonPriceWithHealthRate: self.tonPriceWithHealthRate
+                    tonPriceWithHealthRate: self.tonPriceWithHealthRate,
+                    runecoinWallet: walletAddress,
+                    deps: self.deps
                 }.toCell()
             }
         );
@@ -166,8 +168,14 @@ contract Manager with Deployable, OwnableTransferable {
 
     receive(msg: DecreaseTotalUsdTon){
         self.usdTonsIssued = (self.usdTonsIssued - msg.amount);
-        self.reply("usdTON burned".asComment());
-        // self.payBack(msg.user);
+        send(SendParameters{
+                to: msg.user,
+                bounce: false,
+                value: 0,
+                mode: (SendRemainingValue + SendIgnoreErrors),
+                body: "usdTON burned".asComment()
+            }
+        );
     }
 
     /*04 | Возврат залога */
@@ -182,49 +190,30 @@ contract Manager with Deployable, OwnableTransferable {
                     user: msg.user,
                     amount: msg.amount,
                     settings: self.poolSettings,
-                    rate: self.debtRate,
                     tonPriceWithHealthRate: self.tonPriceWithHealthRate
                 }.toCell()
             }
         );
     }
 
-    /* проверка что адрес требующий возврат залога является владельцем позиции которая отправила запрос */
-    receive(msg: DoWithdrawCollateral){
-        self.onlyUserPosition(msg.user);
-        require((self.totalCollateralAmount - msg.amount) >= 0, "not enough collateral on contract");
-        self.totalCollateralAmount = (self.totalCollateralAmount - msg.amount);
+    receive(msg: PositionLiquidationInspectorMessage){
+        require(sender() == self.owner, "invalid sender");
         send(SendParameters{
-                to: self.deps.poolAddress,
+                to: self._userPositionAddress(msg.user),
                 value: 0,
                 mode: (SendRemainingValue + SendBounceIfActionFail),
                 bounce: true,
-                body: msg.toCell()
+                body: PositionLiquidation{
+                    settings: self.poolSettings,
+                    user: msg.user,
+                    tonPriceWithHealthRate: self.tonPriceWithHealthRate,
+                    tonPrice: self.tonPrice,
+                    runePrice: self.tonPrice,
+                }.toCell()
             }
         );
     }
 
-    // let stabilityFee: Int = msg.amount / 1000000000 * msg.settings.stabilityFeeRate;
-    // dump(stabilityFee);
-    // dump(msg.runecoinWalletAddress);
-
-    // send(SendParameters {
-    //         to: msg.runecoinWalletAddress,
-    //         value: ton("0.1"),
-    //         // mode: (SendRemainingValue + SendBounceIfActionFail),
-    //         bounce: false,
-    //         body: TokenTransferFromPositionManager {
-    //             queryId: 0,
-    //             amount: stabilityFee,
-    //             destination: self.poolAddress,
-    //             responseDestination: msg.user,
-    //             deps: msg.deps,
-    //             customPayload: createOffchainContent("custom"),
-    //             forwardTonAmount: 0,
-    //             forwardPayload: createOffchainContent("forward").asSlice()
-    //         }.toCell()
-    //     }
-    // );
     // receive("EmergencyExit"){
     //     require(sender() == self.owner, "invalid sender");
     //     send(SendParameters{
@@ -312,15 +301,22 @@ contract Manager with Deployable, OwnableTransferable {
         return self.tonPriceWithHealthRate;
     }
 
-    get fun debtRate(): DebtRate {
-        return self.debtRate;
-    }
-
     get fun usdTonsIssued(): Int {
         return self.usdTonsIssued;
     }
 
     get fun totalCollateralAmount(): Int {
         return self.totalCollateralAmount;
+    }
+    //  для проверки ршения проблемы с адресами
+
+    get fun runeInfo(user: Address): Address {
+        let winit: StateInit = initOf RunecoinWallet(self.deps.runecoinAddress, user);
+        let walletAddress: Address = contractAddress(winit);
+        return walletAddress;
+    }
+
+    get fun totalIssued(): Int {
+        return self.usdTonsIssued;
     }
 }

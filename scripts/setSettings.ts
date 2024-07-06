@@ -12,8 +12,7 @@ export async function run(provider: NetworkProvider) {
         return liquidationRatio;
     };
 
-    const newLiquidationRatio = toNano(2);
-    const newLiquidatorIncentiveBps = toNano(1.6);
+    const newLiquidationRatio = toNano(1.15);
 
     await managerContract.send(
         provider.sender(),
@@ -22,7 +21,7 @@ export async function run(provider: NetworkProvider) {
             $$type: 'SetPoolSettings',
             liquidationRatio: newLiquidationRatio,
             stabilityFeeRate: toNano('0.02'),
-            liquidatorIncentiveBps: newLiquidatorIncentiveBps,
+            liquidationFee: toNano('0.15'),
         },
     );
 

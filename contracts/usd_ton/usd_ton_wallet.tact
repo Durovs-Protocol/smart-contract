@@ -13,6 +13,7 @@ contract UsdTonWallet
         self.owner = owner;
         self.master = master;
     }
+
     receive(msg: TokenTransfer){
         // Check sender
         let ctx: Context = context();
@@ -87,6 +88,7 @@ contract UsdTonWallet
                     to: msg.responseAddress!!,
                     value: msgValue,
                     bounce: false,
+                    mode: SendIgnoreErrors,
                     body: TokenExcesses{queryId: msg.queryId}.toCell()
                 }
             );
@@ -153,12 +155,7 @@ contract UsdTonWallet
                 value: 0,
                 mode: (SendRemainingValue + SendIgnoreErrors),
                 bounce: true,
-                body: BurnNotification{
-                    amount: msg.amount,
-                    user: msg.user,
-                    rate: msg.rate,
-                    userPosition: msg.userPosition
-                }.toCell()
+                body: BurnNotification{amount: msg.amount, user: msg.user, userPosition: msg.userPosition}.toCell()
             }
         );
     }
