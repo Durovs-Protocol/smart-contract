@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, fromNano, toNano } from '@ton/core';
 import { loadAddress, log, timer } from '../utils/helpers';
-import { burn, sendValue } from '../utils/test_data';
+import { burn, gasFee } from '../utils/test_data';
 import { Manager } from '../wrappers/Manager';
 import { UserPosition } from '../wrappers/UserPosition';
 
@@ -27,7 +27,7 @@ export async function run(provider: NetworkProvider) {
     // TODO: сделать проверку на текущий баланс - если долга нет - дальше не пускать
     await manager.send(
         user,
-        { value: toNano(sendValue) },
+        { value: toNano(gasFee) },
         {
             $$type: 'BurnUsdTONUserMessage',
             user: user.address as Address,

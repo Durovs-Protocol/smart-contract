@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { loadAddress, log, timer } from '../utils/helpers';
-import { sendValue } from '../utils/test_data';
+import { gasFee } from '../utils/test_data';
 import { Manager } from '../wrappers/Manager';
 import { Pool } from '../wrappers/Pool';
 import { Runecoin } from '../wrappers/Runecoin';
@@ -17,7 +17,7 @@ export async function run(provider: NetworkProvider) {
         log(name.toUpperCase());
         await contract.send(
             provider.sender(),
-            { value: toNano(sendValue) },
+            { value: toNano(gasFee) },
             {
                 $$type: 'SetDeps',
                 managerAddress: manager.address,

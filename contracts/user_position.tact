@@ -80,9 +80,10 @@ contract UserPosition  {
         let ctx: Context = context();
         let remainingValue: Int = (ctx.value - ((msg.amount + self.MinTonsForStorage) + self.GasConsumption));
         self.collateral = self.collateral + msg.amount;
+        
         self.setMessage("Collateral added");
         let comment: StringBuilder = beginString();
-        comment.append("Colleteral was added:");
+        comment.append("Colleteral was added: ");
         comment.append(msg.amount.toString());
   
         send(SendParameters{to: msg.user, bounce: false, value: remainingValue, mode: SendIgnoreErrors, body: comment.toString().asComment()});
@@ -139,15 +140,21 @@ contract UserPosition  {
                 value: 0,
                 mode: (SendRemainingValue + SendIgnoreErrors),
                 body: "Burn error: not enough ton to cover fee".asComment()
-            }
-        );
+            });
             return;
         }
 
         self.setMessage("stables are going to burn...");
 
-        send(SendParameters{to: self.poolAddress, bounce: true, value: fee, mode: SendPayGasSeparately, body: FeePayment{amount: fee}.toCell()});
+        // Отправка дохода в пул
+        send(SendParameters{to: self.poolAddress, 
+            bounce: true, 
+            value: fee, 
+            mode: SendPayGasSeparately + SendIgnoreErrors, 
+            body: FeePayment{amount: fee}.toCell()
+        });
 
+        // Сжигание
         send(SendParameters{
             to: self.usdTonAddress, 
             value: 0,
@@ -281,7 +288,7 @@ contract UserPosition  {
         });
 
         // считаем комиссию 15%
-        let fee: Int =  ( (self.liquidationParams.liquidationAmount - self.liquidationParams.liquidationDebt) * 15000000) /  self.liquidationParams.tonPrice;
+        let fee: Int =  ( (self.liquidationParams.liquidationAmount - self.liquidationParams.liquidationDebt) * 150000000) /  self.liquidationParams.tonPrice;
         let feeDebt: Int = 0;
 
 

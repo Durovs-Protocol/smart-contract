@@ -2,7 +2,7 @@
 
 - Старый: UQBBl-nmyXbVBrm5cVEcYWc1lXL2clCek9WW3XRo-nYRiWqh (purity addict pact west bicycle clutch captain emotion fluid oval ethics evolve monitor draft arctic apart gas payment field invest face pen ordinary miracle)
 
-- `Root Wallet` (10.62 TON):
+- `Root Wallet` (9.429 TON):
     - 0QBBl-nmyXbVBrm5cVEcYWc1lXL2clCek9WW3XRo-nYRidEr
     - UQBBl-nmyXbVBrm5cVEcYWc1lXL2clCek9WW3XRo-nYRiWqh
 
@@ -13,33 +13,43 @@
 1. build: ✅
 2. deploy (pool, manager, usdTON, runecoin_owner, runecoin): ✅
 3. setup: ✅
-4. get-runes
-5. add-supply
-6. mint
-7. burn
-8. liquidation
+4. get-runes: 🔴
+5. add-supply: ✅
+6. mint: 🟡 - ошибка в metadata
+7. burn: 🟡 - списывать TON с supply(работает) и обновлять его баланс, добавить проверку чтобы при сжигании 2.5 и балансе 0.5 не было ошибок
+8. withdrawal-supply - (даем доступ к кошельку runacoin только для текущей userposition), убрать статистику о сумме залога - брать с баланса
+9. liquidation (распоряжаемся только залогом - runacoin не трогаем), убрать usdTonsIssued посылать остатки газа в доход, иметация покупки на DEX - сами у себя
 
 ## Add Supply: 1 TON
 
-User: 4.813 TON => - 1.154 TON
-- User Position: 1.011 TON
+User: 8.358 TON => - 1.071 TON
+- User Position: 1.008 TON
 - Manager: 0.00874797
 - GAS: 0.13425203 TON
 
 ## Mint: 3 usdTON
 
-User: 4.71 TON, usdTON не видно !!!
+User: 8.248 TON
 - User Position: 1.08 TON (-0.003 TON)
-- Manager: 0.008746899 TON (-0.000001071 TON )
 - GAS: 0,103 TON
 
-## Burn: 0.01 usdTON
+------------------------------------------------------------------------------------------------------------
 
-User: 2.269 TON, доп. токена больше нет.
-- User Position: 0.137620349 TON
-- Manager: 0.129521021 TON
-- Pool: 1.014 TON
-- GAS: 0,405 TON
+## Burn: 2.5 usdTON
+
+User: 8.173 TON
+- User Position: 0.99035526 TON
+- Pool: 0.012874266 TON (Доход) - 0,00964474 (должно уменьшиться)
+- GAS: 0,075 TON
+
+## Burn: 0.5 usdTON
+
+User: 8.098 TON
+- User Position: 0.99035526 TON
+- Pool: 0.012874266 TON (Доход) - 0,00964474 (должно уменьшиться)
+- GAS: 0,075 TON
+
+------------------------------------------------------------------------------------------------------------
 
 ## Вывод залога: 1.014 TON
 
@@ -57,3 +67,10 @@ User: 3.206 TON,
 - User Position: 0.137619317
 - Manager: 0.129519091
 - Pool: 0.013702625
+
+
+При создании User Position (передаем RunaCoinAddress - сохраняем в переменной контракта - для выплат)
+
+
+Перед ликвидацией: 4.944
+UP: 2.388

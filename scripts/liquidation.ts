@@ -9,7 +9,7 @@ export async function run(provider: NetworkProvider) {
     const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const user = provider.sender();
-    const userPositionAddress = await manager.getUserPositionAddress(Address.parse(process.env.USER_WALLET!));
+    const userPositionAddress = await manager.getUserPositionAddress(Address.parse(process.env.USER_WALLET_ADDRESS!));
     const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
     const getMessage = async function () {
         const message = await userPosition.getMessage();
@@ -17,7 +17,6 @@ export async function run(provider: NetworkProvider) {
     };
 
     console.log('total supply before', await usdTon.getTotalSupply()); // 5000000000n
-    console.log('total issued before', await manager.getTotalIssued()); // 5000000000n
 
     let positionMessage = await getMessage();
 
@@ -25,10 +24,10 @@ export async function run(provider: NetworkProvider) {
 
     await manager.send(
         user,
-        { value: toNano(1) },
+        { value: toNano(0.3) },
         {
             $$type: 'PositionLiquidationInspectorMessage',
-            user: Address.parse(process.env.USER_WALLET!),
+            user: Address.parse(process.env.USER_WALLET_ADDRESS!),
         },
     );
 

@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, fromNano, toNano } from '@ton/core';
 import { loadAddress, log, numberFormat, timer } from '../utils/helpers';
-import { addSupplyAmount, sendValue } from '../utils/test_data';
+import { addSupplyAmount, gasFee } from '../utils/test_data';
 import { Manager } from '../wrappers/Manager';
 import { UserPosition } from '../wrappers/UserPosition';
 
@@ -30,7 +30,7 @@ export async function run(provider: NetworkProvider) {
     // Отправляем в пулл средства через метод смарт-контракта менеджера: DepositCollateralUserMessage
     await manager.send(
         user,
-        { value: collateralAmount + toNano(sendValue) },
+        { value: collateralAmount + toNano(gasFee) },
         {
             $$type: 'DepositCollateralUserMessage',
             user: user.address as Address,

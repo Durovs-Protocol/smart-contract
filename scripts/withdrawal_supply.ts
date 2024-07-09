@@ -15,7 +15,7 @@ export async function run(provider: NetworkProvider) {
     console.log('04 | Возврат обеспечения');
     console.log('=============================================================================');
 
-    const collateralToWithdraw = toNano(1);
+    const collateralToWithdraw = toNano(0.5);
 
     const userCollateral = async function () {
         const state = await userPosition.getPositionState();
@@ -25,7 +25,7 @@ export async function run(provider: NetworkProvider) {
 
     await manager.send(
         user,
-        { value: toNano(0.3) },
+        { value: toNano(0.05) },
         {
             $$type: 'WithdrawCollateralUserMessage',
             user: user.address as Address,
