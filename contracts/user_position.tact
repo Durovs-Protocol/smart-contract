@@ -79,13 +79,13 @@ contract UserPosition  {
 
         let ctx: Context = context();
         let remainingValue: Int = (ctx.value - ((msg.amount + self.MinTonsForStorage) + self.GasConsumption));
-
-        send(SendParameters{to: msg.user, bounce: false, value: remainingValue, mode: SendIgnoreErrors});
-
         self.collateral = self.collateral + msg.amount;
         self.setMessage("Collateral added");
-        
-        send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors), body: "Colleteral was added".asComment()});
+        let comment: StringBuilder = beginString();
+        comment.append("Colleteral was added:");
+        comment.append(msg.amount.toString());
+  
+        send(SendParameters{to: msg.user, bounce: false, value: remainingValue, mode: SendIgnoreErrors, body: comment.toString().asComment()});
     }
 
 
