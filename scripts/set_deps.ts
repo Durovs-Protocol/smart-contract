@@ -1,11 +1,11 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { loadAddress, log, timer } from '../utils/helpers';
+import { sendValue } from '../utils/test_data';
 import { Manager } from '../wrappers/Manager';
 import { Pool } from '../wrappers/Pool';
 import { Runecoin } from '../wrappers/Runecoin';
 import { UsdTonMaster } from '../wrappers/UsdTon';
-import { sendValue } from '../utils/test_data';
 
 export async function run(provider: NetworkProvider) {
     const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
@@ -14,7 +14,7 @@ export async function run(provider: NetworkProvider) {
     const runeCoin = provider.open(await Runecoin.fromAddress(Address.parse(await loadAddress('runecoin'))));
 
     async function setDeps(contract: any, name: string) {
-        log(name.toUpperCase())
+        log(name.toUpperCase());
         await contract.send(
             provider.sender(),
             { value: toNano(sendValue) },

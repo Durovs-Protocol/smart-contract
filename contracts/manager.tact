@@ -40,7 +40,7 @@ contract Manager with Deployable, OwnableTransferable {
             usdTonAddress: msg.usdTonAddress,
             runecoinAddress: msg.runecoinAddress
         };
-        self.reply("Dependencies set".asComment());
+        self.reply("manager's dependencies set".asComment());
     }
 
     receive(msg: SetPoolSettings){
@@ -134,7 +134,7 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     receive(msg: IncreaseTotalUsdTon){
-        self.usdTonsIssued = (self.usdTonsIssued + msg.amount);
+        // self.usdTonsIssued = (self.usdTonsIssued + msg.amount);
         send(SendParameters{
                 to: msg.user,
                 bounce: false,
@@ -159,6 +159,7 @@ contract Manager with Deployable, OwnableTransferable {
                     amount: msg.amount,
                     settings: self.poolSettings,
                     tonPriceWithHealthRate: self.tonPriceWithHealthRate,
+                    tonPrice: self.tonPrice,
                     runecoinWallet: walletAddress,
                     deps: self.deps
                 }.toCell()
@@ -167,7 +168,7 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     receive(msg: DecreaseTotalUsdTon){
-        self.usdTonsIssued = (self.usdTonsIssued - msg.amount);
+        // self.usdTonsIssued = (self.usdTonsIssued - msg.amount);
         send(SendParameters{
                 to: msg.user,
                 bounce: false,
@@ -208,7 +209,7 @@ contract Manager with Deployable, OwnableTransferable {
                     user: msg.user,
                     tonPriceWithHealthRate: self.tonPriceWithHealthRate,
                     tonPrice: self.tonPrice,
-                    runePrice: self.tonPrice,
+                    runePrice: self.tonPrice
                 }.toCell()
             }
         );

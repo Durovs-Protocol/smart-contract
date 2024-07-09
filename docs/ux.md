@@ -18,7 +18,7 @@
 3. `yarn setup`
     - `yarn set-deps`: имея адреса контрактов: usdTon, manager, poolContract, runeCoin
     - `yarn set-settings` (Настройка параметров пула)
-    - `yarn update-price` (Установка цены тона)
+    - `yarn set-price` (Установка цены тона)
 
 > Далее работа с Runa Coin
 

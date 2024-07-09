@@ -39,7 +39,7 @@ contract UsdTonMaster with Jetton, Deployable {
             usdTonAddress: msg.usdTonAddress,
             runecoinAddress:  msg.runecoinAddress,
         };
-        self.reply("dDependencies set".asComment());
+        self.reply("usdton's dependencies set".asComment());
     }
 
     receive(msg: Mint) {

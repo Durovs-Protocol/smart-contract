@@ -31,7 +31,7 @@ contract Pool with Deployable, OwnableTransferable {
             usdTonAddress: msg.usdTonAddress,
             runecoinAddress: msg.runecoinAddress
         };
-        self.reply("Dependencies set".asComment());
+        self.reply("pool's dependencies set".asComment());
     }
 
     //=============================================================================
@@ -41,6 +41,11 @@ contract Pool with Deployable, OwnableTransferable {
     // вывод всех средств с пула на кошелек владельца пула, после тестов удалить
     receive(msg: TestWithdrawal){
         send(SendParameters{to: self.owner, bounce: false, value: 0, mode: (SendRemainingBalance + SendIgnoreErrors)});
+    }
+
+    // TODO реализовать перевод поступлений в runecoin
+    receive(msg: FeePayment){
+        //
     }
 
     //=============================================================================
