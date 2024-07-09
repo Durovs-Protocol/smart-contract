@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, fromNano, toNano } from '@ton/core';
 import { loadAddress, log, saveAddress, timer } from '../utils/helpers';
-import { mintNormal, sendValue } from '../utils/test_data';
+import { mintNormal } from '../utils/test_data';
 import { Manager } from '../wrappers/Manager';
 import { UsdTonMaster } from '../wrappers/UsdTon';
 import { UsdTonWallet } from '../wrappers/UsdTonWallet';
@@ -13,20 +13,20 @@ export async function run(provider: NetworkProvider) {
 
     const userUsdTonWalletAddress = await usdTon.getGetWalletAddress(user.address as Address);
     const usdtonsBorrowed = toNano(mintNormal);
-    
     console.log(userUsdTonWalletAddress);
 
     log('02 | Пользователь минтит usdTON: ' + fromNano(usdtonsBorrowed).toString());
 
     await manager.send(
         user,
-        { value: toNano(sendValue) },
+        { value: toNano(1.5) },
         {
             $$type: 'MintUsdTonMessage',
             user: user.address as Address,
             amount: usdtonsBorrowed,
         },
     );
+
 
     const userUsdTonWallet = provider.open(await UsdTonWallet.fromAddress(userUsdTonWalletAddress));
     await provider.waitForDeploy(userUsdTonWalletAddress, 30);

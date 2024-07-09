@@ -1,4 +1,4 @@
-export const tonPrice: number = 3.45;
+export const tonPrice: number = 7.5;
 export const sendValue: number = 0.1;
 export const liquidationRatio: number = 1.15;
 export const stabilityFeeRate: number = 0.05;

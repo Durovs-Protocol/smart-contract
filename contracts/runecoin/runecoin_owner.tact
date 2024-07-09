@@ -16,7 +16,7 @@ contract RuneCoinOwner with Deployable {
     owner: Address;
     totalCoins: Int;
     const MinTonForStorage: Int = ton("0.01");
-    const GasConsumption: Int = ton("0.01");
+    const GasConsumption: Int = ton("0.03");
     init(owner: Address){
         self.owner = owner;
         self.totalCoins = 0;
@@ -30,7 +30,7 @@ contract RuneCoinOwner with Deployable {
         let ctx: Context = context();
         send(SendParameters{
                 to: address,
-                value: (ctx.value - self.MinTonForStorage),
+                value: (ctx.value - self.GasConsumption),
                 mode: SendBounceIfActionFail,
                 code: init.code,
                 data: init.data,
@@ -39,6 +39,10 @@ contract RuneCoinOwner with Deployable {
         );
         self.totalCoins = msg.amount;
         self.reply("Runecoin released".asComment());
+    }
+
+    receive(msg: TokenExcesses){
+        // для приема оставшегося ton после установки баланса
     }
 
     // user actions

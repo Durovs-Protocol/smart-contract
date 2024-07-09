@@ -48,12 +48,12 @@ contract UserPosition  {
         };
         self.liquidationParams = LiquidationParams{
             tonForBurn: 0,
-    tonForFee: 0,
-    accountBalance: 0,
-    liquidationAmount: 0,
-    liquidationDebt: 0,
-    feeDebt: 0,
-    runePrice: 0
+            tonForFee: 0,
+            accountBalance: 0,
+            liquidationAmount: 0,
+            liquidationDebt: 0,
+            feeDebt: 0,
+            runePrice: 0
     };
 
         send(SendParameters{
@@ -84,7 +84,8 @@ contract UserPosition  {
 
         self.collateral = self.collateral + msg.amount;
         self.setMessage("Collateral added");
-        self.reply("Colleteral was added".asComment());
+        
+        send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors), body: "Colleteral was added".asComment()});
     }
 
 
@@ -93,11 +94,7 @@ contract UserPosition  {
     receive(msg: MintUsdTon) {
         require(sender() == self.managerAddress, "not from position Manager");
 
-
-
         let debtAfterWithdraw: Int = (self.debt + msg.amount);
-
-
 
         if (!self.isPositionHealthy(self.collateral, debtAfterWithdraw, msg.tonPriceWithHealthRate, msg.settings)){
             self.unhealthyPositionHandler(msg.user);
@@ -132,32 +129,31 @@ contract UserPosition  {
             amountToBurn = self.debt;
         }
 
+        let fee: Int = (amountToBurn * 50000000) /  msg.tonPrice;
+
+        if (fee > (myBalance() - self.GasConsumption)) {
+
+            send(SendParameters{
+                to: msg.user,
+                bounce: false,
+                value: 0,
+                mode: (SendRemainingValue + SendIgnoreErrors),
+                body: "Burn error: not enough ton to cover fee".asComment()
+            }
+        );
+            return;
+        }
+
         self.setMessage("stables are going to burn...");
 
-        // send(SendParameters {
-        //         to: msg.runecoinWallet,
-        //         value: ton("0.1"),
-        //         mode: SendBounceIfActionFail,
-        //         bounce: true,
-        //         body: TokenTransfer{
-        //             queryId: 0,
-        //             amount: msg.amount * 2 / 100,
-        //             destination: self.poolAddress,
-        //             responseDestination: myAddress(),
-
-        //             customPayload: createOffchainContent("custom"),
-        //             forwardTonAmount: 0,
-        //             forwardPayload: createOffchainContent("forward").asSlice()
-        //         }.toCell()
-        //     }
-        // );
+        send(SendParameters{to: self.poolAddress, bounce: true, value: fee, mode: SendPayGasSeparately, body: FeePayment{amount: fee}.toCell()});
 
         send(SendParameters{
             to: self.usdTonAddress, 
             value: 0,
             mode: SendRemainingValue + SendIgnoreErrors, 
             bounce: true,
-            body: BurnMessage{
+            body: BurnMessage {
                 user: msg.user,
                 amount: amountToBurn,
                 userPosition: myAddress()
@@ -241,13 +237,13 @@ contract UserPosition  {
         // тон нужно для покупки тех usdton что взял пользователь
         let tonForFee: Int = tonForBurn * msg.settings.liquidationFee / 1000000000;
         // тон нужно для покупки тех usdton что взял пользователь
-        let accountBalance: Int = myBalance() - (self.MinTonsForStorage + self.GasConsumption);
+        let accountBalance: Int = myBalance() - (self.MinTonsForStorage + self.GasConsumption + ton("0.1"));
         let liquidationAmount: Int = self.debt;
         let liquidationDebt: Int = 0;
         // если невозможно оплатить всю позицию рассчитывается задолженность по ней
         if (accountBalance < tonForBurn) {
           liquidationDebt = liquidationAmount - ((accountBalance * msg.tonPrice) / 1000000000);
-        // tonForBurn = accountBalance;
+          tonForBurn = accountBalance;
         }
 
         self.setMessage("liquidationProcess");
@@ -374,6 +370,7 @@ contract UserPosition  {
         };
         self.message = updatedMessage;
     }
+
     fun setLiquidationParams(params: LiquidationParams) {
         self.liquidationParams = params;
     }

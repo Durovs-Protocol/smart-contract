@@ -11,7 +11,6 @@ export async function run(provider: NetworkProvider) {
     const user = provider.sender();
     const userPositionAddress = await manager.getUserPositionAddress(user.address as Address);
     const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
-    
     const getMessage = async function () {
         const message = await userPosition.getMessage();
         return message.message;
@@ -26,12 +25,13 @@ export async function run(provider: NetworkProvider) {
 
     await manager.send(
         user,
-        { value: toNano(0.3) },
+        { value: toNano(1) },
         {
             $$type: 'PositionLiquidationInspectorMessage',
             user: user.address as Address,
         },
     );
+
     await timer('Position liquidation', 'Ликвидация позиции', 'position liquidated', getMessage, true);
     console.log('total supply after', await usdTon.getTotalSupply()); // 5000000000n
     console.log('total issued after', await manager.getTotalIssued()); // 0n

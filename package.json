@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
-        "run-script": "npx blueprint run --testnet --mnemonic ",
+        "run-script": "npx blueprint run --testnet --mnemonic --tonviewer",
         "action": "blueprint run",
         "blueprint-build": "blueprint build",
         "build": "rm -rf build && blueprint build manager && blueprint build pool  && blueprint build usdTon  && blueprint build userPosition && blueprint build usdTonWallet && blueprint build runecoinOwner  && blueprint build runecoin && blueprint build runecoinWallet",

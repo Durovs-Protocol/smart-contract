@@ -5,9 +5,9 @@ import { UsdTonMaster } from '../wrappers/UsdTon';
 
 export async function run(provider: NetworkProvider) {
     const jettonParams = {
-        name: 'yt07',
-        symbol: 'yt07',
-        description: 'yt07',
+        name: 'yt10',
+        symbol: '11',
+        description: '11',
         image: '',
     };
     const owner = provider.sender().address as Address;

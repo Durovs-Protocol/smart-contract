@@ -1,6 +1,6 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
-import { loadAddress, timer, log } from '../utils/helpers';
+import { loadAddress, log, timer } from '../utils/helpers';
 import { RuneCoinOwner } from '../wrappers/RunecoinOwner';
 
 export async function run(provider: NetworkProvider) {
@@ -23,5 +23,5 @@ export async function run(provider: NetworkProvider) {
         },
     );
 
-    await timer('owners runecoins', 'Покупка runecoin', totalAmount, runecoinsOwner.getTotalAmount);
+    await timer('owners runecoins', 'Покупка runecoin', totalAmount - amount, runecoinsOwner.getTotalAmount);
 }

@@ -9,9 +9,9 @@ export async function run(provider: NetworkProvider) {
     );
 
     const jettonParams = {
-        name: 'runa5',
-        symbol: 'RN5',
-        description: '5',
+        name: 'runa7',
+        symbol: '7',
+        description: '7',
         image: 'https://d391b93f5f62d9c15f67142e43841acc.ipfscdn.io/ipfs/bafybeighpd4rtwtnv3cumptlz4pmvi7z3iuo75mvyvdlthusdiuumfedbq/logo-dark.png',
     };
 
@@ -20,7 +20,7 @@ export async function run(provider: NetworkProvider) {
     await runecoinsOwner.send(
         provider.sender(),
         {
-            value: toNano('0.8'),
+            value: toNano('0.4'),
         },
         {
             $$type: 'SetBalance',
