@@ -9,6 +9,8 @@
         "build": "rm -rf build && blueprint build manager && blueprint build pool  && blueprint build usdTon  && blueprint build userPosition && blueprint build usdTonWallet && blueprint build runecoinOwner  && blueprint build runecoin && blueprint build runecoinWallet",
         "test": "jest --verbose",
 
+        "install": "yarn build && yarn deploy && yarn setup",
+
         "deploy-pool": "yarn run-script deploy_pool",
         "deploy-manager": "yarn run-script deploy_manager",
         "deploy-usdton": "yarn run-script deploy_usd_ton",
@@ -20,6 +22,7 @@
         "set-deps": "yarn run-script set_deps",
         "set-settings": "yarn run-script set_settings",
         "set-price": "yarn run-script set_price",
+        
         "setup": "yarn set-deps && yarn set-settings && yarn set-price",
 
         "get-runes": "yarn run-script get_runecoins",
