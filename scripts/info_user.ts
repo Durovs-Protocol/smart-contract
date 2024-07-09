@@ -28,7 +28,7 @@ export async function run(provider: NetworkProvider) {
     const userUsdTon = await provider.open(await UsdTonWallet.fromAddress(userUsdTonWalletAddress));
     // let usdTonBalance = await userUsdTon.getGetBalance()
 
-    console.log(userUsdTonWalletAddress);
+    // console.log(userUsdTonWalletAddress);
 
     log('Finished');
 
