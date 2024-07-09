@@ -43,6 +43,7 @@ message DecreaseTotalUsdTon {
     user: Address;
     amount: Int as uint64;
 }
+
 // usdTonMaster messages
 
 struct JettonData {
@@ -76,6 +77,7 @@ message SetPositionAddressMessage {
     user: Address;
     position: Address;
 }
+
 // usdTonMaster messages
 
 message MintMessage {
@@ -85,11 +87,6 @@ message MintMessage {
 message DexMessage {
     user: Address;
     amount: Int as coins;
-}
-message RuneDexNotification {
-    amount: Int as coins;
-    user: Address;
-    wallet: Address;
 }
 message DexNotification {
     user: Address;

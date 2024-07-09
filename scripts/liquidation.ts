@@ -9,7 +9,7 @@ export async function run(provider: NetworkProvider) {
     const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const user = provider.sender();
-    const userPositionAddress = await manager.getUserPositionAddress(user.address as Address);
+    const userPositionAddress = await manager.getUserPositionAddress(Address.parse(process.env.USER_WALLET!));
     const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
     const getMessage = async function () {
         const message = await userPosition.getMessage();
@@ -28,7 +28,7 @@ export async function run(provider: NetworkProvider) {
         { value: toNano(1) },
         {
             $$type: 'PositionLiquidationInspectorMessage',
-            user: user.address as Address,
+            user: Address.parse(process.env.USER_WALLET!),
         },
     );
 
