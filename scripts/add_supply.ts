@@ -3,6 +3,7 @@ import { Address, toNano } from '@ton/core';
 import { loadAddress, log, timer } from '../utils/helpers';
 import { addSupplyAmount } from '../utils/test_data';
 import { Manager } from '../wrappers/Manager';
+
 import { UserPosition } from '../wrappers/UserPosition';
 
 export async function run(provider: NetworkProvider) {
@@ -29,15 +30,15 @@ export async function run(provider: NetworkProvider) {
 
     // Отправляем в пулл средства через метод смарт-контракта менеджера: DepositCollateralUserMessage
     // тут передан оптимальный газ
-    await manager.send(
-        user,
-        { value: collateralAmount + toNano(0.1) },
-        {
-            $$type: 'DepositCollateralUserMessage',
-            user: user.address as Address,
-            amount: collateralAmount,
-        },
-    );
+    // await manager.send(
+    //     user,
+    //     { value: collateralAmount + toNano(0.1) },
+    //     {
+    //         $$type: 'DepositCollateralUserMessage',
+    //         user: user.address as Address,
+    //         amount: collateralAmount,
+    //     },
+    // );
 
     console.log(`currentPositionId | ${currentPositionId}`);
     if (currentPositionId <= 0) {

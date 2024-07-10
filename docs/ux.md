@@ -62,3 +62,7 @@
 
 https://testnet.toncenter.com/api/v2/jsonRPC
 https://ton.access.orbs.network/4410c0ff5Bd3F8B62C092Ab4D238bEE463E64410/1/testnet/toncenter-api-v2/jsonRPC
+
+### Тестирование
+
+1. `yarn run-script withdraw_pool` Вывод средств с пула после прохождения цикла на кошелек тестировщика
