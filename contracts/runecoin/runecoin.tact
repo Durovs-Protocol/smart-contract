@@ -53,7 +53,7 @@ contract Runecoin with Jetton, Deployable {
             value: 0, 
             bounce: false,
             mode: SendRemainingValue + SendIgnoreErrors,
-            body: UsdTonWereBurned{ 
+            body: RunecoinBurned{ 
                 amount: msg.amount,
                 user: msg.user,
             }.toCell()

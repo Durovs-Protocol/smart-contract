@@ -33,7 +33,6 @@ export async function run(provider: NetworkProvider) {
 
     await timer('Position liquidation', 'Ликвидация позиции', 'position liquidated', getMessage, true);
     console.log('total supply after', await usdTon.getTotalSupply()); // 5000000000n
-    console.log('total issued after', await manager.getTotalIssued()); // 0n
 
-    console.log(await userPosition.getComment());
+    console.log(await userPosition.getLiquidationParams());
 }

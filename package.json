@@ -17,7 +17,9 @@
         "deploy-runes-owner": "yarn run-script deploy_runecoin_owner",
         "deploy-runecoin": "yarn run-script deploy_send_runecoin_to_owner",
         
-        "deploy": "yarn deploy-pool && yarn deploy-manager && yarn deploy-usdton && yarn deploy-runes-owner && yarn deploy-runecoin",
+        "deploy": "yarn deploy-pool && yarn deploy-manager && yarn deploy-usdton",
+        "deploy-runes": "arn deploy-runes-owner && yarn deploy-runecoin",
+
         
         "set-deps": "yarn run-script set_deps",
         "set-settings": "yarn run-script set_settings",

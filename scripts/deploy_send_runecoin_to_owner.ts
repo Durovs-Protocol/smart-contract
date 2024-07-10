@@ -20,7 +20,7 @@ export async function run(provider: NetworkProvider) {
     await runecoinsOwner.send(
         provider.sender(),
         {
-            value: toNano('0.4'),
+            value: toNano('0.03'),
         },
         {
             $$type: 'SetBalance',

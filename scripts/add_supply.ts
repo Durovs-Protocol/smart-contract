@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
-import { Address, fromNano, toNano } from '@ton/core';
-import { loadAddress, log, numberFormat, timer } from '../utils/helpers';
-import { addSupplyAmount, gasFee } from '../utils/test_data';
+import { Address, toNano } from '@ton/core';
+import { loadAddress, log, timer } from '../utils/helpers';
+import { addSupplyAmount } from '../utils/test_data';
 import { Manager } from '../wrappers/Manager';
 import { UserPosition } from '../wrappers/UserPosition';
 
@@ -28,9 +28,10 @@ export async function run(provider: NetworkProvider) {
     const currentPositionId = await manager.getLastPositionId();
 
     // Отправляем в пулл средства через метод смарт-контракта менеджера: DepositCollateralUserMessage
+    // тут передан оптимальный газ
     await manager.send(
         user,
-        { value: collateralAmount + toNano(gasFee) },
+        { value: collateralAmount + toNano(0.1) },
         {
             $$type: 'DepositCollateralUserMessage',
             user: user.address as Address,
@@ -42,10 +43,10 @@ export async function run(provider: NetworkProvider) {
     if (currentPositionId <= 0) {
         await timer(`Position Id`, 'Внесение обеспечения', currentPositionId + 1n, manager.getLastPositionId);
     } else {
-        const userBalanceBefore = await userCollateral();
-        console.log(`Supply Balance before | ${numberFormat(fromNano(userBalanceBefore.toString()))}`);
-
-        const userBalanceAfter = userBalanceBefore + collateralAmount;
-        await timer(`User balance`, 'Внесение обеспечения', userBalanceAfter, userCollateral);
+        // эта проверка теперпь не будет работать тк supply будет показыватьчя с учетом остатков газа на контракте
+        // const userBalanceBefore = await userCollateral();
+        // console.log(`Supply Balance before | ${numberFormat(fromNano(userBalanceBefore.toString()))}`);
+        // const userBalanceAfter = userBalanceBefore + collateralAmount;
+        // await timer(`User balance`, 'Внесение обеспечения', userBalanceAfter, userCollateral);
     }
 }

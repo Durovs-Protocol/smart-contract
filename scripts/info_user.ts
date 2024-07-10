@@ -2,9 +2,9 @@ import { NetworkProvider } from '@ton/blueprint';
 import { Address, fromNano } from '@ton/core';
 import { loadAddress, log } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
-import { UserPosition } from '../wrappers/UserPosition';
 import { UsdTonMaster } from '../wrappers/UsdTon';
 import { UsdTonWallet } from '../wrappers/UsdTonWallet';
+import { UserPosition } from '../wrappers/UserPosition';
 
 export async function run(provider: NetworkProvider) {
     log('User info');
@@ -17,15 +17,25 @@ export async function run(provider: NetworkProvider) {
     const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
     const state = await userPosition.getPositionState();
 
-    console.log('Supply         in TON:',   fromNano(state.collateral).toString());
-    console.log('Borrow         usdTON:',   fromNano(state.debt).toString());
-    console.log('User Position address:',   userPosition.address.toString());
+    const userUsdTonWalletAddress = await usdTon.getGetWalletAddress(user);
+
+    console.log(userUsdTonWalletAddress);
+    const userUsdTonWallet = provider.open(await UsdTonWallet.fromAddress(userUsdTonWalletAddress));
+
+    console.log('Supply             in TON:', fromNano(state.collateral).toString());
+    console.log('Borrow         usdTON(UP):', fromNano(state.debt).toString());
+    try {
+        const userUsdTonBalance = await userUsdTonWallet.getGetBalance();
+        console.log('Borrow     usdTON(wallet):', fromNano(userUsdTonBalance).toString());
+    } catch (e) {
+        console.log('Borrow usdTON(wallet): no data');
+    }
+    console.log('User     Position address:', userPosition.address.toString());
 
     /**
      * Также выводить тут баланс с userUsdTonWalletAddress
      */
-    const userUsdTonWalletAddress = await usdTon.getGetWalletAddress(user as Address);
-    const userUsdTon = await provider.open(await UsdTonWallet.fromAddress(userUsdTonWalletAddress));
+
     // let usdTonBalance = await userUsdTon.getGetBalance()
 
     // console.log(userUsdTonWalletAddress);
@@ -42,4 +52,7 @@ export async function run(provider: NetworkProvider) {
     // console.log('poolContractDeps', poolContractDeps);
 
     // console.log('=============================================================================\n\n');
+}
+function toNano(mintNormal: any) {
+    throw new Error('Function not implemented.');
 }

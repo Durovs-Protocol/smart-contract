@@ -35,15 +35,6 @@ message TestWithdrawal {
 message FeePayment {
     amount: Int as uint64;
 }
-message IncreaseTotalUsdTon {
-    user: Address;
-    amount: Int as uint64;
-}
-message DecreaseTotalUsdTon {
-    user: Address;
-    amount: Int as uint64;
-}
-
 // usdTonMaster messages
 
 struct JettonData {
@@ -59,7 +50,6 @@ struct JettonWalletData {
     master: Address;
     walletCode: Cell;
 }
-
 // userPosition messages
 
 message SetUserPositionDependecyMessage {
@@ -77,7 +67,6 @@ message SetPositionAddressMessage {
     user: Address;
     position: Address;
 }
-
 // usdTonMaster messages
 
 message MintMessage {
@@ -102,7 +91,11 @@ message BurnNotification {
     amount: Int as coins;
     userPosition: Address;
 }
-message UsdTonWereBurned {
+message UsdTonBurned {
+    user: Address;
+    amount: Int as coins;
+}
+message RunecoinBurned {
     user: Address;
     amount: Int as coins;
 }
@@ -126,7 +119,6 @@ message TokenTransferFromPositionManager {
     forwardPayload: Slice as remaining;
     deps: Deps;
 }
-
 // jetton messages
 
 message(0xf8a7ea5) TokenTransfer {

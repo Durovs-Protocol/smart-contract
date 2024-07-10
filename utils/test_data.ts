@@ -1,4 +1,4 @@
-export const tonPrice: number = 3;
+export const tonPrice: number = 2;
 export const gasFee: number = 0.2; // Стоимость газа
 export const liquidationRatio: number = 1.15;
 export const stabilityFeeRate: number = 0.05;

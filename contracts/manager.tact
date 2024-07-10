@@ -14,7 +14,6 @@ contract Manager with Deployable, OwnableTransferable {
     tonPrice: Int;
     tonPriceWithHealthRate: Int;
     totalCollateralAmount: Int as coins = 0;
-    usdTonsIssued: Int as coins = 0;
     totalFeesCollected: Int as coins = 0;
     init(owner: Address){
         self.owner = owner;
@@ -88,7 +87,6 @@ contract Manager with Deployable, OwnableTransferable {
         require(sender() == msg.user, "Invalid sender");
         let ctx: Context = context();
         require(ctx.value >= ((msg.amount + self.GasConsumption) + self.MinTonForStorage), "not enough tons sent");
-
         //TODO рассчитать газ для всех дальнейших операций сразу
 
         let valueToSendForward: Int = ((context().value - self.MinTonForStorage) - self.GasConsumption);
@@ -133,18 +131,6 @@ contract Manager with Deployable, OwnableTransferable {
         );
     }
 
-    receive(msg: IncreaseTotalUsdTon){
-        // self.usdTonsIssued = (self.usdTonsIssued + msg.amount);
-        send(SendParameters{
-                to: msg.user,
-                bounce: false,
-                value: 0,
-                mode: (SendRemainingValue + SendIgnoreErrors),
-                body: "usdTON minted".asComment()
-            }
-        );
-    }
-
     /*03 | Burn usdTON */
     receive(msg: BurnUsdTONUserMessage){
         let winit: StateInit = initOf RunecoinWallet(self.deps.runecoinAddress, msg.user);
@@ -163,18 +149,6 @@ contract Manager with Deployable, OwnableTransferable {
                     runecoinWallet: walletAddress,
                     deps: self.deps
                 }.toCell()
-            }
-        );
-    }
-
-    receive(msg: DecreaseTotalUsdTon){
-        // self.usdTonsIssued = (self.usdTonsIssued - msg.amount);
-        send(SendParameters{
-                to: msg.user,
-                bounce: false,
-                value: 0,
-                mode: (SendRemainingValue + SendIgnoreErrors),
-                body: "usdTON burned".asComment()
             }
         );
     }
@@ -302,10 +276,6 @@ contract Manager with Deployable, OwnableTransferable {
         return self.tonPriceWithHealthRate;
     }
 
-    get fun usdTonsIssued(): Int {
-        return self.usdTonsIssued;
-    }
-
     get fun totalCollateralAmount(): Int {
         return self.totalCollateralAmount;
     }
@@ -315,9 +285,5 @@ contract Manager with Deployable, OwnableTransferable {
         let winit: StateInit = initOf RunecoinWallet(self.deps.runecoinAddress, user);
         let walletAddress: Address = contractAddress(winit);
         return walletAddress;
-    }
-
-    get fun totalIssued(): Int {
-        return self.usdTonsIssued;
     }
 }
