@@ -76,7 +76,7 @@ contract UserPosition  {
     //=============================================================================
     receive(msg: DepositCollateralMessage) {
         require(sender() == self.managerAddress, "not from positionsManager");
-
+        
         if (self.runesWallet == newAddress(0, 0)) {
             self.runesWallet = msg.runesWallet;
         }
@@ -140,34 +140,51 @@ contract UserPosition  {
             return;
         }
 
-        let fee: Int = (amountToBurn * 50000000) /  msg.tonPrice;
+        let fee: Int = (amountToBurn * 50000000) / 1000000000;
 
-        if (fee > (myBalance() - self.GasConsumption)) {
+        send(SendParameters{
+            to: self.runesWallet,
+            value: ton("0.08"),
+            bounce: true,
+                body: RuneTransfer {
+                    queryId: 0,
+                    amount: fee,
+                    destination: self.poolAddress,
+                    responseDestination: msg.user,
+                    usdton: self.usdTonAddress,
+                    manager: self.managerAddress,
+                    pool: self.poolAddress,
+                    customPayload: createOffchainContent("custom"),
+                    forwardTonAmount: 0,
+                    forwardPayload: createOffchainContent("forward").asSlice()
+                }.toCell()
+        });
+        // if (fee > (myBalance() - self.GasConsumption)) {
 
-            send(SendParameters{
-                to: msg.user,
-                bounce: false,
-                value: 0,
-                mode: (SendRemainingValue + SendIgnoreErrors),
-                body: "Burn error: not enough ton to cover fee".asComment()
-            });
-            return;
-        }
+        //     send(SendParameters{
+        //         to: msg.user,
+        //         bounce: false,
+        //         value: 0,
+        //         mode: (SendRemainingValue + SendIgnoreErrors),
+        //         body: "Burn error: not enough ton to cover fee".asComment()
+        //     });
+        //     return;
+        // }
 
         self.setMessage("stables are going to burn...");
 
         // Отправка дохода в пул
-        send(SendParameters{to: self.poolAddress, 
-            bounce: true, 
-            value: fee, 
-            mode: SendPayGasSeparately + SendIgnoreErrors, 
-            body: FeePayment{amount: fee}.toCell()
-        });
+        // send(SendParameters{to: self.poolAddress, 
+        //     bounce: true, 
+        //     value: fee, 
+        //     mode: SendPayGasSeparately + SendIgnoreErrors, 
+        //     body: FeePayment{amount: fee}.toCell()
+        // });
 
         // Сжигание
         send(SendParameters{
             to: self.usdTonAddress, 
-            value: ton("0.05"),
+            value: ton("0.04"),
             mode:  SendIgnoreErrors, 
             bounce: true,
             body: BurnMessage {

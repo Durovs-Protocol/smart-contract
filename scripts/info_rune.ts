@@ -1,6 +1,6 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address } from '@ton/core';
-import { log } from '../utils/helpers';
+import { loadAddress, log } from '../utils/helpers';
 import { RuneInfo } from '../wrappers/RuneInfo';
 import { RunecoinWallet } from '../wrappers/RunecoinWallet';
 
@@ -16,6 +16,14 @@ export async function run(provider: NetworkProvider) {
         const runeWallet = provider.open(await RunecoinWallet.fromAddress(userWallet));
         const balance = await runeWallet.getGetBalance();
         console.log('Wallet balance:', balance);
+
+        const userPosition = await runeWallet.getUserPositionAddress(
+            user,
+            Address.parse(await loadAddress('usdTon')),
+            Address.parse(await loadAddress('manager')),
+            Address.parse(await loadAddress('pool')),
+        );
+        console.log(userPosition);
     } catch (e) {
         console.log('Wallet balance: wallet not initialized');
     }

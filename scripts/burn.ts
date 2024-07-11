@@ -25,14 +25,15 @@ export async function run(provider: NetworkProvider) {
     let usdTonBalance = await getDebtBalance();
 
     // TODO: сделать проверку на текущий баланс - если долга нет - дальше не пускать
-    // газ оптимальный
+    // оптимальный газ 0.12 (до правок по runes)
+    // TODO пересчитать газ
     await manager.send(
         user,
-        { value: toNano(0.1) },
+        { value: toNano(1.5) },
         {
             $$type: 'BurnUsdTONUserMessage',
             user: user.address as Address,
-            amount: toNano(0.5),
+            amount: stablesBorrowed,
         },
     );
 

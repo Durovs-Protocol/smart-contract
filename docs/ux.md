@@ -12,7 +12,8 @@
     - `yarn deploy-pool`
     - `yarn deploy-manager`
     - `yarn deploy-usdton`
-    - `yarn deploy-runecoin`
+
+    - `deploy-runes`
     - Проверить выполнение: в папке вида `deploy/{contract_name}.address` должны лежать все адреса контрактов
 
 4. `yarn setup`
@@ -22,13 +23,12 @@
 
 # Получение информации
 
-1. `yarn rune-info` - получает данные о состоянии хранилища владельца
+> `yarn rune-info` - получить кошелек rune
+> `yarn get-info` (Получение информации о позиции пользователя) - использовать после сброки, деплоя и запуска yarn add-supply
 
 # User flow
 
-> `yarn get-info` (Получение информации о позиции пользователя) - использовать после сброки, деплоя и запуска yarn add-supply
-
-1. `yarn get-runes` (Получение runecoins пользователем, копируем полученный кошелек из консоли и передаем при взятии залога)
+1. `yarn get-runes` (Получение runecoins пользователем, через info скрипт берем новый адрес кошелька (убедиться что он новый!!))
 2. `yarn add-supply` (Внесение обеспечения (Для проверки баланса использовать скрипт `yarn get-info`(в случае ошибки Exit code: -256 )))
     - collateral: 2, debt:0
 3. `yarn mint` (Перечесление usdTon пользователю)

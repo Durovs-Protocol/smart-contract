@@ -30,15 +30,16 @@ export async function run(provider: NetworkProvider) {
 
     // Отправляем в пулл средства через метод смарт-контракта менеджера: DepositCollateralUserMessage
     // тут передан оптимальный газ
-    // await manager.send(
-    //     user,
-    //     { value: collateralAmount + toNano(0.1) },
-    //     {
-    //         $$type: 'DepositCollateralUserMessage',
-    //         user: user.address as Address,
-    //         amount: collateralAmount,
-    //     },
-    // );
+    await manager.send(
+        user,
+        { value: collateralAmount + toNano(0.1) },
+        {
+            $$type: 'DepositCollateralUserMessage',
+            user: user.address as Address,
+            amount: collateralAmount,
+            runesWallet: Address.parse('EQCs51Op3zgu_MjJ0PnhGV7m3S-RFsoc1heWmVVmk20lO3jV'),
+        },
+    );
 
     console.log(`currentPositionId | ${currentPositionId}`);
     if (currentPositionId <= 0) {
