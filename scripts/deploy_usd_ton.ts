@@ -5,10 +5,10 @@ import { UsdTonMaster } from '../wrappers/UsdTon';
 
 export async function run(provider: NetworkProvider) {
     const jettonParams = {
-        name: 'yt10',
-        symbol: '11',
-        description: '11',
-        image: '',
+        name: `yt-${Date.now()}`,
+        symbol: 'YT',
+        description: '-',
+        image: 'https://ipfs.io/ipfs/QmPSGcz4TyDo3qShEymZRQRavKKRRbiLPHYs9GUgbtwEwx',
     };
     const owner = provider.sender().address as Address;
     const usdTon = provider.open(await UsdTonMaster.fromInit(owner, buildOnchainMetadata(jettonParams)));

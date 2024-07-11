@@ -80,13 +80,13 @@ contract Manager with Deployable, OwnableTransferable {
         let init: StateInit = initOf UserPosition(msg.user,
             self.deps.usdTonAddress,
             self.deps.managerAddress,
-            self.deps.poolAddress,
-            self.deps.runecoinAddress
+            self.deps.poolAddress
         );
         let userPosition: Address = contractAddress(init);
         require(sender() == msg.user, "Invalid sender");
         let ctx: Context = context();
         require(ctx.value >= ((msg.amount + self.GasConsumption) + self.MinTonForStorage), "not enough tons sent");
+
         //TODO рассчитать газ для всех дальнейших операций сразу
 
         let valueToSendForward: Int = ((context().value - self.MinTonForStorage) - self.GasConsumption);
@@ -99,7 +99,8 @@ contract Manager with Deployable, OwnableTransferable {
                     user: msg.user,
                     amount: msg.amount,
                     settings: self.poolSettings,
-                    tonPriceWithHealthRate: self.tonPriceWithHealthRate
+                    tonPriceWithHealthRate: self.tonPriceWithHealthRate,
+                    runesWallet: msg.runesWallet
                 }.toCell(),
                 code: init.code,
                 data: init.data
@@ -239,8 +240,7 @@ contract Manager with Deployable, OwnableTransferable {
         let init: StateInit = initOf UserPosition(user,
             self.deps.usdTonAddress,
             self.deps.managerAddress,
-            self.deps.poolAddress,
-            self.deps.runecoinAddress
+            self.deps.poolAddress
         );
         return contractAddress(init);
     }

@@ -26,7 +26,7 @@ contract UserPosition  {
     const GasConsumption: Int = ton("0.02");
     user: Address;
     usdTonAddress: Address;
-    runecoinAddress: Address;
+    runesWallet: Address;
     managerAddress: Address;
     poolAddress: Address;
 
@@ -34,13 +34,13 @@ contract UserPosition  {
     message: Message;
     liquidationParams: LiquidationParams;
 
-    init(user: Address, usdTonAddress: Address, managerAddress: Address, poolAddress: Address, runecoinAddress: Address) {
+    init(user: Address, usdTonAddress: Address, managerAddress: Address, poolAddress: Address) {
         self.user = user; 
         self.usdTonAddress = usdTonAddress;
-        self.runecoinAddress = runecoinAddress;
 
         self.managerAddress = managerAddress;
         self.poolAddress = poolAddress;
+        self.runesWallet =  newAddress(0, 0);
 
         self.message = Message{
             timestamp: 0,
@@ -76,6 +76,10 @@ contract UserPosition  {
     //=============================================================================
     receive(msg: DepositCollateralMessage) {
         require(sender() == self.managerAddress, "not from positionsManager");
+
+        if (self.runesWallet == newAddress(0, 0)) {
+            self.runesWallet = msg.runesWallet;
+        }
 
         let ctx: Context = context();
         let remainingValue: Int = (ctx.value - ((msg.amount + self.MinTonsForStorage) + self.GasConsumption));

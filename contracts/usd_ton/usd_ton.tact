@@ -157,7 +157,7 @@ contract UsdTonMaster with Jetton, Deployable {
     }
 
     fun _userPositionAddress(user: Address): Address {
-        let init: StateInit = initOf UserPosition(user, self.deps.usdTonAddress, self.deps.managerAddress, self.deps.poolAddress, self.deps.runecoinAddress);
+        let init: StateInit = initOf UserPosition(user, self.deps.usdTonAddress, self.deps.managerAddress, self.deps.poolAddress);
         let userPositionAddress: Address = contractAddress(init);
         return userPositionAddress;
     }

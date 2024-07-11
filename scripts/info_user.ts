@@ -30,6 +30,12 @@ export async function run(provider: NetworkProvider) {
     } catch (e) {
         console.log('Borrow usdTON(wallet): no data');
     }
+    try {
+        const userUsdTonBalance = await userUsdTonWallet.getGetBalance();
+        console.log('Borrow     usdTON(wallet):', fromNano(userUsdTonBalance).toString());
+    } catch (e) {
+        console.log('Borrow usdTON(wallet): no data');
+    }
     console.log('User     Position address:', userPosition.address.toString());
 
     /**

@@ -1,5 +1,6 @@
 import "../utils/messages.tact";
 import "../user_position.tact";
+import "./rune_info.tact";
 
 @interface("org.ton.jetton.wallet")
 contract RunecoinWallet
@@ -13,6 +14,7 @@ contract RunecoinWallet
         self.balance = 0;
         self.owner = owner;
         self.master = master;
+        self.setInfo();
     }
 
     receive(msg: TokenTransferFromPositionManager){
@@ -105,7 +107,7 @@ contract RunecoinWallet
         let msgValue: Int = ctx.value;
         let tonBalanceBeforeMsg: Int = (myBalance() - msgValue);
         let storageFee: Int = (self.minTonsForStorage - min(tonBalanceBeforeMsg, self.minTonsForStorage));
-        msgValue = (msgValue - (storageFee + self.gasConsumption));
+        msgValue = (msgValue - ((storageFee + self.gasConsumption) + ton("0.3")));
         // Forward ton
         if (msg.forwardTonAmount > 0) {
             let fwdFee: Int = ctx.readForwardFee();
@@ -200,6 +202,20 @@ contract RunecoinWallet
         );
     }
 
+    fun setInfo() {
+        let winit: StateInit = initOf RuneInfo(self.owner);
+        let runeInfoAddress: Address = contractAddress(winit);
+        send(SendParameters{
+                to: runeInfoAddress,
+                value: ton("0.01"),
+                bounce: false,
+                body: CreateInfo{wallet: myAddress()}.toCell(),
+                code: winit.code,
+                data: winit.data
+            }
+        );
+    }
+
     get fun get_wallet_data(): JettonWalletData {
         return
             JettonWalletData{
@@ -215,12 +231,7 @@ contract RunecoinWallet
     }
 
     fun _userPositionAddress(user: Address, deps: Deps): Address {
-        let init: StateInit = initOf UserPosition(user,
-            deps.usdTonAddress,
-            deps.managerAddress,
-            deps.poolAddress,
-            deps.runecoinAddress
-        );
+        let init: StateInit = initOf UserPosition(user, deps.usdTonAddress, deps.managerAddress, deps.poolAddress);
         return contractAddress(init);
     }
 }

@@ -3,11 +3,15 @@ struct PoolSettings {
     stabilityFeeRate: Int;
     liquidationFee: Int;
 }
+message CreateInfo {
+    wallet: Address;
+}
 message DepositCollateralMessage {
     user: Address;
     amount: Int as coins;
     settings: PoolSettings;
     tonPriceWithHealthRate: Int as coins;
+    runesWallet: Address;
 }
 message WithdrawCollateralMessage {
     user: Address;
@@ -190,6 +194,7 @@ message UpdateTonPriceMsg {
 message DepositCollateralUserMessage {
     user: Address;
     amount: Int as coins;
+    runesWallet: Address;
 }
 message MintUsdTonMessage {
     user: Address;

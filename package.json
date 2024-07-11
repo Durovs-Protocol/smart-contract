@@ -6,7 +6,7 @@
         "run-script": "npx blueprint run --testnet --mnemonic --tonviewer",
         "action": "blueprint run",
         "blueprint-build": "blueprint build",
-        "build": "rm -rf build && blueprint build manager && blueprint build pool  && blueprint build usdTon  && blueprint build userPosition && blueprint build usdTonWallet && blueprint build runecoinOwner  && blueprint build runecoin && blueprint build runecoinWallet",
+        "build": "rm -rf build && blueprint build manager && blueprint build pool  && blueprint build usdTon  && blueprint build userPosition && blueprint build usdTonWallet && blueprint build runecoinOwner  && blueprint build runecoin && blueprint build runecoinWallet && blueprint build runeInfo",
         "test": "jest --verbose",
 
         "install": "yarn build && yarn deploy && yarn setup",
@@ -14,11 +14,9 @@
         "deploy-pool": "yarn run-script deploy_pool",
         "deploy-manager": "yarn run-script deploy_manager",
         "deploy-usdton": "yarn run-script deploy_usd_ton",
-        "deploy-runes-owner": "yarn run-script deploy_runecoin_owner",
-        "deploy-runecoin": "yarn run-script deploy_send_runecoin_to_owner",
-        
+
+        "deploy-runes": "yarn run-script deploy_runecoin",
         "deploy": "yarn deploy-pool && yarn deploy-manager && yarn deploy-usdton",
-        "deploy-runes": "arn deploy-runes-owner && yarn deploy-runecoin",
 
         
         "set-deps": "yarn run-script set_deps",
@@ -36,6 +34,8 @@
 
         "info-system": "yarn run-script info_system",
         "info-user": "yarn run-script info_user",
+        "info-rune": "yarn run-script info_rune",
+
         "withdraw-pool": "yarn run-script withdraw_pool"
     },
     "devDependencies": {
