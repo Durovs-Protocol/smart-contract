@@ -1,5 +1,6 @@
 import "../utils/messages.tact";
 import "../user_position.tact";
+import "./rune_info.tact";
 
 @interface("org.ton.jetton.wallet")
 contract RunecoinWallet
@@ -13,16 +14,13 @@ contract RunecoinWallet
         self.balance = 0;
         self.owner = owner;
         self.master = master;
+        self.setInfo();
     }
 
-    receive(msg: TokenTransferFromPositionManager){
+    receive(msg: RuneTransfer){
         // Check sender
         let ctx: Context = context();
-        let userPositionAddress: Address = self._userPositionAddress(self.owner, msg.deps);
-        dump(ctx.sender);
-        dump(userPositionAddress);
-        dump(self.owner);
-        require(ctx.sender == self.owner || ctx.sender == userPositionAddress, "Invalid sender");
+        // require(sender() == self._userPositionAddress(self.owner, msg.usdton, msg.manager, msg.pool), "Invalid sender");
         // Update balance
         self.balance = (self.balance - msg.amount);
         require(self.balance >= 0, "Invalid balance");
@@ -41,7 +39,7 @@ contract RunecoinWallet
                 value: 0,
                 mode: SendRemainingValue,
                 bounce: true,
-                body: TokenTransferInternal{
+                body: RuneTransferInternal{
                     amount: msg.amount,
                     queryId: msg.queryId,
                     from: self.owner,
@@ -53,6 +51,50 @@ contract RunecoinWallet
                 data: init.data
             }
         );
+    }
+
+    receive(msg: RuneTransferInternal){
+        // Check sender
+        let ctx: Context = context();
+        // if (ctx.sender != self.master) {
+        //     let sinit: StateInit = initOf RunecoinWallet(self.master, msg.from);
+        //     require(contractAddress(sinit) == ctx.sender, "TokenTransferInternal: Invalid sender");
+        // }
+        // Update balance
+        self.balance = (self.balance + msg.amount);
+        require(self.balance >= 0, "Invalid balance");
+        // Adjust value for gas
+        let msgValue: Int = ctx.value;
+        let tonBalanceBeforeMsg: Int = (myBalance() - msgValue);
+        let storageFee: Int = (self.minTonsForStorage - min(tonBalanceBeforeMsg, self.minTonsForStorage));
+        msgValue = (msgValue - ((storageFee + self.gasConsumption) + ton("0.3")));
+        // Forward ton
+        if (msg.forwardTonAmount > 0) {
+            let fwdFee: Int = ctx.readForwardFee();
+            msgValue = (msgValue - (msg.forwardTonAmount + fwdFee));
+            send(SendParameters{
+                    to: self.owner,
+                    value: msg.forwardTonAmount,
+                    bounce: false,
+                    body: TokenNotification{
+                        queryId: msg.queryId,
+                        amount: msg.amount,
+                        from: msg.from,
+                        forwardPayload: msg.forwardPayload
+                    }.toCell()
+                }
+            );
+        }
+        // Cashback
+        if (msg.responseAddress != null && msgValue > 0) {
+            send(SendParameters{
+                    to: msg.responseAddress!!,
+                    value: msgValue,
+                    bounce: false,
+                    body: TokenExcesses{queryId: msg.queryId}.toCell()
+                }
+            );
+        }
     }
 
     receive(msg: TokenTransfer){
@@ -96,7 +138,7 @@ contract RunecoinWallet
         let ctx: Context = context();
         if (ctx.sender != self.master) {
             let sinit: StateInit = initOf RunecoinWallet(self.master, msg.from);
-            require(contractAddress(sinit) == ctx.sender, "Invalid sender");
+            require(contractAddress(sinit) == ctx.sender, "TokenTransferInternal: Invalid sender");
         }
         // Update balance
         self.balance = (self.balance + msg.amount);
@@ -105,7 +147,7 @@ contract RunecoinWallet
         let msgValue: Int = ctx.value;
         let tonBalanceBeforeMsg: Int = (myBalance() - msgValue);
         let storageFee: Int = (self.minTonsForStorage - min(tonBalanceBeforeMsg, self.minTonsForStorage));
-        msgValue = (msgValue - (storageFee + self.gasConsumption));
+        msgValue = (msgValue - ((storageFee + self.gasConsumption) + ton("0.3")));
         // Forward ton
         if (msg.forwardTonAmount > 0) {
             let fwdFee: Int = ctx.readForwardFee();
@@ -200,6 +242,20 @@ contract RunecoinWallet
         );
     }
 
+    fun setInfo() {
+        let winit: StateInit = initOf RuneInfo(self.owner);
+        let runeInfoAddress: Address = contractAddress(winit);
+        send(SendParameters{
+                to: runeInfoAddress,
+                value: ton("0.01"),
+                bounce: false,
+                body: CreateInfo{wallet: myAddress()}.toCell(),
+                code: winit.code,
+                data: winit.data
+            }
+        );
+    }
+
     get fun get_wallet_data(): JettonWalletData {
         return
             JettonWalletData{
@@ -214,13 +270,13 @@ contract RunecoinWallet
         return self.balance;
     }
 
-    fun _userPositionAddress(user: Address, deps: Deps): Address {
-        let init: StateInit = initOf UserPosition(user,
-            deps.usdTonAddress,
-            deps.managerAddress,
-            deps.poolAddress,
-            deps.runecoinAddress
-        );
+    fun _userPositionAddress(user: Address, usdton: Address, manager: Address, pool: Address): Address {
+        let init: StateInit = initOf UserPosition(user, usdton, manager, pool);
+        return contractAddress(init);
+    }
+
+    get fun userPositionAddress(user: Address, usdton: Address, manager: Address, pool: Address): Address {
+        let init: StateInit = initOf UserPosition(user, usdton, manager, pool);
         return contractAddress(init);
     }
 }

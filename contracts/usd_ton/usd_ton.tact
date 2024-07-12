@@ -44,7 +44,7 @@ contract UsdTonMaster with Jetton, Deployable {
 
     receive(msg: Mint) {
         self.requireOwner();
-        self.mint(sender(), msg.amount, sender(), myBalance());
+        self.mint(sender(), msg.amount, sender());
     }
 
     // usdTon handlers
@@ -55,35 +55,23 @@ contract UsdTonMaster with Jetton, Deployable {
         todo add 
     */
     receive(msg: MintMessage) {
-        // let userPositionAddress: Address = self._userPositionAddress(msg.user);
+        //let userPositionAddress: Address = self._userPositionAddress(msg.user);
         //TODO проверка отправителя
         //require(sender() == userPositionAddress, "invalid sender");
+        // let ctx: Context = context();
+        // let value: Int = ctx.value - ton("0.005");
 
-        let ctx: Context = context();
-        let value: Int = ctx.value - ton("0.15");
-
-        self.mint(msg.user, msg.amount, msg.user, value);
-
-        send(SendParameters{
-            to: self.deps.managerAddress, 
-            value: ton("0.1"),
-            bounce: false,
-            body: IncreaseTotalUsdTon{
-                user: msg.user,
-                amount: msg.amount
-            }.toCell()
-        });
+        self.mint(msg.user, msg.amount, msg.user);
     }
 
     receive(msg: DexMessage) {
-        let ctx: Context = context();
-        let value: Int = ctx.value - ton("0.15");
+
         // имитация покупки, выпуск без увелиячения значения supply
         let winit: StateInit = self.getJettonWalletInit(msg.user);
         let walletAddress: Address = contractAddress(winit);
-        send(SendParameters{
+        send(SendParameters {
                 to: walletAddress,
-                value: value,
+                value: ton("0.03"),
                 bounce: false,
                 body: TokenTransferInternal{
                     amount: msg.amount,
@@ -98,15 +86,18 @@ contract UsdTonMaster with Jetton, Deployable {
             }
         );
         // оповещение об успешной покупке
-        send(SendParameters{
+        send(SendParameters {
             to: msg.user, 
-            value: ton("0.1"),
-            bounce: true,
+            value: ton("0.07"),
+            bounce: false,
             body: DexNotification {
                 amount: msg.amount,
                 user: msg.user
             }.toCell()
         });
+
+
+
     }
 
     /*
@@ -148,7 +139,7 @@ contract UsdTonMaster with Jetton, Deployable {
             value: 0, 
             bounce: false,
             mode: SendRemainingValue + SendIgnoreErrors,
-            body: UsdTonWereBurned{ 
+            body: UsdTonBurned{ 
                 amount: msg.amount,
                 user: msg.user,
             }.toCell()
@@ -162,11 +153,11 @@ contract UsdTonMaster with Jetton, Deployable {
     */
     receive(msg: WithdrawFeesMessage) {
         require(sender() == self.deps.poolAddress, "not from pool");
-        self.mint(msg.to, msg.amount, msg.to, myBalance());
+        self.mint(msg.to, msg.amount, msg.to);
     }
 
     fun _userPositionAddress(user: Address): Address {
-        let init: StateInit = initOf UserPosition(user, self.deps.usdTonAddress, self.deps.managerAddress, self.deps.poolAddress, self.deps.runecoinAddress);
+        let init: StateInit = initOf UserPosition(user, self.deps.usdTonAddress, self.deps.managerAddress, self.deps.poolAddress);
         let userPositionAddress: Address = contractAddress(init);
         return userPositionAddress;
     }

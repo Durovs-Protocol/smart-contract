@@ -26,21 +26,21 @@ contract UserPosition  {
     const GasConsumption: Int = ton("0.02");
     user: Address;
     usdTonAddress: Address;
-    runecoinAddress: Address;
+    runesWallet: Address;
     managerAddress: Address;
     poolAddress: Address;
-    collateral: Int as coins = 0;
+
     debt: Int = 0;
     message: Message;
     liquidationParams: LiquidationParams;
 
-    init(user: Address, usdTonAddress: Address, managerAddress: Address, poolAddress: Address, runecoinAddress: Address) {
+    init(user: Address, usdTonAddress: Address, managerAddress: Address, poolAddress: Address) {
         self.user = user; 
         self.usdTonAddress = usdTonAddress;
-        self.runecoinAddress = runecoinAddress;
 
         self.managerAddress = managerAddress;
         self.poolAddress = poolAddress;
+        self.runesWallet =  newAddress(0, 0);
 
         self.message = Message{
             timestamp: 0,
@@ -76,10 +76,14 @@ contract UserPosition  {
     //=============================================================================
     receive(msg: DepositCollateralMessage) {
         require(sender() == self.managerAddress, "not from positionsManager");
+        
+        if (self.runesWallet == newAddress(0, 0)) {
+            self.runesWallet = msg.runesWallet;
+        }
 
         let ctx: Context = context();
         let remainingValue: Int = (ctx.value - ((msg.amount + self.MinTonsForStorage) + self.GasConsumption));
-        self.collateral = self.collateral + msg.amount;
+ 
         
         self.setMessage("Collateral added");
         let comment: StringBuilder = beginString();
@@ -97,7 +101,9 @@ contract UserPosition  {
 
         let debtAfterWithdraw: Int = (self.debt + msg.amount);
 
-        if (!self.isPositionHealthy(self.collateral, debtAfterWithdraw, msg.tonPriceWithHealthRate, msg.settings)){
+        let balance: Int = myBalance() - (self.GasConsumption + self.MinTonsForStorage);
+
+        if (!self.isPositionHealthy(balance, debtAfterWithdraw, msg.tonPriceWithHealthRate, msg.settings)) {
             self.unhealthyPositionHandler(msg.user);
             return;
         } 
@@ -116,7 +122,6 @@ contract UserPosition  {
 
         self.debt = debtAfterWithdraw;
         self.setMessage("UsdToncoins sent");
-
     }
 
     /*03 | Burn usdTON */
@@ -129,36 +134,58 @@ contract UserPosition  {
             self.setMessage("Your debt is less than you want to repay, charge sent back");
             amountToBurn = self.debt;
         }
-
-        let fee: Int = (amountToBurn * 50000000) /  msg.tonPrice;
-
-        if (fee > (myBalance() - self.GasConsumption)) {
-
-            send(SendParameters{
-                to: msg.user,
-                bounce: false,
-                value: 0,
-                mode: (SendRemainingValue + SendIgnoreErrors),
-                body: "Burn error: not enough ton to cover fee".asComment()
-            });
+        let balance: Int = myBalance() - (self.GasConsumption + self.MinTonsForStorage);
+        if (!self.isPositionHealthy(balance, self.debt - msg.amount, msg.tonPriceWithHealthRate, msg.settings)) {
+            self.unhealthyPositionHandler(msg.user);
             return;
         }
+
+        let fee: Int = (amountToBurn * 50000000) / 1000000000;
+
+        send(SendParameters{
+            to: self.runesWallet,
+            value: ton("0.08"),
+            bounce: true,
+                body: RuneTransfer {
+                    queryId: 0,
+                    amount: fee,
+                    destination: self.poolAddress,
+                    responseDestination: msg.user,
+                    usdton: self.usdTonAddress,
+                    manager: self.managerAddress,
+                    pool: self.poolAddress,
+                    customPayload: createOffchainContent("custom"),
+                    forwardTonAmount: 0,
+                    forwardPayload: createOffchainContent("forward").asSlice()
+                }.toCell()
+        });
+        // if (fee > (myBalance() - self.GasConsumption)) {
+
+        //     send(SendParameters{
+        //         to: msg.user,
+        //         bounce: false,
+        //         value: 0,
+        //         mode: (SendRemainingValue + SendIgnoreErrors),
+        //         body: "Burn error: not enough ton to cover fee".asComment()
+        //     });
+        //     return;
+        // }
 
         self.setMessage("stables are going to burn...");
 
         // Отправка дохода в пул
-        send(SendParameters{to: self.poolAddress, 
-            bounce: true, 
-            value: fee, 
-            mode: SendPayGasSeparately + SendIgnoreErrors, 
-            body: FeePayment{amount: fee}.toCell()
-        });
+        // send(SendParameters{to: self.poolAddress, 
+        //     bounce: true, 
+        //     value: fee, 
+        //     mode: SendPayGasSeparately + SendIgnoreErrors, 
+        //     body: FeePayment{amount: fee}.toCell()
+        // });
 
         // Сжигание
         send(SendParameters{
             to: self.usdTonAddress, 
-            value: 0,
-            mode: SendRemainingValue + SendIgnoreErrors, 
+            value: ton("0.04"),
+            mode:  SendIgnoreErrors, 
             bounce: true,
             body: BurnMessage {
                 user: msg.user,
@@ -169,7 +196,7 @@ contract UserPosition  {
     }
 
     /*03 |from usdTonMaster'*/
-    receive(msg: UsdTonWereBurned) {
+    receive(msg: UsdTonBurned) {
 
         require(sender() == self.usdTonAddress, "not from usdTon");
 
@@ -177,28 +204,34 @@ contract UserPosition  {
         self.debt = self.debt - msg.amount;
 
         if (self.message.message == "liquidationProcess") {
-            self.setMessage("position liquidated");
-        } else {
-            self.setMessage("you've paid stables back");
-        }
-
+        self.setMessage("position liquidated");
+        // Отчисление остатков после ликвидации в пул
         send(SendParameters{
-            to: self.managerAddress, 
+            to: self.poolAddress, 
             value: 0,
             mode: SendRemainingValue + SendIgnoreErrors,
-            bounce: true,
-            body: DecreaseTotalUsdTon {
-                user: msg.user,
-                amount: msg.amount
-            }.toCell()
+            bounce: false,
         });
+        } else {
+        self.setMessage("you've paid stables back");
+         // возврат пользователю остатков газа при сжигании
+        send(SendParameters{
+            to: msg.user, 
+            value: 0,
+            mode: SendRemainingValue + SendIgnoreErrors,
+            bounce: false,
+            body: self.message.message.asComment()
+        });
+        }
+
+
     }
 
     /*04 | Возврат обеспечения (from manager)'*/
     receive(msg: WithdrawCollateralMessage) {
         require(sender() == self.managerAddress, "not from positions manager");
-
-        if (msg.amount  > self.collateral) {
+        let balance: Int = myBalance() - (self.GasConsumption + self.MinTonsForStorage);
+        if (msg.amount  > balance) {
             send(SendParameters{
                 to: msg.user,
                 bounce: false,
@@ -208,8 +241,7 @@ contract UserPosition  {
             });
             return;
         }
-
-        let collateralAfterWithdraw: Int = self.collateral - msg.amount;
+        let collateralAfterWithdraw: Int = balance - msg.amount;
 
 
         if (!self.isPositionHealthy(collateralAfterWithdraw, self.debt, msg.tonPriceWithHealthRate, msg.settings)) {
@@ -219,15 +251,15 @@ contract UserPosition  {
 
         send(SendParameters{to: msg.user, bounce: false, value: msg.amount, mode:  SendIgnoreErrors + SendPayGasSeparately });
 
-        self.collateral = collateralAfterWithdraw;
+
         self.setMessage("collateral sent back to yor wallet");
 
     }
     /*05 | Ликвидация (from manager)'*/
     receive(msg: PositionLiquidation) {
         require(sender() == self.managerAddress, "not from positions manager");
-
-        if (self.isPositionHealthy(self.collateral, self.debt, msg.tonPriceWithHealthRate, msg.settings)) {
+        let balance: Int = myBalance() - (self.GasConsumption + self.MinTonsForStorage);
+        if (self.isPositionHealthy(balance, self.debt, msg.tonPriceWithHealthRate, msg.settings)) {
             send(SendParameters{
                 to: sender(),
                 bounce: false,
@@ -242,7 +274,7 @@ contract UserPosition  {
 
         let liquidationAmount: Int = self.debt;
         let liquidationDebt: Int = 0;
-        let accountBalance: Int = myBalance() - (self.MinTonsForStorage + self.GasConsumption + ton("0.1"));
+        let accountBalance: Int = myBalance() - (self.MinTonsForStorage + self.GasConsumption + ton("0.15"));
         // если невозможно оплатить всю позицию рассчитывается задолженность по ней
         if (accountBalance < tonForBurn) {
           liquidationDebt = liquidationAmount - ((accountBalance * msg.tonPrice) / 1000000000);
@@ -256,7 +288,7 @@ contract UserPosition  {
             tonForBurn: tonForBurn,
             fee: 0,
             accountBalance: accountBalance,
-            liquidationAmount: liquidationAmount,
+            liquidationAmount: liquidationAmount - liquidationDebt,
             liquidationDebt: liquidationDebt,
             feeDebt: 0,
             tonPrice: msg.tonPrice
@@ -265,21 +297,22 @@ contract UserPosition  {
         // покупка usdton для последующего сжигания
         send(SendParameters {
             to: self.usdTonAddress, 
-            value: 0,
-            mode: SendRemainingValue, 
+            value: ton("0.12"),
             bounce: true,
             body: DexMessage{
                 user: myAddress(),
                 amount: liquidationAmount - liquidationDebt
             }.toCell()
         });
+
+        send(SendParameters{to: self.poolAddress, bounce: false, value: self.liquidationParams.tonForBurn, mode: SendPayGasSeparately, body: FeePayment{amount: self.liquidationParams.tonForBurn}.toCell()});
     }
 
     receive(msg: DexNotification) {
         // сжигание купленных токенов с кошелька позиции
         send(SendParameters {
             to: self.usdTonAddress, 
-            value: ton("0.06"),
+            value: ton("0.04"),
             body: BurnMessage {
                 user: myAddress(),
                 amount: msg.amount,
@@ -292,7 +325,7 @@ contract UserPosition  {
         let feeDebt: Int = 0;
 
 
-        let accountBalance: Int = myBalance() - self.GasConsumption;
+        let accountBalance: Int = myBalance() - ton("0.02");
         // расчет наличия долга по комиссии
         if (fee > accountBalance) {
             fee = accountBalance;
@@ -309,8 +342,9 @@ contract UserPosition  {
             tonPrice: self.liquidationParams.tonPrice,
         });
         
-        //отправка ton в pool
-        send(SendParameters{to: self.poolAddress, bounce: false, value: fee, mode: SendPayGasSeparately, body: FeePayment{amount: fee}.toCell()});
+
+        //отправка ton в pool комиссии
+        send(SendParameters{to: self.poolAddress, bounce: false, value: 0, mode: SendRemainingBalance, body: FeePayment{amount: fee}.toCell()});
         // SendRemainingBalance если звахотим отправить весь баланс;
     }
 
@@ -352,7 +386,6 @@ contract UserPosition  {
         self.liquidationParams = params;
     }
 
-
     //=============================================================================
     // Offchain interface
     //=============================================================================
@@ -362,7 +395,7 @@ contract UserPosition  {
 
     get fun positionState(): PositionState  {
         return PositionState{
-            collateral: self.collateral,
+            collateral: myBalance(),
             debt: self.debt
         };
     }
@@ -370,7 +403,8 @@ contract UserPosition  {
     get fun message(): Message {
         return self.message;
     }
-        get fun comment(): LiquidationParams {
+
+    get fun liquidationParams(): LiquidationParams {
         return self.liquidationParams;
     }
 }

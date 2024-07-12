@@ -21,6 +21,29 @@ contract Runecoin with Jetton, Deployable {
         self.content = content;
         self.message = "";
     }
+    receive(msg: DexMessage) {
+        // имитация покупки, выпуск без увелиячения значения supply
+        let winit: StateInit = self.getJettonWalletInit(msg.user);
+        let walletAddress: Address = contractAddress(winit);
+
+        send(SendParameters {
+                to: walletAddress,
+                value: 0,
+                mode: SendRemainingValue,
+                bounce: true,
+                body: TokenTransferInternal{
+                    amount: msg.amount,
+                    queryId: 0,
+                    from: myAddress(),
+                    responseAddress: msg.user,
+                    forwardTonAmount: 0,
+                    forwardPayload: emptySlice()
+                }.toCell(),
+                code: winit.code,
+                data: winit.data
+            }
+        );
+    }
 
 
     receive(msg: Mint) {
@@ -53,7 +76,7 @@ contract Runecoin with Jetton, Deployable {
             value: 0, 
             bounce: false,
             mode: SendRemainingValue + SendIgnoreErrors,
-            body: UsdTonWereBurned{ 
+            body: RunecoinBurned{ 
                 amount: msg.amount,
                 user: msg.user,
             }.toCell()
@@ -69,5 +92,9 @@ contract Runecoin with Jetton, Deployable {
         return self.message;
     }
 
-
+    get fun myWallet(): Address {
+        let winit: StateInit = self.getJettonWalletInit(sender());
+        let walletAddress: Address = contractAddress(winit);
+        return walletAddress;
+    }
 }

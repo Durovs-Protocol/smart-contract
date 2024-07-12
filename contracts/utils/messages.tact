@@ -3,11 +3,15 @@ struct PoolSettings {
     stabilityFeeRate: Int;
     liquidationFee: Int;
 }
+message CreateInfo {
+    wallet: Address;
+}
 message DepositCollateralMessage {
     user: Address;
     amount: Int as coins;
     settings: PoolSettings;
     tonPriceWithHealthRate: Int as coins;
+    runesWallet: Address;
 }
 message WithdrawCollateralMessage {
     user: Address;
@@ -33,14 +37,6 @@ message BurnUsdTONMessage {
 message TestWithdrawal {
 }
 message FeePayment {
-    amount: Int as uint64;
-}
-message IncreaseTotalUsdTon {
-    user: Address;
-    amount: Int as uint64;
-}
-message DecreaseTotalUsdTon {
-    user: Address;
     amount: Int as uint64;
 }
 
@@ -102,7 +98,11 @@ message BurnNotification {
     amount: Int as coins;
     userPosition: Address;
 }
-message UsdTonWereBurned {
+message UsdTonBurned {
+    user: Address;
+    amount: Int as coins;
+}
+message RunecoinBurned {
     user: Address;
     amount: Int as coins;
 }
@@ -116,15 +116,25 @@ message PositionLiquidation {
     tonPrice: Int as coins;
     runePrice: Int as coins;
 }
-message TokenTransferFromPositionManager {
+message RuneTransfer {
     queryId: Int as uint64;
     amount: Int as coins;
     destination: Address;
+    usdton: Address;
+    manager: Address;
+    pool: Address;
     responseDestination: Address?;
     customPayload: Cell?;
     forwardTonAmount: Int as coins;
     forwardPayload: Slice as remaining;
-    deps: Deps;
+}
+message RuneTransferInternal {
+    queryId: Int as uint64;
+    amount: Int as coins;
+    from: Address;
+    responseAddress: Address?;
+    forwardTonAmount: Int as coins;
+    forwardPayload: Slice as remaining;
 }
 
 // jetton messages
@@ -198,6 +208,7 @@ message UpdateTonPriceMsg {
 message DepositCollateralUserMessage {
     user: Address;
     amount: Int as coins;
+    runesWallet: Address;
 }
 message MintUsdTonMessage {
     user: Address;

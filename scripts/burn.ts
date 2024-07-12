@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, fromNano, toNano } from '@ton/core';
 import { loadAddress, log, timer } from '../utils/helpers';
-import { burn, gasFee } from '../utils/test_data';
+import { burn } from '../utils/test_data';
 import { Manager } from '../wrappers/Manager';
 import { UserPosition } from '../wrappers/UserPosition';
 
@@ -25,9 +25,11 @@ export async function run(provider: NetworkProvider) {
     let usdTonBalance = await getDebtBalance();
 
     // TODO: сделать проверку на текущий баланс - если долга нет - дальше не пускать
+    // оптимальный газ 0.12 (до правок по runes)
+    // TODO пересчитать газ
     await manager.send(
         user,
-        { value: toNano(gasFee) },
+        { value: toNano(1.5) },
         {
             $$type: 'BurnUsdTONUserMessage',
             user: user.address as Address,

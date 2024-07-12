@@ -7,35 +7,31 @@
 1. `yarn build` (Запустит build всех контрактов: usdTon, manager, pool, deps, runes, runes-owner)
 
 2. `yarn deploy` (Деплой контрактов + установка зависимостей между контрактами)
+3. `yarn deploy-runes` (Деплой контрактов связанных с runes)
 
     - `yarn deploy-pool`
     - `yarn deploy-manager`
     - `yarn deploy-usdton`
-    - `yarn deploy-runes-owner`
-    - `yarn deploy-runecoin`
+
+    - `deploy-runes`
     - Проверить выполнение: в папке вида `deploy/{contract_name}.address` должны лежать все адреса контрактов
 
-3. `yarn setup`
+4. `yarn setup`
     - `yarn set-deps`: имея адреса контрактов: usdTon, manager, poolContract, runeCoin
     - `yarn set-settings` (Настройка параметров пула)
     - `yarn set-price` (Установка цены тона)
 
-> Далее работа с Runa Coin
-
-1. `yarn deploy-runes-owner`
-
 # Получение информации
 
-1. `yarn rune-info` - получает данные о состоянии хранилища владельца
+> `yarn rune-info` - получить кошелек rune
+> `yarn get-info` (Получение информации о позиции пользователя) - использовать после сброки, деплоя и запуска yarn add-supply
 
 # User flow
 
-> `yarn get-info` (Получение информации о позиции пользователя) - использовать после сброки, деплоя и запуска yarn add-supply
-
-1. `yarn add-supply` (Внесение обеспечения (Для проверки баланса использовать скрипт `yarn get-info`(в случае ошибки Exit code: -256 )))
+1. `yarn get-runes` (Получение runecoins пользователем, через info скрипт берем новый адрес кошелька (убедиться что он новый!!))
+2. `yarn add-supply` (Внесение обеспечения (Для проверки баланса использовать скрипт `yarn get-info`(в случае ошибки Exit code: -256 )))
     - collateral: 2, debt:0
-2. `yarn mint` (Перечесление usdTon пользователю)
-3. `yarn get-runes` (Получение runecoins пользователем)
+3. `yarn mint` (Перечесление usdTon пользователю)
 4. `yarn burn` (Возврат стейблкоина пользователем)
 5. `yarn withdrawal-supply` (Возврат обеспечения пользователю)
 
@@ -62,3 +58,7 @@
 
 https://testnet.toncenter.com/api/v2/jsonRPC
 https://ton.access.orbs.network/4410c0ff5Bd3F8B62C092Ab4D238bEE463E64410/1/testnet/toncenter-api-v2/jsonRPC
+
+### Тестирование
+
+1. `yarn run-script withdraw_pool` Вывод средств с пула после прохождения цикла на кошелек тестировщика

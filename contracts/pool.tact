@@ -51,15 +51,6 @@ contract Pool with Deployable, OwnableTransferable {
     //=============================================================================
     // Helpers
     //=============================================================================
-    fun getUserPositionAddress(user: Address): Address {
-        let init: StateInit = initOf UserPosition(user,
-            self.deps.usdTonAddress,
-            self.deps.managerAddress,
-            myAddress(),
-            self.deps.runecoinAddress
-        );
-        return contractAddress(init);
-    }
 
     //=============================================================================
     // Offchain interface
