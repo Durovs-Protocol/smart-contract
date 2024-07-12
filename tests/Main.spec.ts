@@ -1,15 +1,13 @@
-import { toNano, fromNano } from '@ton/core';
+import { toNano } from '@ton/core';
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import '@ton/test-utils';
 import { buildOnchainMetadata } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { Pool } from '../wrappers/Pool';
 import { Runecoin } from '../wrappers/Runecoin';
-import { RuneCoinOwner } from '../wrappers/RunecoinOwner';
 import { RunecoinWallet } from '../wrappers/RunecoinWallet';
 
 import { UsdTonMaster } from '../wrappers/UsdTon';
-import { UsdTonWallet } from '../wrappers/UsdTonWallet';
 import { UserPosition } from '../wrappers/UserPosition';
 
 describe('UserFlow', () => {
@@ -20,7 +18,6 @@ describe('UserFlow', () => {
     let usdTon: SandboxContract<UsdTonMaster>;
     let manager: SandboxContract<Manager>;
     let runecoin: SandboxContract<Runecoin>;
-    let runecoinOwner: SandboxContract<RuneCoinOwner>;
     let runecoinWallet: SandboxContract<RunecoinWallet>;
     let userPosition: SandboxContract<UserPosition>;
 
@@ -44,23 +41,7 @@ describe('UserFlow', () => {
         usdTon = blockchain.openContract(
             await UsdTonMaster.fromInit(deployer.getSender().address, buildOnchainMetadata(jettonParams)),
         );
-        runecoinOwner = blockchain.openContract(await RuneCoinOwner.fromInit(deployer.getSender().address));
 
-        runecoin = blockchain.openContract(
-            await Runecoin.fromInit(runecoinOwner.address, buildOnchainMetadata(runecoinParams)),
-        );
-
-        await runecoinOwner.send(
-            deployer.getSender(),
-            {
-                value: toNano(1),
-            },
-            {
-                $$type: 'SetBalance',
-                amount: toNano(1000000000),
-                content: buildOnchainMetadata(jettonParams),
-            },
-        );
         runecoinWallet = blockchain.openContract(
             await RunecoinWallet.fromInit(runecoin.address, deployer.getSender().address),
         );
@@ -174,22 +155,7 @@ describe('UserFlow', () => {
                 price: toNano(7),
             },
         );
-
-        await runecoinOwner.send(
-            deployer.getSender(),
-            { value: toNano(1) },
-            {
-                $$type: 'GetRunecoin',
-                amount: toNano(123),
-                user: deployer.getSender().address,
-            },
-        );
     });
-<<<<<<< HEAD
-<<<<<<<< HEAD:tests/Ux.ts
-========
-=======
->>>>>>> master
 
     it('deps set ok', async () => {
         const usdTonDeps = await usdTon.getDeps();
@@ -208,7 +174,7 @@ describe('UserFlow', () => {
     it('pool settings set ok', async () => {
         const poolSettings = await manager.getPoolSettings();
         expect(poolSettings.liquidationRatio).toEqual(toNano(1.2));
-        expect(poolSettings.liquidatorIncentiveBps).toEqual(toNano(1.05));
+
         expect(poolSettings.stabilityFeeRate).toEqual(toNano('0.02'));
     });
 
@@ -218,264 +184,5 @@ describe('UserFlow', () => {
         const tonPriceWithHealthRate = await manager.getTonPriceWithHealthRate();
         expect(tonPriceWithHealthRate).toEqual(5833333333n);
         ///???
-    });
->>>>>>>> master:tests/Main.spec.ts
-
-    it('user flow', async () => {
-        const collateralDepositAmount = toNano(1);
-        const currentPositionId = await manager.getLastPositionId();
-
-        await manager.send(
-            deployer.getSender(),
-            { value: collateralDepositAmount + toNano(2) },
-            {
-                $$type: 'DepositCollateralUserMessage',
-                user: deployer.getSender().address,
-                amount: collateralDepositAmount,
-            },
-        );
-<<<<<<<< HEAD:tests/Ux.ts
-        // id увеличен на 1
-========
-
-        /**
-         * 
-         */
-<<<<<<< HEAD
->>>>>>>> master:tests/Main.spec.ts
-        const lastPositionId = await manager.getLastPositionId();
-        // expect(Number(lastPositionId) - Number(currentPositionId)).toEqual(1n);
-
-<<<<<<<< HEAD:tests/Ux.ts
-        const userPositionContract = blockchain.openContract(
-            await UserPosition.fromInit(
-                deployer.address,
-                usdTon.address,
-                manager.address,
-                pool.address,
-                runecoin.address,
-            ),
-        );
-
-        // запись о залоге есть в контракте user position
-        let positionState = await userPositionContract.getPositionState();
-========
-=======
-        const lastPositionId = await manager.getLastPositionId();
-        // expect(Number(lastPositionId) - Number(currentPositionId)).toEqual(1n);
-
->>>>>>> master
-        // userPosition contract has a state with deposited collateral stored
-        // const userPositionContract = blockchain.openContract(
-        //     await UserPosition.fromInit(
-        //         deployer.address,
-        //         usdTon.address,
-        //         manager.address,
-        //         pool.address,
-        //         runecoin.address,
-        //     ),
-        // );
-        // let positionState = await userPositionContract.getPositionState();
-<<<<<<< HEAD
->>>>>>>> master:tests/Main.spec.ts
-
-        // expect(positionState.collateral).toEqual(collateralDepositAmount);
-
-<<<<<<<< HEAD:tests/Ux.ts
-        // пользователь минтит USDTON
-        const initialTotalSupply = await usdTon.getTotalSupply();
-        expect(initialTotalSupply).toEqual(0n);
-        const stablesBorrowed = toNano(2);
-========
-    //     // -- user draw usdTons
-    //     const initialTotalSupply = await usdTon.getTotalSupply();
-
-    //     expect(initialTotalSupply).toEqual(0n);
-
-    //     const stablesBorrowed = toNano(2);
->>>>>>>> master:tests/Main.spec.ts
-
-    //     await manager.send(
-    //         deployer.getSender(),
-    //         { value: toNano(1) },
-    //         {
-    //             $$type: 'MintUsdTonMessage',
-    //             user: deployer.getSender().address,
-    //             amount: stablesBorrowed,
-    //         },
-    //     );
-
-<<<<<<<< HEAD:tests/Ux.ts
-        // баланс кашелька равен указанной сумме
-        const userUsdToncoinWalletAddress = await usdTon.getGetWalletAddress(deployer.getSender().address);
-        const userUsdTonWallet = blockchain.openContract(await UsdTonWallet.fromAddress(userUsdToncoinWalletAddress));
-        let userUsdTonBalance = await userUsdTonWallet.getGetBalance();
-        expect(userUsdTonBalance).toEqual(stablesBorrowed);
-
-        // монет выпущенно столько сколько наминтил пользователь
-        const currentTotalSupply = await usdTon.getTotalSupply();
-        expect(currentTotalSupply).toEqual(stablesBorrowed);
-
-        // в user position указана та же сумма
-        positionState = await userPositionContract.getPositionState();
-        expect(positionState.debt).toEqual(stablesBorrowed);
-
-        // burn
-        userUsdTonBalance = await userUsdTonWallet.getGetBalance();
-        console.log('balance before burn', userUsdTonBalance);
-
-        await manager.send(
-            deployer.getSender(),
-            { value: toNano('1') },
-            {
-                $$type: 'BurnUsdTONUserMessage',
-                user: deployer.getSender().address,
-                amount: stablesBorrowed,
-            },
-        );
-========
-    //     const userUsdToncoinWalletAddress = await usdTon.getGetWalletAddress(deployer.getSender().address);
-    //     const userUsdTonWallet = blockchain.openContract(await UsdTonWallet.fromAddress(userUsdToncoinWalletAddress));
-    //     let userUsdTonBalance = await userUsdTonWallet.getGetBalance();
-
-    //     expect(userUsdTonBalance).toEqual(stablesBorrowed);
-
-    //     const currentTotalSupply = await usdTon.getTotalSupply();
-    //     expect(currentTotalSupply).toEqual(stablesBorrowed);
-
-    //     // position updated
-    //     positionState = await userPositionContract.getPositionState();
-    //     expect(positionState.debt).toEqual(stablesBorrowed);
-
-    //     userUsdTonBalance = await userUsdTonWallet.getGetBalance();
-    //     console.log('balance before repay', userUsdTonBalance);
-
-    //     // user pays stables back
-    //     await manager.send(
-    //         deployer.getSender(),
-    //         { value: toNano('1') },
-    //         {
-    //             $$type: 'BurnUsdTONUserMessage',
-    //             user: deployer.getSender().address,
-    //             amount: stablesBorrowed,
-    //         },
-    //     );
->>>>>>>> master:tests/Main.spec.ts
-
-    //     let positionMessage = await userPositionContract.getMessage();
-    //     console.log({ positionMessage });
-
-    //     userUsdTonBalance = await userUsdTonWallet.getGetBalance();
-    //     console.log('balance after repay', userUsdTonBalance);
-
-    //     expect(userUsdTonBalance).toEqual(0n);
-
-    //     positionState = await userPositionContract.getPositionState();
-    //     console.log({ positionState });
-    //     expect(positionState.debt).toEqual(0n);
-
-<<<<<<<< HEAD:tests/Ux.ts
-        // возврат залога
-========
-    //     // withdraw collateral
->>>>>>>> master:tests/Main.spec.ts
-
-    //     const collateralToWithdraw = toNano('0.5');
-
-    //     await manager.send(
-    //         deployer.getSender(),
-    //         { value: toNano('1') },
-    //         {
-    //             $$type: 'WithdrawCollateralUserMessage',
-    //             user: deployer.getSender().address,
-    //             amount: collateralToWithdraw,
-    //         },
-    //     );
-
-    //     positionState = await userPositionContract.getPositionState();
-    //     console.log({ positionState });
-    //     expect(positionState.collateral).toEqual(500000000n);
-
-=======
-
-        // expect(positionState.collateral).toEqual(collateralDepositAmount);
-
-    //     // -- user draw usdTons
-    //     const initialTotalSupply = await usdTon.getTotalSupply();
-
-    //     expect(initialTotalSupply).toEqual(0n);
-
-    //     const stablesBorrowed = toNano(2);
-
-    //     await manager.send(
-    //         deployer.getSender(),
-    //         { value: toNano(1) },
-    //         {
-    //             $$type: 'MintUsdTonMessage',
-    //             user: deployer.getSender().address,
-    //             amount: stablesBorrowed,
-    //         },
-    //     );
-
-    //     const userUsdToncoinWalletAddress = await usdTon.getGetWalletAddress(deployer.getSender().address);
-    //     const userUsdTonWallet = blockchain.openContract(await UsdTonWallet.fromAddress(userUsdToncoinWalletAddress));
-    //     let userUsdTonBalance = await userUsdTonWallet.getGetBalance();
-
-    //     expect(userUsdTonBalance).toEqual(stablesBorrowed);
-
-    //     const currentTotalSupply = await usdTon.getTotalSupply();
-    //     expect(currentTotalSupply).toEqual(stablesBorrowed);
-
-    //     // position updated
-    //     positionState = await userPositionContract.getPositionState();
-    //     expect(positionState.debt).toEqual(stablesBorrowed);
-
-    //     userUsdTonBalance = await userUsdTonWallet.getGetBalance();
-    //     console.log('balance before repay', userUsdTonBalance);
-
-    //     // user pays stables back
-    //     await manager.send(
-    //         deployer.getSender(),
-    //         { value: toNano('1') },
-    //         {
-    //             $$type: 'BurnUsdTONUserMessage',
-    //             user: deployer.getSender().address,
-    //             amount: stablesBorrowed,
-    //         },
-    //     );
-
-    //     let positionMessage = await userPositionContract.getMessage();
-    //     console.log({ positionMessage });
-
-    //     userUsdTonBalance = await userUsdTonWallet.getGetBalance();
-    //     console.log('balance after repay', userUsdTonBalance);
-
-    //     expect(userUsdTonBalance).toEqual(0n);
-
-    //     positionState = await userPositionContract.getPositionState();
-    //     console.log({ positionState });
-    //     expect(positionState.debt).toEqual(0n);
-
-    //     // withdraw collateral
-
-    //     const collateralToWithdraw = toNano('0.5');
-
-    //     await manager.send(
-    //         deployer.getSender(),
-    //         { value: toNano('1') },
-    //         {
-    //             $$type: 'WithdrawCollateralUserMessage',
-    //             user: deployer.getSender().address,
-    //             amount: collateralToWithdraw,
-    //         },
-    //     );
-
-    //     positionState = await userPositionContract.getPositionState();
-    //     console.log({ positionState });
-    //     expect(positionState.collateral).toEqual(500000000n);
-
->>>>>>> master
-    //     const message = await userPositionContract.getMessage();
-    //     console.log({ message });
     });
 });

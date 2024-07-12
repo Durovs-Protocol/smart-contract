@@ -50,8 +50,6 @@ npm manifest:
           "withdrawal-supply": "yarn run-script 04withdrawCollateral",
           "get-info": "yarn run-script 0info",
   
-          "deploy-runecoin-owner": "yarn run-script deployRunaCoinOwner",
-          "send-runa-to-owner": "yarn run-script sendRunaToOwner",
           "buy-runa": "yarn run-script getRunaCoins"
   
           // "deploy-runecoin": "yarn run-script deployRunaCoin",

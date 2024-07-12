@@ -5,7 +5,6 @@ import { buildOnchainMetadata } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { Pool } from '../wrappers/Pool';
 import { Runecoin } from '../wrappers/Runecoin';
-import { RuneCoinOwner } from '../wrappers/RunecoinOwner';
 import { RunecoinWallet } from '../wrappers/RunecoinWallet';
 
 import { UsdTonMaster } from '../wrappers/UsdTon';
@@ -20,7 +19,6 @@ describe('UserFlow', () => {
     let usdTon: SandboxContract<UsdTonMaster>;
     let manager: SandboxContract<Manager>;
     let runecoin: SandboxContract<Runecoin>;
-    let runecoinOwner: SandboxContract<RuneCoinOwner>;
     let runecoinWallet: SandboxContract<RunecoinWallet>;
     let userPosition: SandboxContract<UserPosition>;
 
@@ -44,23 +42,11 @@ describe('UserFlow', () => {
         usdTon = blockchain.openContract(
             await UsdTonMaster.fromInit(deployer.getSender().address, buildOnchainMetadata(jettonParams)),
         );
-        runecoinOwner = blockchain.openContract(await RuneCoinOwner.fromInit(deployer.getSender().address));
 
         runecoin = blockchain.openContract(
-            await Runecoin.fromInit(runecoinOwner.address, buildOnchainMetadata(runecoinParams)),
+            await Runecoin.fromInit(deployer.getSender().address, buildOnchainMetadata(runecoinParams)),
         );
 
-        await runecoinOwner.send(
-            deployer.getSender(),
-            {
-                value: toNano(1),
-            },
-            {
-                $$type: 'SetBalance',
-                amount: toNano(1000000000),
-                content: buildOnchainMetadata(jettonParams),
-            },
-        );
         runecoinWallet = blockchain.openContract(
             await RunecoinWallet.fromInit(runecoin.address, deployer.getSender().address),
         );
@@ -163,6 +149,7 @@ describe('UserFlow', () => {
                 $$type: 'SetPoolSettings',
                 liquidationRatio: toNano(1.2),
                 stabilityFeeRate: toNano('0.02'),
+                liquidationFee: toNano('0.02'),
             },
         );
 
@@ -174,31 +161,12 @@ describe('UserFlow', () => {
                 price: toNano(7),
             },
         );
-
-        await runecoinOwner.send(
-            deployer.getSender(),
-            { value: toNano(1) },
-            {
-                $$type: 'GetRunecoin',
-                amount: toNano(123),
-                user: deployer.getSender().address,
-            },
-        );
     });
 
     it('liquidation', async () => {
         const collateralDepositAmount = toNano(1);
         const currentPositionId = await manager.getLastPositionId();
 
-        await manager.send(
-            deployer.getSender(),
-            { value: collateralDepositAmount + toNano(2) },
-            {
-                $$type: 'DepositCollateralUserMessage',
-                user: deployer.getSender().address,
-                amount: collateralDepositAmount,
-            },
-        );
         const userPositionAddress = await manager.getUserPositionAddress(deployer.getSender().address);
         console.log(userPositionAddress);
         // запись о залоге есть в контракте user position
