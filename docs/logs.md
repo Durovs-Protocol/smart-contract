@@ -6,6 +6,8 @@
     - 0QBBl-nmyXbVBrm5cVEcYWc1lXL2clCek9WW3XRo-nYRidEr
     - UQBBl-nmyXbVBrm5cVEcYWc1lXL2clCek9WW3XRo-nYRiWqh
 
+> Заметки и вопросы по коду смотреть через поиск по файлам по ключевому слову TODO
+
 
 # Логи:
 Статусы: ✅, 🟡, 🔴

@@ -14,9 +14,9 @@
         "deploy-pool": "yarn run-script deploy_pool",
         "deploy-manager": "yarn run-script deploy_manager",
         "deploy-usdton": "yarn run-script deploy_usd_ton",
-
         "deploy-runes": "yarn run-script deploy_runecoin",
-        "deploy": "yarn deploy-pool && yarn deploy-manager && yarn deploy-usdton",
+
+        "deploy": "yarn deploy-pool && yarn deploy-manager && yarn deploy-usdton && yarn deploy-runes",
 
         
         "set-deps": "yarn run-script set_deps",
@@ -32,6 +32,7 @@
         "withdrawal-supply": "yarn run-script withdrawal_supply",
         "liquidation": "yarn run-script liquidation",
 
+        "info-access": "yarn run-script info_access",
         "info-system": "yarn run-script info_system",
         "info-user": "yarn run-script info_user",
         "info-rune": "yarn run-script info_rune",

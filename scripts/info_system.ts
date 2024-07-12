@@ -6,6 +6,10 @@ import { RuneCoinOwner } from '../wrappers/RunecoinOwner';
 import { Pool } from '../wrappers/Pool';
 import { UsdTonMaster } from '../wrappers/UsdTon';
 
+/**
+ * 
+ * @param provider 
+ */
 export async function run(provider: NetworkProvider) {
     log('System setting information');
 
