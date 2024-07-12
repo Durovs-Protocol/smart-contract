@@ -3,6 +3,7 @@ export const gasFee: number = 0.2; // Стоимость газа
 export const liquidationRatio: number = 1.15;
 export const stabilityFeeRate: number = 0.05;
 export const liquidationFee: number = 0.05;
+export const minHealthRate: number = 2;
 
 /**
  * UX
