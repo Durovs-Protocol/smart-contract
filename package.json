@@ -30,7 +30,7 @@
         "supply": "yarn run-script supply",
         "mint": "yarn run-script mint",
         "burn": "yarn run-script burn",
-        "withdrawal-supply": "yarn run-script withdrawal_supply",
+        "withdraw": "yarn run-script withdraw",
         "liquidation": "yarn run-script liquidation",
 
         "info-access": "yarn run-script info_access",

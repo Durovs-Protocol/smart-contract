@@ -46,6 +46,29 @@ contract Runecoin with Jetton, Deployable {
         );
     }
 
+    get fun userRunaCoinAddress(userAddress: Address): Address{ 
+        let winit: StateInit = self.getJettonWalletInit(userAddress);
+        let walletAddress: Address = contractAddress(winit);
+        return walletAddress;
+    }
+
+
+    receive(msg: GetUserRunacoinAddress) {
+        let userRunaCoinAddress: Address = self.userRunaCoinAddress(msg.user);
+
+        send(SendParameters {
+                to: sender(),
+                value: 0,
+                mode: SendRemainingValue,
+                bounce: true,
+                body: GetUserRunacoinAddressResponse{
+                    userRunaCoinAddress: userRunaCoinAddress,
+                    user: msg.user,
+                    amount: msg.amount,
+                }.toCell()
+            }
+        );
+    }
 
     receive(msg: Mint) {
         self.requireOwner();

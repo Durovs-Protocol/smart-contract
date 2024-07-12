@@ -37,7 +37,7 @@ export async function run(provider: NetworkProvider) {
             $$type: 'DepositCollateralUserMessage',
             user: user.address as Address,
             amount: collateralAmount,
-            runesWallet: Address.parse(await loadAddress('runacoin')),
+            runesWallet: Address.parse(await loadAddress('runecoin')),
         },
     );
 

@@ -11,7 +11,6 @@ message DepositCollateralMessage {
     amount: Int as coins;
     settings: PoolSettings;
     tonPriceWithHealthRate: Int as coins;
-    runesWallet: Address;
 }
 message WithdrawCollateralMessage {
     user: Address;
@@ -31,12 +30,23 @@ message BurnUsdTONMessage {
     settings: PoolSettings;
     tonPriceWithHealthRate: Int as coins;
     tonPrice: Int as coins;
-    runecoinWallet: Address;
+    userRunaCoinAddress: Address;
     deps: Deps;
 }
 message TestWithdrawal {
 }
 message FeePayment {
+    amount: Int as uint64;
+}
+
+message GetUserRunacoinAddress{
+    user: Address;
+    amount: Int as uint64;
+}
+
+message GetUserRunacoinAddressResponse {
+    userRunaCoinAddress: Address;
+    user: Address;
     amount: Int as uint64;
 }
 

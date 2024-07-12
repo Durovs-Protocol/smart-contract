@@ -63,4 +63,13 @@ contract Pool with Deployable, OwnableTransferable {
     get fun deps(): Deps {
         return self.deps;
     }
+
+    get fun myAddress(): Address{
+        return myAddress();
+    }
+
+    get fun userPoolAddress(userAddress: Address): Address{
+        let init: StateInit = initOf Pool(userAddress);
+        return contractAddress(init);
+    }
 }

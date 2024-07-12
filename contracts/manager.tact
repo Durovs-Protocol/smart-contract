@@ -7,6 +7,7 @@ import "./runecoin/runecoin_wallet.tact";
 contract Manager with Deployable, OwnableTransferable {
     const MinTonForStorage: Int = ton("0.01");
     const GasConsumption: Int = ton("0.01");
+
     deps: Deps;
     poolSettings: PoolSettings;
     owner: Address;
@@ -15,6 +16,7 @@ contract Manager with Deployable, OwnableTransferable {
     tonPriceWithHealthRate: Int;
     totalCollateralAmount: Int as coins = 0;
     totalFeesCollected: Int as coins = 0;
+
     init(owner: Address){
         self.owner = owner;
         self.poolSettings = PoolSettings{liquidationRatio: 0, stabilityFeeRate: 0, liquidationFee: 0};
@@ -100,7 +102,6 @@ contract Manager with Deployable, OwnableTransferable {
                     amount: msg.amount,
                     settings: self.poolSettings,
                     tonPriceWithHealthRate: self.tonPriceWithHealthRate,
-                    runesWallet: msg.runesWallet
                 }.toCell(),
                 code: init.code,
                 data: init.data
@@ -134,27 +135,36 @@ contract Manager with Deployable, OwnableTransferable {
 
     /*03 | Burn usdTON */
     receive(msg: BurnUsdTONUserMessage){
+        send(SendParameters {
+                to: self.deps.runecoinAddress,
+                value: 0,
+                mode: SendRemainingValue,
+                bounce: true,
+                body: GetUserRunacoinAddress{
+                    user: msg.user,
+                    amount: msg.amount,
+                }.toCell()
+            }
+        );
+    }
 
-
-
-        // let winit: StateInit = initOf RunecoinWallet(self.deps.runecoinAddress, msg.user);
-        // let walletAddress: Address = contractAddress(winit);
-        // send(SendParameters{
-        //         to: self._userPositionAddress(msg.user),
-        //         value: 0,
-        //         mode: (SendRemainingValue + SendBounceIfActionFail),
-        //         bounce: true,
-        //         body: BurnUsdTONMessage{
-        //             user: msg.user,
-        //             amount: msg.amount,
-        //             settings: self.poolSettings,
-        //             tonPriceWithHealthRate: self.tonPriceWithHealthRate,
-        //             tonPrice: self.tonPrice,
-        //             runecoinWallet: walletAddress,
-        //             deps: self.deps
-        //         }.toCell()
-        //     }
-        // );
+    receive(msg: GetUserRunacoinAddressResponse) {
+        send(SendParameters{
+                to: self._userPositionAddress(msg.user),
+                value: 0,
+                mode: (SendRemainingValue + SendBounceIfActionFail),
+                bounce: true,
+                body: BurnUsdTONMessage{
+                    user: msg.user,
+                    amount: msg.amount,
+                    settings: self.poolSettings,
+                    tonPriceWithHealthRate: self.tonPriceWithHealthRate,
+                    tonPrice: self.tonPrice,
+                    userRunaCoinAddress: msg.userRunaCoinAddress,
+                    deps: self.deps
+                }.toCell()
+            }
+        );
     }
 
     /*04 | Возврат залога */

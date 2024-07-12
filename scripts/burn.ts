@@ -4,6 +4,7 @@ import { loadAddress, log, timer } from '../utils/helpers';
 import { burn } from '../utils/data';
 import { Manager } from '../wrappers/Manager';
 import { UserPosition } from '../wrappers/UserPosition';
+import { RunecoinWallet } from '../wrappers/RunecoinWallet';
 
 export async function run(provider: NetworkProvider) {
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
@@ -24,12 +25,16 @@ export async function run(provider: NetworkProvider) {
     // const userUsdTonWallet = provider.open(await UsdTonWallet.fromAddress(userUsdToncoinWalletAddress));
     let usdTonBalance = await getDebtBalance();
 
+    // const runecoinWallet = provider.open(await RunecoinWallet.fromAddress(user.address as Address));
+    // const balanceBefore = await runecoinWallet.getGetBalance()
+    // console.log('\nbalanceBefore: '+ balanceBefore);
+
     // TODO: сделать проверку на текущий баланс - если долга нет - дальше не пускать
     // оптимальный газ 0.12 (до правок по runes)
     // TODO пересчитать газ
     await manager.send(
         user,
-        { value: toNano(1.5) },
+        { value: toNano(0.12) },
         {
             $$type: 'BurnUsdTONUserMessage',
             user: user.address as Address,
@@ -40,8 +45,11 @@ export async function run(provider: NetworkProvider) {
     await timer(
         'User stable balance',
         'Погашение задолжности',
-        fromNano(usdTonBalance - stablesBorrowed),
+        usdTonBalance - stablesBorrowed,
         getDebtBalance,
         true,
     );
+
+    // const balanceAfter = await runecoinWallet.getGetBalance()
+    // console.log('\nbalanceAfter: '+ balanceAfter);
 }

@@ -25,11 +25,11 @@ export async function run(provider: NetworkProvider) {
 
     await manager.send(
         user,
-        { value: toNano(0.03) },
+        { value: toNano(0.015) },
         {
             $$type: 'WithdrawCollateralUserMessage',
             user: user.address as Address,
-            amount: toNano(1.1),
+            amount: toNano(0.01),
         },
     );
 
