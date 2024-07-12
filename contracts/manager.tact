@@ -134,24 +134,27 @@ contract Manager with Deployable, OwnableTransferable {
 
     /*03 | Burn usdTON */
     receive(msg: BurnUsdTONUserMessage){
-        let winit: StateInit = initOf RunecoinWallet(self.deps.runecoinAddress, msg.user);
-        let walletAddress: Address = contractAddress(winit);
-        send(SendParameters{
-                to: self._userPositionAddress(msg.user),
-                value: 0,
-                mode: (SendRemainingValue + SendBounceIfActionFail),
-                bounce: true,
-                body: BurnUsdTONMessage{
-                    user: msg.user,
-                    amount: msg.amount,
-                    settings: self.poolSettings,
-                    tonPriceWithHealthRate: self.tonPriceWithHealthRate,
-                    tonPrice: self.tonPrice,
-                    runecoinWallet: walletAddress,
-                    deps: self.deps
-                }.toCell()
-            }
-        );
+
+
+
+        // let winit: StateInit = initOf RunecoinWallet(self.deps.runecoinAddress, msg.user);
+        // let walletAddress: Address = contractAddress(winit);
+        // send(SendParameters{
+        //         to: self._userPositionAddress(msg.user),
+        //         value: 0,
+        //         mode: (SendRemainingValue + SendBounceIfActionFail),
+        //         bounce: true,
+        //         body: BurnUsdTONMessage{
+        //             user: msg.user,
+        //             amount: msg.amount,
+        //             settings: self.poolSettings,
+        //             tonPriceWithHealthRate: self.tonPriceWithHealthRate,
+        //             tonPrice: self.tonPrice,
+        //             runecoinWallet: walletAddress,
+        //             deps: self.deps
+        //         }.toCell()
+        //     }
+        // );
     }
 
     /*04 | Возврат залога */

@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, fromNano, toNano } from '@ton/core';
 import { loadAddress, log, timer } from '../utils/helpers';
-import { burn } from '../utils/test_data';
+import { burn } from '../utils/data';
 import { Manager } from '../wrappers/Manager';
 import { UserPosition } from '../wrappers/UserPosition';
 

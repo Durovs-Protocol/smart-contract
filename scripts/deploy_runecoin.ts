@@ -1,15 +1,10 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { toNano } from '@ton/core';
 import { buildOnchainMetadata, saveAddress } from '../utils/helpers';
+import { jettonParams } from '../utils/data';
 import { Runecoin } from '../wrappers/Runecoin';
 
 export async function run(provider: NetworkProvider) {
-    const jettonParams = {
-        name: `rune-${Date.now()}`,
-        symbol: 'R',
-        description: '-',
-        image: 'https://ipfs.io/ipfs/QmfGfEGQav42ZW14W2D5oNtvWUC7Nwj759hjHAZvFiRhaX',
-    };
 
     const runecoin = provider.open(
         await Runecoin.fromInit(provider.sender().address!, buildOnchainMetadata(jettonParams)),

@@ -146,6 +146,7 @@ describe('UserFlow', () => {
             { value: toNano(1) },
             {
                 $$type: 'SetPoolSettings',
+                liquidationFee: toNano(0.15),
                 liquidationRatio: toNano(1.2),
                 stabilityFeeRate: toNano('0.02'),
                 liquidationFee: toNano('0.15'),
@@ -201,6 +202,7 @@ describe('UserFlow', () => {
                 $$type: 'DepositCollateralUserMessage',
                 user: deployer.getSender().address,
                 amount: collateralDepositAmount,
+                runesWallet: deployer.getSender().address,
             },
         );
 

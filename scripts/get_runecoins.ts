@@ -23,6 +23,7 @@ export async function run(provider: NetworkProvider) {
     );
     const runeInfo = provider.open(await RuneInfo.fromInit(user.address as Address));
     await provider.waitForDeploy(runeInfo.address, 30);
-    const userWallet = await runeInfo.getMyAddress();
-    console.log('Rune wallet:', userWallet.toString());
+
+    const runeWallet = await runeInfo.getMyAddress();
+    console.log('Rune wallet:', runeWallet.toString());
 }

@@ -1,6 +1,6 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { loadAddress } from '../utils/helpers';
-import { tonPrice } from '../utils/test_data';
+import { tonPrice } from '../utils/data';
 import { Address, toNano } from '@ton/core';
 import '@ton/test-utils';
 

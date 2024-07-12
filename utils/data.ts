@@ -13,3 +13,9 @@ export const addSupplyAmount: number = 1;
 export const mintNormal: number = 3;
 export const mintMax: number = 3.5;
 export const burn: number = mintNormal - 0.5;
+export const jettonParams = {
+    name: `rune-${Date.now()}`,
+    symbol: 'R',
+    description: '-',
+    image: 'https://ipfs.io/ipfs/QmfGfEGQav42ZW14W2D5oNtvWUC7Nwj759hjHAZvFiRhaX',
+};

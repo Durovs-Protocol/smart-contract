@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { loadAddress, timer } from '../utils/helpers';
-import { liquidationRatio, gasFee, stabilityFeeRate, liquidationFee } from '../utils/test_data';
+import { liquidationRatio, gasFee, stabilityFeeRate, liquidationFee } from '../utils/data';
 import { Manager } from '../wrappers/Manager';
 
 export async function run(provider: NetworkProvider) {

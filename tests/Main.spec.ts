@@ -142,6 +142,7 @@ describe('UserFlow', () => {
             { value: toNano(1) },
             {
                 $$type: 'SetPoolSettings',
+                liquidationFee: toNano(0.15),
                 liquidationRatio: toNano(1.2),
                 stabilityFeeRate: toNano('0.02'),
             },
@@ -174,7 +175,7 @@ describe('UserFlow', () => {
     it('pool settings set ok', async () => {
         const poolSettings = await manager.getPoolSettings();
         expect(poolSettings.liquidationRatio).toEqual(toNano(1.2));
-
+        // expect(poolSettings.liquidatorIncentiveBps).toEqual(toNano(1.05));
         expect(poolSettings.stabilityFeeRate).toEqual(toNano('0.02'));
     });
 
@@ -185,4 +186,218 @@ describe('UserFlow', () => {
         expect(tonPriceWithHealthRate).toEqual(5833333333n);
         ///???
     });
+
+    // it('user flow', async () => {
+    //     const collateralDepositAmount = toNano(1);
+    //     const currentPositionId = await manager.getLastPositionId();
+
+    //     await manager.send(
+    //         deployer.getSender(),
+    //         { value: collateralDepositAmount + toNano(2) },
+    //         {
+    //             $$type: 'DepositCollateralUserMessage',
+    //             user: deployer.getSender().address,
+    //             amount: collateralDepositAmount,
+    //             runesWallet: deployer.getSender().address,
+    //         },
+    //     );
+
+    //     const lastPositionId = await manager.getLastPositionId();
+    //     // expect(Number(lastPositionId) - Number(currentPositionId)).toEqual(1n);
+
+    //     // userPosition contract has a state with deposited collateral stored
+    //     const userPositionContract = blockchain.openContract(
+    //         await UserPosition.fromInit(
+    //             deployer.address,
+    //             usdTon.address,
+    //             manager.address,
+    //             pool.address,
+    //             // runecoin.address,
+    //         ),
+    //     );
+    //     let positionState = await userPositionContract.getPositionState();
+
+    //     // expect(positionState.collateral).toEqual(collateralDepositAmount);
+    //     // пользователь минтит USDTON
+    //     const initialTotalSupply = await usdTon.getTotalSupply();
+    //     expect(initialTotalSupply).toEqual(0n);
+    //     const stablesBorrowed = toNano(2);
+    // //     // -- user draw usdTons
+    // //     const initialTotalSupply = await usdTon.getTotalSupply();
+
+    // //     expect(initialTotalSupply).toEqual(0n);
+
+    // //     const stablesBorrowed = toNano(2);
+
+    // //     await manager.send(
+    // //         deployer.getSender(),
+    // //         { value: toNano(1) },
+    // //         {
+    // //             $$type: 'MintUsdTonMessage',
+    // //             user: deployer.getSender().address,
+    // //             amount: stablesBorrowed,
+    // //         },
+    // //     );
+    //     // баланс кашелька равен указанной сумме
+    //     const userUsdToncoinWalletAddress = await usdTon.getGetWalletAddress(deployer.getSender().address);
+    //     const userUsdTonWallet = blockchain.openContract(await UsdTonWallet.fromAddress(userUsdToncoinWalletAddress));
+    //     let userUsdTonBalance = await userUsdTonWallet.getGetBalance();
+    //     expect(userUsdTonBalance).toEqual(stablesBorrowed);
+
+    //     // монет выпущенно столько сколько наминтил пользователь
+    //     const currentTotalSupply = await usdTon.getTotalSupply();
+    //     expect(currentTotalSupply).toEqual(stablesBorrowed);
+
+    //     // в user position указана та же сумма
+    //     positionState = await userPositionContract.getPositionState();
+    //     expect(positionState.debt).toEqual(stablesBorrowed);
+
+    //     // burn
+    //     userUsdTonBalance = await userUsdTonWallet.getGetBalance();
+    //     console.log('balance before burn', userUsdTonBalance);
+
+    //     await manager.send(
+    //         deployer.getSender(),
+    //         { value: toNano('1') },
+    //         {
+    //             $$type: 'BurnUsdTONUserMessage',
+    //             user: deployer.getSender().address,
+    //             amount: stablesBorrowed,
+    //         },
+    //     );
+    // //     const userUsdToncoinWalletAddress = await usdTon.getGetWalletAddress(deployer.getSender().address);
+    // //     const userUsdTonWallet = blockchain.openContract(await UsdTonWallet.fromAddress(userUsdToncoinWalletAddress));
+    // //     let userUsdTonBalance = await userUsdTonWallet.getGetBalance();
+
+    // //     expect(userUsdTonBalance).toEqual(stablesBorrowed);
+
+    // //     const currentTotalSupply = await usdTon.getTotalSupply();
+    // //     expect(currentTotalSupply).toEqual(stablesBorrowed);
+
+    // //     // position updated
+    // //     positionState = await userPositionContract.getPositionState();
+    // //     expect(positionState.debt).toEqual(stablesBorrowed);
+
+    // //     userUsdTonBalance = await userUsdTonWallet.getGetBalance();
+    // //     console.log('balance before repay', userUsdTonBalance);
+
+    // //     // user pays stables back
+    // //     await manager.send(
+    // //         deployer.getSender(),
+    // //         { value: toNano('1') },
+    // //         {
+    // //             $$type: 'BurnUsdTONUserMessage',
+    // //             user: deployer.getSender().address,
+    // //             amount: stablesBorrowed,
+    // //         },
+    // //     );
+
+    // //     let positionMessage = await userPositionContract.getMessage();
+    // //     console.log({ positionMessage });
+
+    // //     userUsdTonBalance = await userUsdTonWallet.getGetBalance();
+    // //     console.log('balance after repay', userUsdTonBalance);
+
+    // //     expect(userUsdTonBalance).toEqual(0n);
+
+    // //     positionState = await userPositionContract.getPositionState();
+    // //     console.log({ positionState });
+    // //     expect(positionState.debt).toEqual(0n);
+
+    // // withdraw collateral
+
+    // //     const collateralToWithdraw = toNano('0.5');
+
+    // //     await manager.send(
+    // //         deployer.getSender(),
+    // //         { value: toNano('1') },
+    // //         {
+    // //             $$type: 'WithdrawCollateralUserMessage',
+    // //             user: deployer.getSender().address,
+    // //             amount: collateralToWithdraw,
+    // //         },
+    // //     );
+
+    // //     positionState = await userPositionContract.getPositionState();
+    // //     console.log({ positionState });
+    // //     expect(positionState.collateral).toEqual(500000000n);
+
+    //     // expect(positionState.collateral).toEqual(collateralDepositAmount);
+
+    // //     // -- user draw usdTons
+    // //     const initialTotalSupply = await usdTon.getTotalSupply();
+
+    // //     expect(initialTotalSupply).toEqual(0n);
+
+    // //     const stablesBorrowed = toNano(2);
+
+    // //     await manager.send(
+    // //         deployer.getSender(),
+    // //         { value: toNano(1) },
+    // //         {
+    // //             $$type: 'MintUsdTonMessage',
+    // //             user: deployer.getSender().address,
+    // //             amount: stablesBorrowed,
+    // //         },
+    // //     );
+
+    // //     const userUsdToncoinWalletAddress = await usdTon.getGetWalletAddress(deployer.getSender().address);
+    // //     const userUsdTonWallet = blockchain.openContract(await UsdTonWallet.fromAddress(userUsdToncoinWalletAddress));
+    // //     let userUsdTonBalance = await userUsdTonWallet.getGetBalance();
+
+    // //     expect(userUsdTonBalance).toEqual(stablesBorrowed);
+
+    // //     const currentTotalSupply = await usdTon.getTotalSupply();
+    // //     expect(currentTotalSupply).toEqual(stablesBorrowed);
+
+    // //     // position updated
+    // //     positionState = await userPositionContract.getPositionState();
+    // //     expect(positionState.debt).toEqual(stablesBorrowed);
+
+    // //     userUsdTonBalance = await userUsdTonWallet.getGetBalance();
+    // //     console.log('balance before repay', userUsdTonBalance);
+
+    // //     // user pays stables back
+    // //     await manager.send(
+    // //         deployer.getSender(),
+    // //         { value: toNano('1') },
+    // //         {
+    // //             $$type: 'BurnUsdTONUserMessage',
+    // //             user: deployer.getSender().address,
+    // //             amount: stablesBorrowed,
+    // //         },
+    // //     );
+
+    // //     let positionMessage = await userPositionContract.getMessage();
+    // //     console.log({ positionMessage });
+
+    // //     userUsdTonBalance = await userUsdTonWallet.getGetBalance();
+    // //     console.log('balance after repay', userUsdTonBalance);
+
+    // //     expect(userUsdTonBalance).toEqual(0n);
+
+    // //     positionState = await userPositionContract.getPositionState();
+    // //     console.log({ positionState });
+    // //     expect(positionState.debt).toEqual(0n);
+
+    // //     // withdraw collateral
+
+    // //     const collateralToWithdraw = toNano('0.5');
+
+    // //     await manager.send(
+    // //         deployer.getSender(),
+    // //         { value: toNano('1') },
+    // //         {
+    // //             $$type: 'WithdrawCollateralUserMessage',
+    // //             user: deployer.getSender().address,
+    // //             amount: collateralToWithdraw,
+    // //         },
+    // //     );
+
+    // //     positionState = await userPositionContract.getPositionState();
+    // //     console.log({ positionState });
+    // //     expect(positionState.collateral).toEqual(500000000n);
+    // //     const message = await userPositionContract.getMessage();
+    // //     console.log({ message });
+    // });
 });

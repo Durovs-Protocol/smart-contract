@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { loadAddress, log, timer } from '../utils/helpers';
-import { addSupplyAmount } from '../utils/test_data';
+import { addSupplyAmount } from '../utils/data';
 import { Manager } from '../wrappers/Manager';
 
 import { UserPosition } from '../wrappers/UserPosition';
@@ -37,7 +37,7 @@ export async function run(provider: NetworkProvider) {
             $$type: 'DepositCollateralUserMessage',
             user: user.address as Address,
             amount: collateralAmount,
-            runesWallet: Address.parse('EQCs51Op3zgu_MjJ0PnhGV7m3S-RFsoc1heWmVVmk20lO3jV'),
+            runesWallet: Address.parse(await loadAddress('runacoin')),
         },
     );
 
