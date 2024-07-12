@@ -19,3 +19,9 @@ export const jettonParams = {
     description: '-',
     image: 'https://ipfs.io/ipfs/QmfGfEGQav42ZW14W2D5oNtvWUC7Nwj759hjHAZvFiRhaX',
 };
+export const runecoinParams = {
+    name: 'rune',
+    symbol: 'rune',
+    description: 'rune',
+    image: '',
+};

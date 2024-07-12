@@ -49,7 +49,7 @@ describe('UserFlow', () => {
         );
 
         runecoinWallet = blockchain.openContract(
-            await RunecoinWallet.fromInit(runecoin.address, deployer.getSender().address),
+            await RunecoinWallet.fromInit(deployer.getSender().address, deployer.getSender().address),
         );
 
         pool = blockchain.openContract(await Pool.fromInit(deployer.getSender().address));
@@ -151,7 +151,6 @@ describe('UserFlow', () => {
                 liquidationFee: toNano(0.15),
                 liquidationRatio: toNano(1.2),
                 stabilityFeeRate: toNano('0.02'),
-                liquidationFee: toNano('0.15'),
             },
         );
 
