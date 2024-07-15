@@ -1,6 +1,5 @@
 import "../utils/messages.tact";
 import "../user_position.tact";
-import "./rune_info.tact";
 
 @interface("org.ton.jetton.wallet")
 contract RunecoinWallet

@@ -19,19 +19,18 @@ export async function run(provider: NetworkProvider) {
 
     const userUsdTonWalletAddress = await usdTon.getGetWalletAddress(user);
 
-    console.log(userUsdTonWalletAddress);
+    console.log('UserUsdTonWalletAddress: ' + userUsdTonWalletAddress);
+    console.log('User Position address:  ', userPosition.address.toString() + '\n\n');
     const userUsdTonWallet = provider.open(await UsdTonWallet.fromAddress(userUsdTonWalletAddress));
 
-    console.log('Supply             in TON:', fromNano(state.collateral).toString());
-    console.log('Borrow         usdTON(UP):', fromNano(state.debt).toString());
+    console.log('Supply in TON:    ', fromNano(state.collateral).toString());
+    console.log('Borrow by UP:     ', fromNano(state.debt).toString());
     try {
         const userUsdTonBalance = await userUsdTonWallet.getGetBalance();
-        console.log('Borrow     usdTON(wallet):', fromNano(userUsdTonBalance).toString());
+        console.log('Borrow by wallet: ', fromNano(userUsdTonBalance).toString());
     } catch (e) {
-        console.log('Borrow usdTON(wallet): no data');
+        console.log('Borrow by wallet: no data');
     }
-
-    console.log('User     Position address:', userPosition.address.toString());
 
     /**
      * Также выводить тут баланс с userUsdTonWalletAddress

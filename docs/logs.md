@@ -14,12 +14,9 @@
 
 > Сейчас все проверяется только с одним кошельком
 
-1. build: ✅
-
-2. deploy (pool, manager, usdTON, runecoin_owner, runecoin): 
-    - 🟡 перейти на токеномику, в том числе отказаться от runecoin_owner
-
-3. setup: ✅
+1. ✅ => build
+2. ✅ => deploy (pool, manager, usdTON, runecoin)
+3. ✅ => setup
 4. get-runes: ✅
 5. add-supply: 🟡
 6. mint: 🟡 - ошибка в metadata

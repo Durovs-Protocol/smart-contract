@@ -6,7 +6,7 @@
         "run-script": "npx blueprint run --testnet --mnemonic --tonviewer",
         "action": "blueprint run",
         "blueprint-build": "blueprint build",
-        "build": "rm -rf build && blueprint build manager && blueprint build pool  && blueprint build usdTon  && blueprint build userPosition && blueprint build usdTonWallet && blueprint build runecoin && blueprint build runecoinWallet && blueprint build runeInfo",
+        "build": "rm -rf build && blueprint build manager && blueprint build pool  && blueprint build usdTon  && blueprint build userPosition && blueprint build usdTonWallet && blueprint build runecoin && blueprint build runecoinWallet",
         "test": "jest --verbose",
 
         "install": "yarn build && yarn deploy && yarn setup",

@@ -218,7 +218,6 @@ message UpdateTonPriceMsg {
 message DepositCollateralUserMessage {
     user: Address;
     amount: Int as coins;
-    runesWallet: Address;
 }
 message MintUsdTonMessage {
     user: Address;

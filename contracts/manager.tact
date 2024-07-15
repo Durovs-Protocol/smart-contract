@@ -67,11 +67,21 @@ contract Manager with Deployable, OwnableTransferable {
 
     // для теста
     bounced(msg: bounced<DepositCollateralMessage>){
-        send(SendParameters{to: self.owner, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
+        send(SendParameters{
+            to: self.owner,
+            bounce: false,
+            value: 0,
+            mode: (SendRemainingValue + SendIgnoreErrors)
+        });
     }
 
     bounced(msg: bounced<MintUsdTonMessage>){
-        send(SendParameters{to: self.owner, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
+        send(SendParameters{
+            to: self.owner,
+            bounce: false,
+            value: 0,
+            mode: (SendRemainingValue + SendIgnoreErrors)
+        });
     }
 
     //=============================================================================
@@ -112,8 +122,12 @@ contract Manager with Deployable, OwnableTransferable {
 
     receive(msg: AddPositionId){
         self.lastPositionId = (self.lastPositionId + 1);
-        send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendBounceIfActionFail)}
-        );
+        send(SendParameters{
+            to: msg.user, 
+            bounce: false, 
+            value: 0, 
+            mode: (SendRemainingValue + SendBounceIfActionFail)
+        });
     }
 
     /*02 | Mint usdTON */
@@ -171,36 +185,34 @@ contract Manager with Deployable, OwnableTransferable {
     receive(msg: WithdrawCollateralUserMessage){
         require(sender() == msg.user, "invalid sender");
         send(SendParameters{
-                to: self._userPositionAddress(msg.user),
-                value: 0,
-                mode: (SendRemainingValue + SendIgnoreErrors),
-                bounce: true,
-                body: WithdrawCollateralMessage{
-                    user: msg.user,
-                    amount: msg.amount,
-                    settings: self.poolSettings,
-                    tonPriceWithHealthRate: self.tonPriceWithHealthRate
-                }.toCell()
-            }
-        );
+            to: self._userPositionAddress(msg.user),
+            value: 0,
+            mode: (SendRemainingValue + SendIgnoreErrors),
+            bounce: true,
+            body: WithdrawCollateralMessage{
+                user: msg.user,
+                amount: msg.amount,
+                settings: self.poolSettings,
+                tonPriceWithHealthRate: self.tonPriceWithHealthRate
+            }.toCell()
+        });
     }
 
     receive(msg: PositionLiquidationInspectorMessage){
         require(sender() == self.owner, "invalid sender");
         send(SendParameters{
-                to: self._userPositionAddress(msg.user),
-                value: 0,
-                mode: (SendRemainingValue + SendBounceIfActionFail),
-                bounce: true,
-                body: PositionLiquidation{
-                    settings: self.poolSettings,
-                    user: msg.user,
-                    tonPriceWithHealthRate: self.tonPriceWithHealthRate,
-                    tonPrice: self.tonPrice,
-                    runePrice: self.tonPrice
-                }.toCell()
-            }
-        );
+            to: self._userPositionAddress(msg.user),
+            value: 0,
+            mode: (SendRemainingValue + SendBounceIfActionFail),
+            bounce: true,
+            body: PositionLiquidation{
+                settings: self.poolSettings,
+                user: msg.user,
+                tonPriceWithHealthRate: self.tonPriceWithHealthRate,
+                tonPrice: self.tonPrice,
+                runePrice: self.tonPrice
+            }.toCell()
+        });
     }
 
     // receive("EmergencyExit"){
@@ -259,7 +271,8 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     fun payBack(user: Address) {
-        send(SendParameters{to: user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
+        send(SendParameters{
+            to: user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
     }
     //=============================================================================
     // Offchain interface
@@ -294,9 +307,9 @@ contract Manager with Deployable, OwnableTransferable {
     }
     //  для проверки ршения проблемы с адресами
 
-    get fun runeInfo(user: Address): Address {
-        let winit: StateInit = initOf RunecoinWallet(self.deps.runecoinAddress, user);
-        let walletAddress: Address = contractAddress(winit);
-        return walletAddress;
-    }
+    // get fun runeInfo(user: Address): Address {
+    //     let winit: StateInit = initOf RunecoinWallet(self.deps.runecoinAddress, user);
+    //     let walletAddress: Address = contractAddress(winit);
+    //     return walletAddress;
+    // }
 }

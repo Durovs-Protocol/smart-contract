@@ -1,10 +1,9 @@
 import { NetworkProvider } from '@ton/blueprint';
-import { Address, fromNano, toNano } from '@ton/core';
+import { Address, toNano } from '@ton/core';
 import { loadAddress, log, timer } from '../utils/helpers';
 import { burn } from '../utils/data';
 import { Manager } from '../wrappers/Manager';
 import { UserPosition } from '../wrappers/UserPosition';
-import { RunecoinWallet } from '../wrappers/RunecoinWallet';
 
 export async function run(provider: NetworkProvider) {
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
@@ -24,10 +23,6 @@ export async function run(provider: NetworkProvider) {
     // const userUsdToncoinWalletAddress = await usdTon.getGetWalletAddress(user.address as Address);
     // const userUsdTonWallet = provider.open(await UsdTonWallet.fromAddress(userUsdToncoinWalletAddress));
     let usdTonBalance = await getDebtBalance();
-
-    // const runecoinWallet = provider.open(await RunecoinWallet.fromAddress(user.address as Address));
-    // const balanceBefore = await runecoinWallet.getGetBalance()
-    // console.log('\nbalanceBefore: '+ balanceBefore);
 
     // TODO: сделать проверку на текущий баланс - если долга нет - дальше не пускать
     // оптимальный газ 0.12 (до правок по runes)
@@ -49,7 +44,4 @@ export async function run(provider: NetworkProvider) {
         getDebtBalance,
         true,
     );
-
-    // const balanceAfter = await runecoinWallet.getGetBalance()
-    // console.log('\nbalanceAfter: '+ balanceAfter);
 }
