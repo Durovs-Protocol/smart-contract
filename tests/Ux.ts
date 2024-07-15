@@ -9,7 +9,7 @@ import { RunecoinWallet } from '../wrappers/RunecoinWallet';
 
 import { UsdTonMaster } from '../wrappers/UsdTon';
 import { UserPosition } from '../wrappers/UserPosition';
-import { jettonParams, runecoinParams } from '../utils/data';
+import { jettonParams } from '../utils/data';
 
 describe('UserFlow', () => {
     let blockchain: Blockchain;
@@ -190,7 +190,6 @@ describe('UserFlow', () => {
                 $$type: 'DepositCollateralUserMessage',
                 user: deployer.getSender().address,
                 amount: collateralDepositAmount,
-                runesWallet: deployer.getSender().address,
             },
         );
 

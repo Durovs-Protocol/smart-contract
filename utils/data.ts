@@ -55,3 +55,15 @@ export const runecoinParams = {
     description: 'rune',
     image: '',
 };
+
+/**
+ * Для теста
+ */
+
+export const testJettonParams = {
+    name: 'yt',
+    symbol: 'yt',
+    description: 'yt',
+    image: '',
+};
+export const testRunecoinParams = runecoinParams;

@@ -35,23 +35,8 @@ contract Pool with Deployable, OwnableTransferable {
     }
 
     //=============================================================================
-    // Actions
+    // Actions: TODO: вывод дохода, конвертация TON в runacoin
     //=============================================================================
-
-    // вывод всех средств с пула на кошелек владельца пула, после тестов удалить
-    receive(msg: TestWithdrawal){
-        send(SendParameters{
-            to: self.owner, 
-            bounce: false, 
-            value: 0, 
-            mode: (SendRemainingBalance + SendIgnoreErrors)
-        });
-    }
-
-    // TODO реализовать перевод поступлений в runecoin
-    receive(msg: FeePayment){
-        //
-    }
 
     //=============================================================================
     // Helpers
