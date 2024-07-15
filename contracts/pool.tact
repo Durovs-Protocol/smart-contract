@@ -40,7 +40,12 @@ contract Pool with Deployable, OwnableTransferable {
 
     // вывод всех средств с пула на кошелек владельца пула, после тестов удалить
     receive(msg: TestWithdrawal){
-        send(SendParameters{to: self.owner, bounce: false, value: 0, mode: (SendRemainingBalance + SendIgnoreErrors)});
+        send(SendParameters{
+            to: self.owner, 
+            bounce: false, 
+            value: 0, 
+            mode: (SendRemainingBalance + SendIgnoreErrors)
+        });
     }
 
     // TODO реализовать перевод поступлений в runecoin

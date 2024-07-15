@@ -53,6 +53,6 @@ export async function run(provider: NetworkProvider) {
 
     // console.log('=============================================================================\n\n');
 }
-function toNano(mintNormal: any) {
+function toNano(mintAmount: any) {
     throw new Error('Function not implemented.');
 }

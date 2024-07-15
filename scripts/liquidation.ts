@@ -4,6 +4,7 @@ import { loadAddress, log, timer } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { UsdTonMaster } from '../wrappers/UsdTon';
 import { UserPosition } from '../wrappers/UserPosition';
+import { liquidationGas } from '../utils/data';
 
 export async function run(provider: NetworkProvider) {
     const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
@@ -24,7 +25,7 @@ export async function run(provider: NetworkProvider) {
 
     await manager.send(
         user,
-        { value: toNano(0.3) },
+        { value: toNano(liquidationGas) },
         {
             $$type: 'PositionLiquidationInspectorMessage',
             user: Address.parse(process.env.USER_WALLET_ADDRESS!),

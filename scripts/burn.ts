@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { loadAddress, log, timer } from '../utils/helpers';
-import { burn } from '../utils/data';
+import { burnAmount, burnGas } from '../utils/data';
 import { Manager } from '../wrappers/Manager';
 import { UserPosition } from '../wrappers/UserPosition';
 
@@ -9,8 +9,7 @@ export async function run(provider: NetworkProvider) {
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const user = provider.sender();
 
-    const stablesBorrowed = toNano(burn);
-    log('03 | Пользователь возвращает usdTon | Burn amount: ' + burn);
+    log('03 | Пользователь возвращает usdTon | Burn amount: ' + burnAmount);
 
     const getDebtBalance = async function () {
         const userPositionAddress = await manager.getUserPositionAddress(user.address as Address);
@@ -29,18 +28,18 @@ export async function run(provider: NetworkProvider) {
     // TODO пересчитать газ
     await manager.send(
         user,
-        { value: toNano(0.12) },
+        { value: toNano(burnGas) },
         {
             $$type: 'BurnUsdTONUserMessage',
             user: user.address as Address,
-            amount: stablesBorrowed,
+            amount: toNano(burnAmount),
         },
     );
 
     await timer(
         'User stable balance',
         'Погашение задолжности',
-        usdTonBalance - stablesBorrowed,
+        usdTonBalance - toNano(burnAmount),
         getDebtBalance,
         true,
     );
