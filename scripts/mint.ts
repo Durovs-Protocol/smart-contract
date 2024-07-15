@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, fromNano, toNano } from '@ton/core';
 import { loadAddress, log, saveAddress, timer } from '../utils/helpers';
-import { mintNormal } from '../utils/test_data';
+import { mintAmount, mintGas } from '../utils/data';
 import { Manager } from '../wrappers/Manager';
 import { UsdTonMaster } from '../wrappers/UsdTon';
 import { UsdTonWallet } from '../wrappers/UsdTonWallet';
@@ -12,14 +12,14 @@ export async function run(provider: NetworkProvider) {
     const user = provider.sender();
 
     const userUsdTonWalletAddress = await usdTon.getGetWalletAddress(user.address as Address);
-    const usdtonsBorrowed = toNano(mintNormal);
+    const usdtonsBorrowed = toNano(mintAmount);
     console.log(userUsdTonWalletAddress);
 
-    log('02 | Пользователь минтит usdTON: ' + fromNano(usdtonsBorrowed).toString());
+    log('2. Пользователь минтит usdTON: ' + fromNano(usdtonsBorrowed).toString());
     // выставлен оптимальный газ
     await manager.send(
         user,
-        { value: toNano(0.05) },
+        { value: toNano(mintGas) },
         {
             $$type: 'MintUsdTonMessage',
             user: user.address as Address,
@@ -29,8 +29,6 @@ export async function run(provider: NetworkProvider) {
 
     const userUsdTonWallet = provider.open(await UsdTonWallet.fromAddress(userUsdTonWalletAddress));
     await provider.waitForDeploy(userUsdTonWalletAddress, 30);
-
-    const userUsdTonBalance = await userUsdTonWallet.getGetBalance();
 
     await timer(`User stable balance`, 'Mint usdTon', usdtonsBorrowed, userUsdTonWallet.getGetBalance);
 

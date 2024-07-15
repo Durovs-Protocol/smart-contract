@@ -7,14 +7,15 @@ import "./runecoin/runecoin_wallet.tact";
 contract Manager with Deployable, OwnableTransferable {
     const MinTonForStorage: Int = ton("0.01");
     const GasConsumption: Int = ton("0.01");
+
     deps: Deps;
     poolSettings: PoolSettings;
     owner: Address;
     lastPositionId: Int as coins = 0;
     tonPrice: Int;
-    tonPriceWithHealthRate: Int;
     totalCollateralAmount: Int as coins = 0;
     totalFeesCollected: Int as coins = 0;
+
     init(owner: Address){
         self.owner = owner;
         self.poolSettings = PoolSettings{liquidationRatio: 0, stabilityFeeRate: 0, liquidationFee: 0};
@@ -25,7 +26,6 @@ contract Manager with Deployable, OwnableTransferable {
             runecoinAddress: newAddress(0, 0)
         };
         self.tonPrice = 0;
-        self.tonPriceWithHealthRate = 0;
     }
 
     //=============================================================================
@@ -58,19 +58,10 @@ contract Manager with Deployable, OwnableTransferable {
     //=============================================================================
     receive(msg: UpdateTonPriceMsg){
         self.requireOwner();
-        self.tonPriceWithHealthRate = msg.price * 1000000000 / self.poolSettings.liquidationRatio;
         self.tonPrice = msg.price;
         self.reply("Ton price updated".asComment());
     }
 
-    // для теста
-    bounced(msg: bounced<DepositCollateralMessage>){
-        send(SendParameters{to: self.owner, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
-    }
-
-    bounced(msg: bounced<MintUsdTonMessage>){
-        send(SendParameters{to: self.owner, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
-    }
 
     //=============================================================================
     // User actions
@@ -99,8 +90,7 @@ contract Manager with Deployable, OwnableTransferable {
                     user: msg.user,
                     amount: msg.amount,
                     settings: self.poolSettings,
-                    tonPriceWithHealthRate: self.tonPriceWithHealthRate,
-                    runesWallet: msg.runesWallet
+                    tonPrice: self.tonPrice,
                 }.toCell(),
                 code: init.code,
                 data: init.data
@@ -111,8 +101,12 @@ contract Manager with Deployable, OwnableTransferable {
 
     receive(msg: AddPositionId){
         self.lastPositionId = (self.lastPositionId + 1);
-        send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendBounceIfActionFail)}
-        );
+        send(SendParameters{
+            to: msg.user, 
+            bounce: false, 
+            value: 0, 
+            mode: (SendRemainingValue + SendBounceIfActionFail)
+        });
     }
 
     /*02 | Mint usdTON */
@@ -126,7 +120,7 @@ contract Manager with Deployable, OwnableTransferable {
                     user: msg.user,
                     amount: msg.amount,
                     settings: self.poolSettings,
-                    tonPriceWithHealthRate: self.tonPriceWithHealthRate
+                    tonPrice: self.tonPrice
                 }.toCell()
             }
         );
@@ -134,8 +128,21 @@ contract Manager with Deployable, OwnableTransferable {
 
     /*03 | Burn usdTON */
     receive(msg: BurnUsdTONUserMessage){
-        let winit: StateInit = initOf RunecoinWallet(self.deps.runecoinAddress, msg.user);
-        let walletAddress: Address = contractAddress(winit);
+        send(SendParameters {
+                to: self.deps.runecoinAddress,
+                value: 0,
+                mode: SendRemainingValue,
+                bounce: true,
+                body: GetUserRunacoinAddress{
+                    user: msg.user,
+                    amount: msg.amount,
+                }.toCell()
+            }
+        );
+    }
+
+    /* Обход получения адреса runacoins кошелька пользователя */
+    receive(msg: GetUserRunacoinAddressResponse) {
         send(SendParameters{
                 to: self._userPositionAddress(msg.user),
                 value: 0,
@@ -145,9 +152,8 @@ contract Manager with Deployable, OwnableTransferable {
                     user: msg.user,
                     amount: msg.amount,
                     settings: self.poolSettings,
-                    tonPriceWithHealthRate: self.tonPriceWithHealthRate,
                     tonPrice: self.tonPrice,
-                    runecoinWallet: walletAddress,
+                    userRunaCoinAddress: msg.userRunaCoinAddress,
                     deps: self.deps
                 }.toCell()
             }
@@ -158,36 +164,33 @@ contract Manager with Deployable, OwnableTransferable {
     receive(msg: WithdrawCollateralUserMessage){
         require(sender() == msg.user, "invalid sender");
         send(SendParameters{
-                to: self._userPositionAddress(msg.user),
-                value: 0,
-                mode: (SendRemainingValue + SendIgnoreErrors),
-                bounce: true,
-                body: WithdrawCollateralMessage{
-                    user: msg.user,
-                    amount: msg.amount,
-                    settings: self.poolSettings,
-                    tonPriceWithHealthRate: self.tonPriceWithHealthRate
-                }.toCell()
-            }
-        );
+            to: self._userPositionAddress(msg.user),
+            value: 0,
+            mode: (SendRemainingValue + SendIgnoreErrors),
+            bounce: true,
+            body: WithdrawCollateralMessage{
+                user: msg.user,
+                amount: msg.amount,
+                settings: self.poolSettings,
+                tonPrice: self.tonPrice
+            }.toCell()
+        });
     }
 
+    // from: code, to: UserPosition
     receive(msg: PositionLiquidationInspectorMessage){
         require(sender() == self.owner, "invalid sender");
         send(SendParameters{
-                to: self._userPositionAddress(msg.user),
-                value: 0,
-                mode: (SendRemainingValue + SendBounceIfActionFail),
-                bounce: true,
-                body: PositionLiquidation{
-                    settings: self.poolSettings,
-                    user: msg.user,
-                    tonPriceWithHealthRate: self.tonPriceWithHealthRate,
-                    tonPrice: self.tonPrice,
-                    runePrice: self.tonPrice
-                }.toCell()
-            }
-        );
+            to: self._userPositionAddress(msg.user),
+            value: 0,
+            mode: (SendRemainingValue + SendBounceIfActionFail),
+            bounce: true,
+            body: PositionLiquidation{
+                settings: self.poolSettings,
+                user: msg.user,
+                tonPrice: self.tonPrice
+            }.toCell()
+        });
     }
 
     // receive("EmergencyExit"){
@@ -246,12 +249,13 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     fun payBack(user: Address) {
-        send(SendParameters{to: user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
+        send(SendParameters{
+            to: user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
     }
+
     //=============================================================================
     // Offchain interface
     //=============================================================================
-
     get fun lastPositionId(): Int {
         return self.lastPositionId;
     }
@@ -272,18 +276,7 @@ contract Manager with Deployable, OwnableTransferable {
         return self.tonPrice;
     }
 
-    get fun tonPriceWithHealthRate(): Int {
-        return self.tonPriceWithHealthRate;
-    }
-
     get fun totalCollateralAmount(): Int {
         return self.totalCollateralAmount;
-    }
-    //  для проверки ршения проблемы с адресами
-
-    get fun runeInfo(user: Address): Address {
-        let winit: StateInit = initOf RunecoinWallet(self.deps.runecoinAddress, user);
-        let walletAddress: Address = contractAddress(winit);
-        return walletAddress;
     }
 }

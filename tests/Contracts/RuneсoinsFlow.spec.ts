@@ -5,6 +5,7 @@ import { buildOnchainMetadata } from '../../utils/helpers';
 import { Runecoin } from '../../wrappers/Runecoin';
 
 import { RunecoinWallet } from '../../wrappers/RunecoinWallet';
+import { jettonParams } from '../../utils/data';
 
 describe('RunaCoinOwner', () => {
     let blockchain: Blockchain;

@@ -26,7 +26,6 @@ contract UserPosition  {
     const GasConsumption: Int = ton("0.02");
     user: Address;
     usdTonAddress: Address;
-    runesWallet: Address;
     managerAddress: Address;
     poolAddress: Address;
 
@@ -40,7 +39,6 @@ contract UserPosition  {
 
         self.managerAddress = managerAddress;
         self.poolAddress = poolAddress;
-        self.runesWallet =  newAddress(0, 0);
 
         self.message = Message{
             timestamp: 0,
@@ -77,10 +75,6 @@ contract UserPosition  {
     receive(msg: DepositCollateralMessage) {
         require(sender() == self.managerAddress, "not from positionsManager");
         
-        if (self.runesWallet == newAddress(0, 0)) {
-            self.runesWallet = msg.runesWallet;
-        }
-
         let ctx: Context = context();
         let remainingValue: Int = (ctx.value - ((msg.amount + self.MinTonsForStorage) + self.GasConsumption));
  
@@ -90,7 +84,12 @@ contract UserPosition  {
         comment.append("Colleteral was added: ");
         comment.append(msg.amount.toString());
   
-        send(SendParameters{to: msg.user, bounce: false, value: remainingValue, mode: SendIgnoreErrors, body: comment.toString().asComment()});
+        send(SendParameters{to: msg.user, 
+            bounce: false, 
+            value: remainingValue, 
+            mode: SendIgnoreErrors, 
+            body: comment.toString().asComment()
+        });
     }
 
 
@@ -101,9 +100,7 @@ contract UserPosition  {
 
         let debtAfterWithdraw: Int = (self.debt + msg.amount);
 
-        let balance: Int = myBalance() - (self.GasConsumption + self.MinTonsForStorage);
-
-        if (!self.isPositionHealthy(balance, debtAfterWithdraw, msg.tonPriceWithHealthRate, msg.settings)) {
+        if (!self.isPositionHealthy(myBalance(), debtAfterWithdraw, msg.tonPrice, msg.settings)) {
             self.unhealthyPositionHandler(msg.user);
             return;
         } 
@@ -134,8 +131,7 @@ contract UserPosition  {
             self.setMessage("Your debt is less than you want to repay, charge sent back");
             amountToBurn = self.debt;
         }
-        let balance: Int = myBalance() - (self.GasConsumption + self.MinTonsForStorage);
-        if (!self.isPositionHealthy(balance, self.debt - msg.amount, msg.tonPriceWithHealthRate, msg.settings)) {
+        if (!self.isPositionHealthy(myBalance(), self.debt - msg.amount, msg.tonPrice, msg.settings)) {
             self.unhealthyPositionHandler(msg.user);
             return;
         }
@@ -143,7 +139,7 @@ contract UserPosition  {
         let fee: Int = (amountToBurn * 50000000) / 1000000000;
 
         send(SendParameters{
-            to: self.runesWallet,
+            to: msg.userRunaCoinAddress,
             value: ton("0.08"),
             bounce: true,
                 body: RuneTransfer {
@@ -230,8 +226,8 @@ contract UserPosition  {
     /*04 | Возврат обеспечения (from manager)'*/
     receive(msg: WithdrawCollateralMessage) {
         require(sender() == self.managerAddress, "not from positions manager");
-        let balance: Int = myBalance() - (self.GasConsumption + self.MinTonsForStorage);
-        if (msg.amount  > balance) {
+
+        if (msg.amount > myBalance() + (self.GasConsumption + self.MinTonsForStorage)) {
             send(SendParameters{
                 to: msg.user,
                 bounce: false,
@@ -241,25 +237,27 @@ contract UserPosition  {
             });
             return;
         }
-        let collateralAfterWithdraw: Int = balance - msg.amount;
-
-
-        if (!self.isPositionHealthy(collateralAfterWithdraw, self.debt, msg.tonPriceWithHealthRate, msg.settings)) {
+        if (!self.isPositionHealthy(myBalance() - msg.amount, self.debt, msg.tonPrice, msg.settings)) {
             self.unhealthyPositionHandler(msg.user);
             return;
         }
 
-        send(SendParameters{to: msg.user, bounce: false, value: msg.amount, mode:  SendIgnoreErrors + SendPayGasSeparately });
+        send(SendParameters{
+            to: msg.user, 
+            bounce: false, 
+            value: 0, 
+            mode: SendRemainingBalance
+        });
 
 
-        self.setMessage("collateral sent back to yor wallet");
+        // self.setMessage("collateral sent back to yor wallet");
 
     }
+    
     /*05 | Ликвидация (from manager)'*/
     receive(msg: PositionLiquidation) {
         require(sender() == self.managerAddress, "not from positions manager");
-        let balance: Int = myBalance() - (self.GasConsumption + self.MinTonsForStorage);
-        if (self.isPositionHealthy(balance, self.debt, msg.tonPriceWithHealthRate, msg.settings)) {
+        if (self.isPositionHealthy(myBalance(), self.debt, msg.tonPrice, msg.settings)) {
             send(SendParameters{
                 to: sender(),
                 bounce: false,
@@ -305,7 +303,14 @@ contract UserPosition  {
             }.toCell()
         });
 
-        send(SendParameters{to: self.poolAddress, bounce: false, value: self.liquidationParams.tonForBurn, mode: SendPayGasSeparately, body: FeePayment{amount: self.liquidationParams.tonForBurn}.toCell()});
+        send(SendParameters{to: self.poolAddress, 
+            bounce: false, 
+            value: self.liquidationParams.tonForBurn, 
+            mode: SendPayGasSeparately, 
+            body: FeePayment{
+                amount: self.liquidationParams.tonForBurn
+            }.toCell()
+        });
     }
 
     receive(msg: DexNotification) {
@@ -349,7 +354,7 @@ contract UserPosition  {
     }
 
     receive(msg: TokenExcesses) {
-        // для приема оставшегося ton после имитации операций на dex
+        // для приема оставшегося ton после имитации операций на dex или с любых контрактов
     }
 
 
@@ -357,9 +362,8 @@ contract UserPosition  {
     // Helpers
     //=============================================================================
 
-    fun isPositionHealthy(collateral: Int, debt: Int, tonPriceWithHealthRate: Int, settings: PoolSettings): Bool {
-        let collateralPriceWithSafetyMargin: Int = collateral * tonPriceWithHealthRate / 1000000000;
-        return  collateralPriceWithSafetyMargin >= debt;
+    fun isPositionHealthy(collateral: Int, debt: Int, tonPrice: Int, settings: PoolSettings): Bool {
+        return (collateral - self.GasConsumption - self.MinTonsForStorage) * tonPrice / debt >= settings.liquidationRatio;
     }
 
     fun unhealthyPositionHandler(user: Address) {

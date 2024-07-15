@@ -9,6 +9,7 @@ import { RunecoinWallet } from '../wrappers/RunecoinWallet';
 
 import { UsdTonMaster } from '../wrappers/UsdTon';
 import { UserPosition } from '../wrappers/UserPosition';
+import { jettonParams, runecoinParams } from '../utils/data';
 
 describe('UserFlow', () => {
     let blockchain: Blockchain;
@@ -22,18 +23,6 @@ describe('UserFlow', () => {
     let userPosition: SandboxContract<UserPosition>;
 
     beforeAll(async () => {
-        const jettonParams = {
-            name: 'yt',
-            symbol: 'yt',
-            description: 'yt',
-            image: '',
-        };
-        const runecoinParams = {
-            name: 'rune',
-            symbol: 'rune',
-            description: 'rune',
-            image: '',
-        };
 
         blockchain = await Blockchain.create();
         deployer = await blockchain.treasury('deployer');
@@ -42,13 +31,13 @@ describe('UserFlow', () => {
             await UsdTonMaster.fromInit(deployer.getSender().address, buildOnchainMetadata(jettonParams)),
         );
 
-        runecoin = blockchain.openContract(
-            await Runecoin.fromInit(deployer.getSender().address, buildOnchainMetadata(runecoinParams)),
-        );
+        // runecoin = blockchain.openContract(
+        //     await Runecoin.fromInit(deployer.getSender().address, buildOnchainMetadata(runecoinParams)),
+        // );
 
-        runecoinWallet = blockchain.openContract(
-            await RunecoinWallet.fromInit(runecoin.address, deployer.getSender().address),
-        );
+        // runecoinWallet = blockchain.openContract(
+        //     await RunecoinWallet.fromInit(deployer.getSender().address, deployer.getSender().address),
+        // );
 
         pool = blockchain.openContract(await Pool.fromInit(deployer.getSender().address));
         manager = blockchain.openContract(await Manager.fromInit(deployer.getSender().address));
@@ -146,9 +135,9 @@ describe('UserFlow', () => {
             { value: toNano(1) },
             {
                 $$type: 'SetPoolSettings',
+                liquidationFee: toNano(0.15),
                 liquidationRatio: toNano(1.2),
                 stabilityFeeRate: toNano('0.02'),
-                liquidationFee: toNano('0.15'),
             },
         );
 
@@ -185,9 +174,6 @@ describe('UserFlow', () => {
     it('initial price set ok', async () => {
         const tonPrice = await manager.getTonPrice();
         expect(tonPrice).toEqual(toNano(7));
-        const tonPriceWithHealthRate = await manager.getTonPriceWithHealthRate();
-        expect(tonPriceWithHealthRate).toEqual(5833333333n);
-        ///???
     });
 
     it('user flow', async () => {

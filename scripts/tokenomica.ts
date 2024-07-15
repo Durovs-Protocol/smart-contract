@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, Dictionary, toNano } from '@ton/core';
+import { holders } from '../utils/data';
 import { loadAddress, log } from '../utils/helpers';
-import { holders } from '../utils/test_data';
 import { Runecoin } from '../wrappers/Runecoin';
 
 export async function run(provider: NetworkProvider) {

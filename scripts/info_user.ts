@@ -7,36 +7,37 @@ import { UsdTonWallet } from '../wrappers/UsdTonWallet';
 import { UserPosition } from '../wrappers/UserPosition';
 
 export async function run(provider: NetworkProvider) {
-    log('User info');
+    log('User Position info');
 
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
-
     const user = provider.sender().address as Address;
+    
+    /**
+     * User position
+     */
     const userPositionAddress = await manager.getUserPositionAddress(user);
     const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
     const state = await userPosition.getPositionState();
+    console.log('User Position address:  ', userPosition.address.toString() + '\n\n');
 
-    const userUsdTonWalletAddress = await usdTon.getGetWalletAddress(user);
+    let tonPrice = await manager.getTonPrice();
+    let healthRate = tonPrice * state.collateral/state.debt;
 
-    console.log(userUsdTonWalletAddress);
-    const userUsdTonWallet = provider.open(await UsdTonWallet.fromAddress(userUsdTonWalletAddress));
+    console.log('Ton price:        ', fromNano(tonPrice).toString());
+    console.log('Health Rate:      ', fromNano(healthRate).toString());
+    console.log('\nSupply in TON:    ', fromNano(state.collateral).toString());
+    console.log('Borrow by UP:     ', fromNano(state.debt).toString());
 
-    console.log('Supply             in TON:', fromNano(state.collateral).toString());
-    console.log('Borrow         usdTON(UP):', fromNano(state.debt).toString());
     try {
+        const userUsdTonWalletAddress = await usdTon.getGetWalletAddress(user);
+        const userUsdTonWallet = provider.open(await UsdTonWallet.fromAddress(userUsdTonWalletAddress));
+
         const userUsdTonBalance = await userUsdTonWallet.getGetBalance();
-        console.log('Borrow     usdTON(wallet):', fromNano(userUsdTonBalance).toString());
+        console.log('Borrow by wallet: ', fromNano(userUsdTonBalance).toString());
     } catch (e) {
-        console.log('Borrow usdTON(wallet): no data');
+        console.log('Borrow by wallet: no data');
     }
-    try {
-        const userUsdTonBalance = await userUsdTonWallet.getGetBalance();
-        console.log('Borrow     usdTON(wallet):', fromNano(userUsdTonBalance).toString());
-    } catch (e) {
-        console.log('Borrow usdTON(wallet): no data');
-    }
-    console.log('User     Position address:', userPosition.address.toString());
 
     /**
      * Также выводить тут баланс с userUsdTonWalletAddress
@@ -59,6 +60,6 @@ export async function run(provider: NetworkProvider) {
 
     // console.log('=============================================================================\n\n');
 }
-function toNano(mintNormal: any) {
+function toNano(mintAmount: any) {
     throw new Error('Function not implemented.');
 }

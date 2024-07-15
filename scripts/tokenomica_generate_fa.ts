@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { toNano } from '@ton/core';
+import { holders } from '../utils/data';
 import { log, saveAddress } from '../utils/helpers';
-import { holders } from '../utils/test_data';
 import { FakeWallet } from '../wrappers/FakeWallet';
 
 export async function run(provider: NetworkProvider) {

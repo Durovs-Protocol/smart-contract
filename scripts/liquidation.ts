@@ -1,22 +1,25 @@
 import { NetworkProvider } from '@ton/blueprint';
-import { Address, toNano } from '@ton/core';
+import { Address, fromNano, toNano } from '@ton/core';
 import { loadAddress, log, timer } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { UsdTonMaster } from '../wrappers/UsdTon';
 import { UserPosition } from '../wrappers/UserPosition';
+import { liquidationGas } from '../utils/data';
 
 export async function run(provider: NetworkProvider) {
     const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const user = provider.sender();
+
     const userPositionAddress = await manager.getUserPositionAddress(Address.parse(process.env.USER_WALLET_ADDRESS!));
     const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
+
     const getMessage = async function () {
         const message = await userPosition.getMessage();
         return message.message;
     };
 
-    console.log('total supply before', await usdTon.getTotalSupply()); // 5000000000n
+    console.log('Supply for liquidate', fromNano(await usdTon.getTotalSupply()));
 
     let positionMessage = await getMessage();
 
@@ -24,7 +27,7 @@ export async function run(provider: NetworkProvider) {
 
     await manager.send(
         user,
-        { value: toNano(0.3) },
+        { value: toNano(liquidationGas) },
         {
             $$type: 'PositionLiquidationInspectorMessage',
             user: Address.parse(process.env.USER_WALLET_ADDRESS!),
@@ -32,7 +35,7 @@ export async function run(provider: NetworkProvider) {
     );
 
     await timer('Position liquidation', 'Ликвидация позиции', 'position liquidated', getMessage, true);
-    console.log('total supply after', await usdTon.getTotalSupply()); // 5000000000n
+    console.log('total supply after', fromNano(await usdTon.getTotalSupply()));
 
     console.log(await userPosition.getLiquidationParams());
 }

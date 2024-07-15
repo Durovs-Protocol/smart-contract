@@ -1,6 +1,5 @@
 import "../utils/messages.tact";
 import "../user_position.tact";
-import "./rune_info.tact";
 
 @interface("org.ton.jetton.wallet")
 contract RunecoinWallet
@@ -14,7 +13,6 @@ contract RunecoinWallet
         self.balance = 0;
         self.owner = owner;
         self.master = master;
-        self.setInfo();
     }
 
     receive(msg: RuneTransfer){
@@ -58,7 +56,7 @@ contract RunecoinWallet
         let ctx: Context = context();
         // if (ctx.sender != self.master) {
         //     let sinit: StateInit = initOf RunecoinWallet(self.master, msg.from);
-        //     require(contractAddress(sinit) == ctx.sender, "TokenTransferInternal: Invalid sender");
+        //     requir.ability(contractAddress(sinit) == ctx.sender, "TokenTransferInternal: Invalid sender");
         // }
         // Update balance
         self.balance = (self.balance + msg.amount);
@@ -242,20 +240,6 @@ contract RunecoinWallet
         );
     }
 
-    fun setInfo() {
-        let winit: StateInit = initOf RuneInfo(self.owner);
-        let runeInfoAddress: Address = contractAddress(winit);
-        send(SendParameters{
-                to: runeInfoAddress,
-                value: ton("0.01"),
-                bounce: false,
-                body: CreateInfo{wallet: myAddress()}.toCell(),
-                code: winit.code,
-                data: winit.data
-            }
-        );
-    }
-
     get fun get_wallet_data(): JettonWalletData {
         return
             JettonWalletData{
@@ -279,4 +263,5 @@ contract RunecoinWallet
         let init: StateInit = initOf UserPosition(user, usdton, manager, pool);
         return contractAddress(init);
     }
+
 }

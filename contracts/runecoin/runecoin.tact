@@ -102,36 +102,40 @@ contract Runecoin with Jetton, Deployable {
         );
     }
 
+    get fun userRunaCoinAddress(userAddress: Address): Address{ 
+        let winit: StateInit = self.getJettonWalletInit(userAddress);
+        let walletAddress: Address = contractAddress(winit);
+        return walletAddress;
+    }
+
+
+    receive(msg: GetUserRunacoinAddress) {
+        let userRunaCoinAddress: Address = self.userRunaCoinAddress(msg.user);
+
+        send(SendParameters {
+                to: sender(),
+                value: 0,
+                mode: SendRemainingValue,
+                bounce: true,
+                body: GetUserRunacoinAddressResponse{
+                    userRunaCoinAddress: userRunaCoinAddress,
+                    user: msg.user,
+                    amount: msg.amount,
+                }.toCell()
+            }
+        );
+    }
+
+    receive(msg: Mint) {
+        self.requireOwner();
+        let ctx: Context = context();
+        self.mint(sender(), msg.amount, sender(), ctx.value);
+    }
+
     receive(msg: MintMessage) {
         let ctx: Context = context();
         self.mint(msg.user, msg.amount, msg.user, ctx.value);
     }
-
-    receive(msg: BurnMessage) {
-        let winit: StateInit = self.getJettonWalletInit(msg.user);
-        let walletAddress: Address = contractAddress(winit);
-        send(SendParameters{
-            to: walletAddress, 
-            value: 0, 
-            bounce: false,
-            mode: SendRemainingValue + SendIgnoreErrors,
-            body: msg.toCell()
-        });
-    }
-
-    receive(msg: BurnNotification) {
-        send(SendParameters{
-            to: msg.userPosition, 
-            value: 0, 
-            bounce: false,
-            mode: SendRemainingValue + SendIgnoreErrors,
-            body: RunecoinBurned{ 
-                amount: msg.amount,
-                user: msg.user,
-            }.toCell()
-        });
-    }
-
 
     get fun totalSupply(): Int {
         return self.totalSupply;

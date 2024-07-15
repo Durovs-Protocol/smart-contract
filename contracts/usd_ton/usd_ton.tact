@@ -146,16 +146,6 @@ contract UsdTonMaster with Jetton, Deployable {
         });
     }
 
-    /*
-        message came from pool
-        increase totalSupply
-        send transfer to jetton
-    */
-    receive(msg: WithdrawFeesMessage) {
-        require(sender() == self.deps.poolAddress, "not from pool");
-        self.mint(msg.to, msg.amount, msg.to);
-    }
-
     fun _userPositionAddress(user: Address): Address {
         let init: StateInit = initOf UserPosition(user, self.deps.usdTonAddress, self.deps.managerAddress, self.deps.poolAddress);
         let userPositionAddress: Address = contractAddress(init);
