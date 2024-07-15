@@ -81,34 +81,6 @@ contract Runecoin with Jetton, Deployable {
         self.mint(msg.user, msg.amount, msg.user, ctx.value);
     }
 
-    // TODO зачем ??
-    receive(msg: BurnMessage) {
-        let winit: StateInit = self.getJettonWalletInit(msg.user);
-        let walletAddress: Address = contractAddress(winit);
-        send(SendParameters{
-            to: walletAddress, 
-            value: 0, 
-            bounce: false,
-            mode: SendRemainingValue + SendIgnoreErrors,
-            body: msg.toCell()
-        });
-    }
-
-    // TODO remove this code
-    receive(msg: BurnNotification) {
-        send(SendParameters{
-            to: msg.userPosition, 
-            value: 0, 
-            bounce: false,
-            mode: SendRemainingValue + SendIgnoreErrors,
-            body: RunecoinBurned{ 
-                amount: msg.amount,
-                user: msg.user,
-            }.toCell()
-        });
-    }
-
-
     get fun totalSupply(): Int {
         return self.totalSupply;
     }
@@ -116,10 +88,5 @@ contract Runecoin with Jetton, Deployable {
     get fun message(): String {
         return self.message;
     }
-
-    get fun myWallet(): Address {
-        let winit: StateInit = self.getJettonWalletInit(sender());
-        let walletAddress: Address = contractAddress(winit);
-        return walletAddress;
-    }
+    
 }

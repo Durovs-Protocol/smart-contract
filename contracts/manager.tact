@@ -65,24 +65,6 @@ contract Manager with Deployable, OwnableTransferable {
         self.reply("Ton price updated".asComment());
     }
 
-    // для теста
-    bounced(msg: bounced<DepositCollateralMessage>){
-        send(SendParameters{
-            to: self.owner,
-            bounce: false,
-            value: 0,
-            mode: (SendRemainingValue + SendIgnoreErrors)
-        });
-    }
-
-    bounced(msg: bounced<MintUsdTonMessage>){
-        send(SendParameters{
-            to: self.owner,
-            bounce: false,
-            value: 0,
-            mode: (SendRemainingValue + SendIgnoreErrors)
-        });
-    }
 
     //=============================================================================
     // User actions
@@ -162,6 +144,7 @@ contract Manager with Deployable, OwnableTransferable {
         );
     }
 
+    /* Обход получения адреса runacoins кошелька пользователя */
     receive(msg: GetUserRunacoinAddressResponse) {
         send(SendParameters{
                 to: self._userPositionAddress(msg.user),
@@ -274,10 +257,10 @@ contract Manager with Deployable, OwnableTransferable {
         send(SendParameters{
             to: user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
     }
+
     //=============================================================================
     // Offchain interface
     //=============================================================================
-
     get fun lastPositionId(): Int {
         return self.lastPositionId;
     }
@@ -305,11 +288,4 @@ contract Manager with Deployable, OwnableTransferable {
     get fun totalCollateralAmount(): Int {
         return self.totalCollateralAmount;
     }
-    //  для проверки ршения проблемы с адресами
-
-    // get fun runeInfo(user: Address): Address {
-    //     let winit: StateInit = initOf RunecoinWallet(self.deps.runecoinAddress, user);
-    //     let walletAddress: Address = contractAddress(winit);
-    //     return walletAddress;
-    // }
 }

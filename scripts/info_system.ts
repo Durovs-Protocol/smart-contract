@@ -1,5 +1,5 @@
 import { NetworkProvider } from '@ton/blueprint';
-import { Address } from '@ton/core';
+import { Address, fromNano } from '@ton/core';
 import { loadAddress, log } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { Pool } from '../wrappers/Pool';
@@ -23,5 +23,19 @@ export async function run(provider: NetworkProvider) {
             pool.address.toString() +
             '\nusdTon address : ' +
             usdTon.address.toString(),
+    );
+
+    let settings = await manager.getPoolSettings();
+    let tonPrice = await manager.getTonPrice();
+
+    log(
+        'Liquidation Ratio:  ' +
+            fromNano(settings.liquidationRatio) +
+            '\nStability Fee Rate: ' +
+            fromNano(settings.stabilityFeeRate) +
+            '\nLiquidation Fee:    ' +
+            fromNano(settings.liquidationFee) +
+            '\nTon Price:          ' +
+            fromNano(tonPrice),
     );
 }

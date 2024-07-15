@@ -259,6 +259,7 @@ contract UserPosition  {
         // self.setMessage("collateral sent back to yor wallet");
 
     }
+    
     /*05 | Ликвидация (from manager)'*/
     receive(msg: PositionLiquidation) {
         require(sender() == self.managerAddress, "not from positions manager");

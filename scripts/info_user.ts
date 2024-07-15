@@ -7,25 +7,32 @@ import { UsdTonWallet } from '../wrappers/UsdTonWallet';
 import { UserPosition } from '../wrappers/UserPosition';
 
 export async function run(provider: NetworkProvider) {
-    log('User info');
+    log('User Position info');
 
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
-
     const user = provider.sender().address as Address;
+    
+    /**
+     * User position
+     */
     const userPositionAddress = await manager.getUserPositionAddress(user);
     const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
     const state = await userPosition.getPositionState();
-
-    const userUsdTonWalletAddress = await usdTon.getGetWalletAddress(user);
-
-    console.log('UserUsdTonWalletAddress: ' + userUsdTonWalletAddress);
     console.log('User Position address:  ', userPosition.address.toString() + '\n\n');
-    const userUsdTonWallet = provider.open(await UsdTonWallet.fromAddress(userUsdTonWalletAddress));
 
-    console.log('Supply in TON:    ', fromNano(state.collateral).toString());
+    let tonPrice = await manager.getTonPrice();
+    let healthRate = tonPrice * state.collateral/state.debt;
+
+    console.log('Ton price:        ', fromNano(tonPrice).toString());
+    console.log('Health Rate:      ', fromNano(healthRate).toString());
+    console.log('\nSupply in TON:    ', fromNano(state.collateral).toString());
     console.log('Borrow by UP:     ', fromNano(state.debt).toString());
+
     try {
+        const userUsdTonWalletAddress = await usdTon.getGetWalletAddress(user);
+        const userUsdTonWallet = provider.open(await UsdTonWallet.fromAddress(userUsdTonWalletAddress));
+
         const userUsdTonBalance = await userUsdTonWallet.getGetBalance();
         console.log('Borrow by wallet: ', fromNano(userUsdTonBalance).toString());
     } catch (e) {

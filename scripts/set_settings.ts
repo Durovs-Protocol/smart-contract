@@ -5,26 +5,24 @@ import { liquidationRatio, gasFee, stabilityFeeRate, liquidationFee } from '../u
 import { Manager } from '../wrappers/Manager';
 
 export async function run(provider: NetworkProvider) {
-    const managerContract = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
+    const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
 
     let getliquidRatio = async function () {
-        const settings = await managerContract.getPoolSettings();
+        const settings = await manager.getPoolSettings();
         const liquidationRatio = settings.liquidationRatio;
         return liquidationRatio;
     };
 
-    const newLiquidationRatio = toNano(liquidationRatio);
-
-    await managerContract.send(
+    await manager.send(
         provider.sender(),
         { value: toNano(gasFee) },
         {
             $$type: 'SetPoolSettings',
-            liquidationRatio: newLiquidationRatio,
+            liquidationRatio: toNano(liquidationRatio),
             stabilityFeeRate: toNano(stabilityFeeRate),
             liquidationFee: toNano(liquidationFee),
         },
     );
 
-    await timer(`liquid ratio`, 'Настройка пула', newLiquidationRatio, getliquidRatio);
+    await timer(`liquid ratio`, 'Настройка пула', toNano(liquidationRatio), getliquidRatio);
 }
