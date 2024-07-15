@@ -2,6 +2,7 @@ import { NetworkProvider } from '@ton/blueprint';
 import { Address } from '@ton/core';
 import { loadAddress, log } from '../utils/helpers';
 import { RuneInfo } from '../wrappers/RuneInfo';
+import { Runecoin } from '../wrappers/Runecoin';
 import { RunecoinWallet } from '../wrappers/RunecoinWallet';
 
 export async function run(provider: NetworkProvider) {
@@ -10,6 +11,12 @@ export async function run(provider: NetworkProvider) {
     const runeInfo = provider.open(await RuneInfo.fromInit(user));
     await provider.waitForDeploy(runeInfo.address, 30);
     const userWallet = await runeInfo.getMyAddress();
+    const rune = provider.open(await Runecoin.fromAddress(Address.parse(await loadAddress('runecoin'))));
+
+    console.log('rune holders________________________________________________________________');
+    console.log(await rune.getHolders());
+    console.log('rune holders-info________________________________________________________________');
+    console.log(await rune.getHoldersInfo());
 
     console.log('Rune    wallet:', userWallet.toString());
     try {

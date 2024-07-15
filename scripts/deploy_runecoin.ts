@@ -18,7 +18,7 @@ export async function run(provider: NetworkProvider) {
     await runecoin.send(
         provider.sender(),
         {
-            value: toNano('0.01'),
+            value: toNano('0.02'),
         },
         {
             $$type: 'Deploy',
