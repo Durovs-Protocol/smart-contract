@@ -10,6 +10,7 @@ import { RunecoinWallet } from '../wrappers/RunecoinWallet';
 import { UsdTonMaster } from '../wrappers/UsdTon';
 import { UsdTonWallet } from '../wrappers/UsdTonWallet';
 import { UserPosition } from '../wrappers/UserPosition';
+import { jettonParams, runecoinParams } from '../utils/data';
 
 describe('UserFlow', () => {
     let blockchain: Blockchain;
@@ -23,18 +24,6 @@ describe('UserFlow', () => {
     let userPosition: SandboxContract<UserPosition>;
 
     beforeAll(async () => {
-        const jettonParams = {
-            name: 'yt',
-            symbol: 'yt',
-            description: 'yt',
-            image: '',
-        };
-        const runecoinParams = {
-            name: 'rune',
-            symbol: 'rune',
-            description: 'rune',
-            image: '',
-        };
 
         blockchain = await Blockchain.create();
         deployer = await blockchain.treasury('deployer');

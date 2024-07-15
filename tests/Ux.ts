@@ -9,7 +9,7 @@ import { RunecoinWallet } from '../wrappers/RunecoinWallet';
 
 import { UsdTonMaster } from '../wrappers/UsdTon';
 import { UserPosition } from '../wrappers/UserPosition';
-import { jettonParams } from '../utils/data';
+import { jettonParams, runecoinParams } from '../utils/data';
 
 describe('UserFlow', () => {
     let blockchain: Blockchain;
@@ -174,9 +174,6 @@ describe('UserFlow', () => {
     it('initial price set ok', async () => {
         const tonPrice = await manager.getTonPrice();
         expect(tonPrice).toEqual(toNano(7));
-        const tonPriceWithHealthRate = await manager.getTonPriceWithHealthRate();
-        expect(tonPriceWithHealthRate).toEqual(5833333333n);
-        ///???
     });
 
     it('user flow', async () => {

@@ -6,8 +6,9 @@ import { Manager } from '../wrappers/Manager';
 
 export async function run(provider: NetworkProvider) {
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
-    const newTonPrice = toNano(liquidationTonPrice); // toNano(tonPrice);
-
+    const newTonPrice = toNano(tonPrice);
+    // const newTonPrice = toNano(liquidationTonPrice);
+    
     let getCurrentTonPrice = async function () {
         return await manager.getTonPrice();
     };

@@ -37,14 +37,14 @@ export const withdrawGas: number = 0.15;
  * Liquidation
  */
 export const liquidationGas: number = 0.3;
-export const liquidationTonPrice: number = 3.4; // mintAmount*liquidationRatio - {немного тк в supply попадает TON на хранение}
+export const liquidationTonPrice: number = 2.9; // mintAmount*liquidationRatio - {немного тк в supply попадает TON на хранение}
 
 /**
  * Runacoin
  */
 export const testnetMintAmount: number = 100;
 export const jettonParams = {
-    name: `rune-${Date.now()}`,
+    name: 'Runa_test_1', //`rune-${Date.now()}`,
     symbol: 'R',
     description: '-',
     image: 'https://ipfs.io/ipfs/QmfGfEGQav42ZW14W2D5oNtvWUC7Nwj759hjHAZvFiRhaX',
@@ -54,6 +54,13 @@ export const runecoinParams = {
     symbol: 'rune',
     description: 'rune',
     image: '',
+};
+
+export const usdTONJettonParams = {
+    name: `yt-${Date.now()}`,
+    symbol: 'YT',
+    description: '-',
+    image: 'https://ipfs.io/ipfs/QmPSGcz4TyDo3qShEymZRQRavKKRRbiLPHYs9GUgbtwEwx',
 };
 
 /**

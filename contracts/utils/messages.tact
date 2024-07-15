@@ -3,37 +3,31 @@ struct PoolSettings {
     stabilityFeeRate: Int;
     liquidationFee: Int;
 }
-message CreateInfo {
-    wallet: Address;
-}
 message DepositCollateralMessage {
     user: Address;
     amount: Int as coins;
     settings: PoolSettings;
-    tonPriceWithHealthRate: Int as coins;
-}
-message WithdrawCollateralMessage {
-    user: Address;
-    amount: Int as coins;
-    settings: PoolSettings;
-    tonPriceWithHealthRate: Int as coins;
+    tonPrice: Int as coins;
 }
 message MintUsdTon {
     user: Address;
     amount: Int as uint64;
     settings: PoolSettings;
-    tonPriceWithHealthRate: Int as coins;
+    tonPrice: Int as coins;
 }
 message BurnUsdTONMessage {
     user: Address;
     amount: Int as uint64;
     settings: PoolSettings;
-    tonPriceWithHealthRate: Int as coins;
     tonPrice: Int as coins;
     userRunaCoinAddress: Address;
     deps: Deps;
 }
-message TestWithdrawal {
+message WithdrawCollateralMessage {
+    user: Address;
+    amount: Int as coins;
+    settings: PoolSettings;
+    tonPrice: Int as coins;
 }
 message FeePayment {
     amount: Int as uint64;
@@ -122,9 +116,7 @@ message PositionLiquidationInspectorMessage {
 message PositionLiquidation {
     settings: PoolSettings;
     user: Address;
-    tonPriceWithHealthRate: Int as coins;
     tonPrice: Int as coins;
-    runePrice: Int as coins;
 }
 message RuneTransfer {
     queryId: Int as uint64;

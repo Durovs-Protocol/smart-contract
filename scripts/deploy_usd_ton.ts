@@ -2,16 +2,11 @@ import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { buildOnchainMetadata, saveAddress } from '../utils/helpers';
 import { UsdTonMaster } from '../wrappers/UsdTon';
+import { usdTONJettonParams } from '../utils/data';
 
 export async function run(provider: NetworkProvider) {
-    const jettonParams = {
-        name: `yt-${Date.now()}`,
-        symbol: 'YT',
-        description: '-',
-        image: 'https://ipfs.io/ipfs/QmPSGcz4TyDo3qShEymZRQRavKKRRbiLPHYs9GUgbtwEwx',
-    };
     const owner = provider.sender().address as Address;
-    const usdTon = provider.open(await UsdTonMaster.fromInit(owner, buildOnchainMetadata(jettonParams)));
+    const usdTon = provider.open(await UsdTonMaster.fromInit(owner, buildOnchainMetadata(usdTONJettonParams)));
 
     await usdTon.send(
         provider.sender(),
@@ -27,7 +22,7 @@ export async function run(provider: NetworkProvider) {
     await provider.waitForDeploy(usdTon.address, 30);
     await saveAddress('usdTon', usdTon.address);
     console.log('=============================================================================');
-    console.log('UsdToncoin deployed successfully');
+    console.log('Usd on TON deployed successfully');
     console.log('=============================================================================');
     // run methods on `usdTon`
 }

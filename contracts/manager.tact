@@ -13,7 +13,6 @@ contract Manager with Deployable, OwnableTransferable {
     owner: Address;
     lastPositionId: Int as coins = 0;
     tonPrice: Int;
-    tonPriceWithHealthRate: Int;
     totalCollateralAmount: Int as coins = 0;
     totalFeesCollected: Int as coins = 0;
 
@@ -27,7 +26,6 @@ contract Manager with Deployable, OwnableTransferable {
             runecoinAddress: newAddress(0, 0)
         };
         self.tonPrice = 0;
-        self.tonPriceWithHealthRate = 0;
     }
 
     //=============================================================================
@@ -60,7 +58,6 @@ contract Manager with Deployable, OwnableTransferable {
     //=============================================================================
     receive(msg: UpdateTonPriceMsg){
         self.requireOwner();
-        self.tonPriceWithHealthRate = msg.price * 1000000000 / self.poolSettings.liquidationRatio;
         self.tonPrice = msg.price;
         self.reply("Ton price updated".asComment());
     }
@@ -93,7 +90,7 @@ contract Manager with Deployable, OwnableTransferable {
                     user: msg.user,
                     amount: msg.amount,
                     settings: self.poolSettings,
-                    tonPriceWithHealthRate: self.tonPriceWithHealthRate,
+                    tonPrice: self.tonPrice,
                 }.toCell(),
                 code: init.code,
                 data: init.data
@@ -123,7 +120,7 @@ contract Manager with Deployable, OwnableTransferable {
                     user: msg.user,
                     amount: msg.amount,
                     settings: self.poolSettings,
-                    tonPriceWithHealthRate: self.tonPriceWithHealthRate
+                    tonPrice: self.tonPrice
                 }.toCell()
             }
         );
@@ -155,7 +152,6 @@ contract Manager with Deployable, OwnableTransferable {
                     user: msg.user,
                     amount: msg.amount,
                     settings: self.poolSettings,
-                    tonPriceWithHealthRate: self.tonPriceWithHealthRate,
                     tonPrice: self.tonPrice,
                     userRunaCoinAddress: msg.userRunaCoinAddress,
                     deps: self.deps
@@ -176,11 +172,12 @@ contract Manager with Deployable, OwnableTransferable {
                 user: msg.user,
                 amount: msg.amount,
                 settings: self.poolSettings,
-                tonPriceWithHealthRate: self.tonPriceWithHealthRate
+                tonPrice: self.tonPrice
             }.toCell()
         });
     }
 
+    // from: code, to: UserPosition
     receive(msg: PositionLiquidationInspectorMessage){
         require(sender() == self.owner, "invalid sender");
         send(SendParameters{
@@ -191,9 +188,7 @@ contract Manager with Deployable, OwnableTransferable {
             body: PositionLiquidation{
                 settings: self.poolSettings,
                 user: msg.user,
-                tonPriceWithHealthRate: self.tonPriceWithHealthRate,
-                tonPrice: self.tonPrice,
-                runePrice: self.tonPrice
+                tonPrice: self.tonPrice
             }.toCell()
         });
     }
@@ -279,10 +274,6 @@ contract Manager with Deployable, OwnableTransferable {
 
     get fun tonPrice(): Int {
         return self.tonPrice;
-    }
-
-    get fun tonPriceWithHealthRate(): Int {
-        return self.tonPriceWithHealthRate;
     }
 
     get fun totalCollateralAmount(): Int {
