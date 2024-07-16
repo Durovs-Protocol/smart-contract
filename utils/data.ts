@@ -25,7 +25,7 @@ export const mintGas: number = 0.1;
  * Burn
  */
 export const burnAmount: number = 2.5;
-export const burnGas: number = 0.1;  // Сжигание, отправка с кошелека runacoins, обновление UserPosition
+export const burnGas: number = 0.1; // Сжигание, отправка с кошелека runacoins, обновление UserPosition
 
 /**
  * Withdraw
@@ -74,3 +74,16 @@ export const testJettonParams = {
     image: '',
 };
 export const testRunecoinParams = runecoinParams;
+export const holders = [
+    { name: 'supply', percent: 40 },
+    { name: 'foundersTeam', percent: 16 },
+    { name: 'foundation', percent: 9 },
+    { name: 'dao', percent: 5 },
+    { name: 'private', percent: 5 },
+    { name: 'preSeed', percent: 6 },
+    { name: 'seed', percent: 7 },
+    { name: 'airdrop', percent: 5 },
+    { name: 'advisors', percent: 4 },
+    { name: 'publicSales', percent: 2 },
+    { name: 'marketMaking', percent: 1 },
+];

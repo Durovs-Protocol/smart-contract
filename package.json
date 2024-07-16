@@ -6,7 +6,8 @@
         "run-script": "npx blueprint run --testnet --mnemonic --tonviewer",
         "action": "blueprint run",
         "blueprint-build": "blueprint build",
-        "build": "rm -rf build && blueprint build manager && blueprint build pool  && blueprint build usdTon  && blueprint build userPosition && blueprint build usdTonWallet && blueprint build runecoin && blueprint build runecoinWallet",
+        "build": "rm -rf build && blueprint build manager && blueprint build pool  && blueprint build usdTon  && blueprint build userPosition && blueprint build usdTonWallet && blueprint build runecoin && blueprint build runecoinWallet && blueprint build runeInfo && blueprint build fakeWallet",
+
         "test": "jest --verbose",
 
         "install": "yarn build && yarn deploy && yarn setup",
@@ -22,6 +23,11 @@
         "set-deps": "yarn run-script set_deps",
         "set-settings": "yarn run-script set_settings",
         "set-price": "yarn run-script set_price",
+
+        "set-holders": "yarn run-script tokenomica",
+        "mint-to-holders": "yarn run-script tokenomica_mint",
+        "generate-fake-wallets":"yarn run-script tokenomica_generate_fa",
+
         
         "setup": "yarn set-deps && yarn set-settings && yarn set-price",
 

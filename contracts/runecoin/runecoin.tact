@@ -7,12 +7,35 @@ message Mint {
     amount: Int;
 }
 
+struct Holders {
+    supply: Address;
+    foundersTeam: Address;
+    foundation: Address;
+    dao: Address;
+    private: Address;
+    preSeed: Address;
+    seed: Address;
+    airdrop: Address;
+    advisors: Address;
+    publicSales: Address;
+    marketMaking: Address;
+}
+
+message SetHolders {
+    holders:  map<Address, Int>;
+    holdersInfo:  Holders;
+}
+
+
 contract Runecoin with Jetton, Deployable {
     totalSupply: Int as coins;
     owner: Address;
     content: Cell?;
     mintable: Bool;
     message: String;
+    holders: map<Address, Int>;
+    holdersInfo: Holders;
+
 
     init(owner: Address, content: Cell?) {
         self.totalSupply = 0;
@@ -20,6 +43,39 @@ contract Runecoin with Jetton, Deployable {
         self.mintable = true;
         self.content = content;
         self.message = "";
+        self.holders = emptyMap();
+        self.holdersInfo = Holders{
+            supply: newAddress(0, 0),
+            foundersTeam: newAddress(0, 0),
+            foundation: newAddress(0, 0),
+            dao:newAddress(0, 0),
+            private: newAddress(0, 0),
+            preSeed: newAddress(0, 0),
+            seed: newAddress(0, 0),
+            airdrop: newAddress(0, 0),
+            advisors: newAddress(0, 0),
+            publicSales: newAddress(0, 0),
+            marketMaking:newAddress(0, 0)
+        };
+    }
+
+    receive(msg: SetHolders) {
+      self.holders = msg.holders;
+      self.holdersInfo = msg.holdersInfo;
+    }
+
+
+    receive(msg: Mint) {
+      self.requireOwner();
+      let ctx: Context = context();
+
+      let addresses: map<Address, Int> = self.holders;
+
+      foreach (key, value in addresses) {
+        let amount: Int = msg.amount * value / 1000000000;
+        self.mint(key, amount, key, ton("0.3"));
+      }
+
     }
 
     // Имитация покупки, выпуск без увеличения значения supply
@@ -88,5 +144,18 @@ contract Runecoin with Jetton, Deployable {
     get fun message(): String {
         return self.message;
     }
-    
+
+    get fun myWallet(): Address {
+        let winit: StateInit = self.getJettonWalletInit(sender());
+        let walletAddress: Address = contractAddress(winit);
+        return walletAddress;
+    }
+
+    get fun holders(): map<Address, Int> {
+        return self.holders;
+    }
+
+    get fun holdersInfo(): Holders {
+        return self.holdersInfo;
+    }
 }

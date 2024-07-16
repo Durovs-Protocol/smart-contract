@@ -54,6 +54,12 @@
 3. `yarn update-price` Обновить цену
 4. `yarn liquidation` Запуск ликвидации
 
+# Runecoin
+
+1. `generate-fake-wallets` (Запустит деплой кошельков для распредлеения runacoin)
+2. `set-holders` (Назначить аккаунты для распределения общего выпуска)
+3. `mint-to-holders` Mint
+
 ### RPC
 
 https://testnet.toncenter.com/api/v2/jsonRPC

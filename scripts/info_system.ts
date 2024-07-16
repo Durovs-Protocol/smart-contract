@@ -15,7 +15,6 @@ export async function run(provider: NetworkProvider) {
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
     const pool = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool'))));
-
     log(
         'Manager address: ' +
             manager.address.toString() +
