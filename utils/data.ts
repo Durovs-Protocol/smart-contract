@@ -36,8 +36,8 @@ export const withdrawGas: number = 0.15;
 /**
  * Liquidation
  */
-export const liquidationGas: number = 0.3;
-export const liquidationTonPrice: number = 2.9; // mintAmount*liquidationRatio - {немного тк в supply попадает TON на хранение}
+export const liquidationGas: number = 0.05;
+export const liquidationTonPrice: number = 3.4; // mintAmount*liquidationRatio - {немного тк в supply попадает TON на хранение}
 
 /**
  * Runacoin
