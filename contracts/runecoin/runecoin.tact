@@ -126,11 +126,6 @@ contract Runecoin with Jetton, Deployable {
         );
     }
 
-    receive(msg: Mint) {
-        self.requireOwner();
-        let ctx: Context = context();
-        self.mint(sender(), msg.amount, sender(), ctx.value);
-    }
 
     receive(msg: MintMessage) {
         let ctx: Context = context();
