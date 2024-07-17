@@ -41,6 +41,10 @@ contract Pool with Deployable, OwnableTransferable {
     receive(msg: FeePayment){
         // Принимаем TON при ликвидации
         // TODO: обмен через DEX на RUNA
+        let comment: StringBuilder = beginString();
+        comment.append("Fee payment:");
+        comment.append(msg.amount.toString());
+        send(SendParameters{to: msg.user, value: 0, bounce: false, body: comment.toString().asComment()});
     }
 
     //=============================================================================
@@ -59,11 +63,11 @@ contract Pool with Deployable, OwnableTransferable {
         return self.deps;
     }
 
-    get fun myAddress(): Address{
+    get fun myAddress(): Address {
         return myAddress();
     }
 
-    get fun userPoolAddress(userAddress: Address): Address{
+    get fun userPoolAddress(userAddress: Address): Address {
         let init: StateInit = initOf Pool(userAddress);
         return contractAddress(init);
     }

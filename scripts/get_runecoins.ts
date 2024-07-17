@@ -1,8 +1,8 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
+import { testnetMintAmount } from '../utils/data';
 import { loadAddress, log } from '../utils/helpers';
 import { Runecoin } from '../wrappers/Runecoin';
-import { testnetMintAmount } from '../utils/data';
 
 export async function run(provider: NetworkProvider) {
     const runecoin = provider.open(await Runecoin.fromAddress(Address.parse(await loadAddress('runecoin'))));
@@ -21,7 +21,4 @@ export async function run(provider: NetworkProvider) {
             user: user.address as Address,
         },
     );
-
-    const runeWallet = await runecoin.getUserRunaCoinAddress(user.address as Address)
-    console.log('Rune wallet:', runeWallet.toString());
 }

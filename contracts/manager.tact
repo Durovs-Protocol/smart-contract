@@ -7,14 +7,13 @@ import "./runecoin/runecoin_wallet.tact";
 contract Manager with Deployable, OwnableTransferable {
     const MinTonForStorage: Int = ton("0.01");
     const GasConsumption: Int = ton("0.01");
-
     deps: Deps;
     poolSettings: PoolSettings;
     owner: Address;
     lastPositionId: Int as coins = 0;
     tonPrice: Int;
     totalCollateralAmount: Int as coins = 0;
-    totalFeesCollected: Int as coins = 0;
+
 
     init(owner: Address){
         self.owner = owner;
@@ -62,7 +61,6 @@ contract Manager with Deployable, OwnableTransferable {
         self.reply("Ton price updated".asComment());
     }
 
-
     //=============================================================================
     // User actions
     //=============================================================================
@@ -90,7 +88,7 @@ contract Manager with Deployable, OwnableTransferable {
                     user: msg.user,
                     amount: msg.amount,
                     settings: self.poolSettings,
-                    tonPrice: self.tonPrice,
+                    tonPrice: self.tonPrice
                 }.toCell(),
                 code: init.code,
                 data: init.data
@@ -101,12 +99,8 @@ contract Manager with Deployable, OwnableTransferable {
 
     receive(msg: AddPositionId){
         self.lastPositionId = (self.lastPositionId + 1);
-        send(SendParameters{
-            to: msg.user, 
-            bounce: false, 
-            value: 0, 
-            mode: (SendRemainingValue + SendBounceIfActionFail)
-        });
+        send(SendParameters{to: msg.user, bounce: false, value: 0, mode: (SendRemainingValue + SendBounceIfActionFail)}
+        );
     }
 
     /*02 | Mint usdTON */
@@ -128,21 +122,6 @@ contract Manager with Deployable, OwnableTransferable {
 
     /*03 | Burn usdTON */
     receive(msg: BurnUsdTONUserMessage){
-        send(SendParameters {
-                to: self.deps.runecoinAddress,
-                value: 0,
-                mode: SendRemainingValue,
-                bounce: true,
-                body: GetUserRunacoinAddress{
-                    user: msg.user,
-                    amount: msg.amount,
-                }.toCell()
-            }
-        );
-    }
-
-    /* Обход получения адреса runacoins кошелька пользователя */
-    receive(msg: GetUserRunacoinAddressResponse) {
         send(SendParameters{
                 to: self._userPositionAddress(msg.user),
                 value: 0,
@@ -153,7 +132,6 @@ contract Manager with Deployable, OwnableTransferable {
                     amount: msg.amount,
                     settings: self.poolSettings,
                     tonPrice: self.tonPrice,
-                    userRunaCoinAddress: msg.userRunaCoinAddress,
                     deps: self.deps
                 }.toCell()
             }
@@ -164,33 +142,31 @@ contract Manager with Deployable, OwnableTransferable {
     receive(msg: WithdrawCollateralUserMessage){
         require(sender() == msg.user, "invalid sender");
         send(SendParameters{
-            to: self._userPositionAddress(msg.user),
-            value: 0,
-            mode: (SendRemainingValue + SendIgnoreErrors),
-            bounce: true,
-            body: WithdrawCollateralMessage{
-                user: msg.user,
-                amount: msg.amount,
-                settings: self.poolSettings,
-                tonPrice: self.tonPrice
-            }.toCell()
-        });
+                to: self._userPositionAddress(msg.user),
+                value: 0,
+                mode: (SendRemainingValue + SendIgnoreErrors),
+                bounce: true,
+                body: WithdrawCollateralMessage{
+                    user: msg.user,
+                    amount: msg.amount,
+                    settings: self.poolSettings,
+                    tonPrice: self.tonPrice
+                }.toCell()
+            }
+        );
     }
 
     // from: code, to: UserPosition
     receive(msg: PositionLiquidationInspectorMessage){
         require(sender() == self.owner, "invalid sender");
         send(SendParameters{
-            to: self._userPositionAddress(msg.user),
-            value: 0,
-            mode: (SendRemainingValue + SendBounceIfActionFail),
-            bounce: true,
-            body: PositionLiquidation{
-                settings: self.poolSettings,
-                user: msg.user,
-                tonPrice: self.tonPrice
-            }.toCell()
-        });
+                to: self._userPositionAddress(msg.user),
+                value: 0,
+                mode: (SendRemainingValue + SendBounceIfActionFail),
+                bounce: true,
+                body: PositionLiquidation{settings: self.poolSettings, user: msg.user, tonPrice: self.tonPrice}.toCell()
+            }
+        );
     }
 
     // receive("EmergencyExit"){
@@ -249,13 +225,12 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     fun payBack(user: Address) {
-        send(SendParameters{
-            to: user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
+        send(SendParameters{to: user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
     }
-
     //=============================================================================
     // Offchain interface
     //=============================================================================
+
     get fun lastPositionId(): Int {
         return self.lastPositionId;
     }
