@@ -3,6 +3,10 @@ import "@stdlib/deploy";
 import "@stdlib/ownable";
 import "./utils/messages.tact";
 import "./runecoin/runecoin_wallet.tact";
+struct ManagerState {
+    totalSupplyed: Int;
+    totalMinted: Int;
+}
 
 contract Manager with Deployable, OwnableTransferable {
     const MinTonForStorage: Int = ton("0.01");
@@ -10,20 +14,19 @@ contract Manager with Deployable, OwnableTransferable {
     deps: Deps;
     poolSettings: PoolSettings;
     owner: Address;
-    lastPositionId: Int as coins = 0;
     tonPrice: Int;
-    totalCollateralAmount: Int as coins = 0;
-
-
+    lastPositionId: Int as coins = 0;
+    state: ManagerState;
     init(owner: Address){
         self.owner = owner;
-        self.poolSettings = PoolSettings{liquidationRatio: 0, stabilityFeeRate: 0, liquidationFee: 0};
+        self.poolSettings = PoolSettings{liquidationRatio: 0, stabilityFeeRate: 0, liquidationFee: 0, minHealthRate: 0};
         self.deps = Deps{
             managerAddress: newAddress(0, 0),
             poolAddress: newAddress(0, 0),
             usdTonAddress: newAddress(0, 0),
             runecoinAddress: newAddress(0, 0)
         };
+        self.state = ManagerState{totalSupplyed: 0, totalMinted: 0};
         self.tonPrice = 0;
     }
 
@@ -46,7 +49,8 @@ contract Manager with Deployable, OwnableTransferable {
         self.poolSettings = PoolSettings{
             liquidationRatio: msg.liquidationRatio,
             stabilityFeeRate: msg.stabilityFeeRate,
-            liquidationFee: msg.liquidationFee
+            liquidationFee: msg.liquidationFee,
+            minHealthRate: msg.minHealthRate
         };
         self.reply("Pool settings updated".asComment());
     }
@@ -74,11 +78,10 @@ contract Manager with Deployable, OwnableTransferable {
         let userPosition: Address = contractAddress(init);
         require(sender() == msg.user, "Invalid sender");
         let ctx: Context = context();
-        require(ctx.value >= ((msg.amount + self.GasConsumption) + self.MinTonForStorage), "not enough tons sent");
-
+        require(ctx.value >= (msg.amount + self.GasConsumption + self.MinTonForStorage), "not enough tons sent");
         //TODO рассчитать газ для всех дальнейших операций сразу
 
-        let valueToSendForward: Int = ((context().value - self.MinTonForStorage) - self.GasConsumption);
+        let valueToSendForward: Int = ctx.value - (self.GasConsumption + self.MinTonForStorage);
         send(SendParameters{
                 to: userPosition,
                 value: valueToSendForward,
@@ -94,7 +97,6 @@ contract Manager with Deployable, OwnableTransferable {
                 data: init.data
             }
         );
-        self.totalCollateralAmount = (self.totalCollateralAmount + msg.amount);
     }
 
     receive(msg: AddPositionId){
@@ -104,7 +106,12 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     /*02 | Mint usdTON */
-    receive(msg: MintUsdTonMessage){
+    receive(msg: MintUsdTonMessage) {
+        let stabilityFee: Int = msg.amount * 50000000 / 1000000000;
+
+        if (!(self.poolIsHealthy(msg.amount, stabilityFee))) {
+            return ;
+        }
         send(SendParameters{
                 to: self._userPositionAddress(msg.user),
                 value: 0,
@@ -114,7 +121,7 @@ contract Manager with Deployable, OwnableTransferable {
                     user: msg.user,
                     amount: msg.amount,
                     settings: self.poolSettings,
-                    tonPrice: self.tonPrice
+                    tonPrice: self.tonPrice,
                 }.toCell()
             }
         );
@@ -139,7 +146,7 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     /*04 | Возврат залога */
-    receive(msg: WithdrawCollateralUserMessage){
+    receive(msg: WithdrawCollateralUserMessage) {
         require(sender() == msg.user, "invalid sender");
         send(SendParameters{
                 to: self._userPositionAddress(msg.user),
@@ -167,6 +174,14 @@ contract Manager with Deployable, OwnableTransferable {
                 body: PositionLiquidation{settings: self.poolSettings, user: msg.user, tonPrice: self.tonPrice}.toCell()
             }
         );
+    }
+
+    receive(msg: UsdTonUpdateNotification){
+        self.state.totalMinted = msg.newValue;
+    }
+
+    receive(msg: PoolUpdateNotification){
+        self.state.totalSupplyed = msg.newValue;
     }
 
     // receive("EmergencyExit"){
@@ -227,6 +242,12 @@ contract Manager with Deployable, OwnableTransferable {
     fun payBack(user: Address) {
         send(SendParameters{to: user, bounce: false, value: 0, mode: (SendRemainingValue + SendIgnoreErrors)});
     }
+
+    fun poolIsHealthy(amount: Int, stabilityFee: Int): Bool {
+        let totalSupplyed: Int = self.state.totalSupplyed * self.tonPrice / 1000000000;
+
+        return (self.state.totalMinted + amount) / 100 <= (stabilityFee + totalSupplyed);
+    }
     //=============================================================================
     // Offchain interface
     //=============================================================================
@@ -251,7 +272,7 @@ contract Manager with Deployable, OwnableTransferable {
         return self.tonPrice;
     }
 
-    get fun totalCollateralAmount(): Int {
-        return self.totalCollateralAmount;
+    get fun state(): ManagerState {
+        return self.state;
     }
 }

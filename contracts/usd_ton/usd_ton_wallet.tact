@@ -95,31 +95,31 @@ contract UsdTonWallet
         }
     }
 
-    receive(msg: TokenBurn){
-        // Check sender
-        let ctx: Context = context();
-        require(ctx.sender == self.owner, "Invalid sender");
-        // Update balance
-        self.balance = (self.balance - msg.amount);
-        require(self.balance >= 0, "Invalid balance");
-        // Gas checks
-        let fwdFee: Int = ctx.readForwardFee();
-        require(ctx.value > ((fwdFee + 2 * self.gasConsumption) + self.minTonsForStorage), "Invalid value");
-        // Burn tokens
-        send(SendParameters{
-                to: self.master,
-                value: 0,
-                mode: SendRemainingValue,
-                bounce: true,
-                body: TokenBurnNotification{
-                    queryId: msg.queryId,
-                    amount: msg.amount,
-                    owner: self.owner,
-                    responseAddress: self.owner
-                }.toCell()
-            }
-        );
-    }
+    // receive(msg: TokenBurn){
+    //     // Check sender
+    //     let ctx: Context = context();
+    //     require(ctx.sender == self.owner, "Invalid sender");
+    //     // Update balance
+    //     self.balance = (self.balance - msg.amount);
+    //     require(self.balance >= 0, "Invalid balance");
+    //     // Gas checks
+    //     let fwdFee: Int = ctx.readForwardFee();
+    //     require(ctx.value > ((fwdFee + 2 * self.gasConsumption) + self.minTonsForStorage), "Invalid value");
+    //     // Burn tokens
+    //     send(SendParameters{
+    //             to: self.master,
+    //             value: 0,
+    //             mode: SendRemainingValue,
+    //             bounce: true,
+    //             body: TokenBurnNotification{
+    //                 queryId: msg.queryId,
+    //                 amount: msg.amount,
+    //                 owner: self.owner,
+    //                 responseAddress: self.owner
+    //             }.toCell()
+    //         }
+    //     );
+    // }
 
     bounced(msg: Slice){
         // Parse bounced message

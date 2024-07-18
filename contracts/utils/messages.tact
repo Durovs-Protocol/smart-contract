@@ -2,6 +2,7 @@ struct PoolSettings {
     liquidationRatio: Int;
     stabilityFeeRate: Int;
     liquidationFee: Int;
+    minHealthRate: Int;
 }
 message DepositCollateralMessage {
     user: Address;
@@ -29,6 +30,10 @@ message WithdrawCollateralMessage {
     tonPrice: Int as coins;
 }
 message FeePayment {
+    amount: Int as uint64;
+    user: Address;
+}
+message StabilityFeePayment {
     amount: Int as uint64;
     user: Address;
 }
@@ -126,6 +131,12 @@ message RuneTransferInternal {
     forwardTonAmount: Int as coins;
     forwardPayload: Slice as remaining;
 }
+message PoolUpdateNotification {
+    newValue: Int as coins;
+}
+message UsdTonUpdateNotification {
+    newValue: Int as coins;
+}
 
 // jetton messages
 
@@ -152,18 +163,18 @@ message(0x7362d09c) TokenNotification {
     from: Address;
     forwardPayload: Slice as remaining;
 }
-message(0x595f07bc) TokenBurn {
-    queryId: Int as uint64;
-    amount: Int as coins;
-    owner: Address;
-    responseAddress: Address?;
-}
-message(0x7bdd97de) TokenBurnNotification {
-    queryId: Int as uint64;
-    amount: Int as coins;
-    owner: Address;
-    responseAddress: Address?;
-}
+// message(0x595f07bc) TokenBurn {
+//     queryId: Int as uint64;
+//     amount: Int as coins;
+//     owner: Address;
+//     responseAddress: Address?;
+// }
+// message(0x7bdd97de) TokenBurnNotification {
+//     queryId: Int as uint64;
+//     amount: Int as coins;
+//     owner: Address;
+//     responseAddress: Address?;
+// }
 message(0xd53276db) TokenExcesses {
     queryId: Int as uint64;
 }
@@ -191,6 +202,7 @@ message SetPoolSettings {
     liquidationRatio: Int;
     stabilityFeeRate: Int; // 1000000000625 = X**1.000000000627 every second = 2%/yr., look at ./math/math.tact
     liquidationFee: Int;
+    minHealthRate: Int;
 }
 message UpdateTonPriceMsg {
     price: Int as coins;
