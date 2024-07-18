@@ -57,20 +57,19 @@ export const runecoinParams = {
 };
 
 export const usdTONJettonParams = {
-    name: `yt-${Date.now()}`,
-    symbol: 'YT',
-    description: '-',
+    name: `ton-usd-${Date.now()}`,
+    symbol: 'TUSD',
+    description: 'Algorithmic Stable coin (USD) on TON',
     image: 'https://ipfs.io/ipfs/QmPSGcz4TyDo3qShEymZRQRavKKRRbiLPHYs9GUgbtwEwx',
 };
 
 /**
  * Для теста
  */
-
 export const testJettonParams = {
-    name: 'yt',
-    symbol: 'yt',
-    description: 'yt',
+    name: `ton-usd-${Date.now()}`,
+    symbol: 'TUSD',
+    description: 'Algorithmic Stable coin (USD) on TON',
     image: '',
 };
 export const testRunecoinParams = runecoinParams;
