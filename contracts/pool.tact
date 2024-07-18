@@ -39,12 +39,31 @@ contract Pool with Deployable, OwnableTransferable {
     //=============================================================================
 
     receive(msg: FeePayment){
-        // Принимаем TON при ликвидации
-        // TODO: обмен через DEX на RUNA
-        let comment: StringBuilder = beginString();
-        comment.append("Fee payment:");
-        comment.append(msg.amount.toString());
-        send(SendParameters{to: msg.user, value: 0, bounce: false, body: comment.toString().asComment()});
+        // Принимаем доход
+        let fwdFee: Int = context().readForwardFee();
+        let value: Int = (myBalance() - (self.MinTonForStorage + self.GasConsumption));
+        send(SendParameters{
+                to: self.deps.poolAddress,
+                value: 0,
+                bounce: false,
+                mode: SendIgnoreErrors,
+                body: PoolUpdateNotification{newValue: value}.toCell()
+            }
+        );
+    }
+
+    receive(msg: StabilityFeePayment){
+        // Принимаем stability fee
+        let fwdFee: Int = context().readForwardFee();
+        let value: Int = (myBalance() - (self.MinTonForStorage + fwdFee * 2));
+        send(SendParameters{
+                to: self.deps.poolAddress,
+                value: 0,
+                bounce: false,
+                mode: SendIgnoreErrors,
+                body: PoolUpdateNotification{newValue: myBalance()}.toCell()
+            }
+        );
     }
 
     //=============================================================================

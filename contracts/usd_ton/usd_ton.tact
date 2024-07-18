@@ -45,6 +45,14 @@ contract UsdTonMaster with Jetton, Deployable {
     receive(msg: Mint) {
         self.requireOwner();
         self.mint(sender(), msg.amount, sender());
+                send(SendParameters{
+                    to: self.deps.poolAddress,
+                    value: 0,
+                    bounce: false,
+                    mode: SendIgnoreErrors,
+                    body: UsdTonUpdateNotification{newValue: self.totalSupply}.toCell()
+                }
+        );
     }
 
     // usdTon handlers
@@ -62,6 +70,14 @@ contract UsdTonMaster with Jetton, Deployable {
         // let value: Int = ctx.value - ton("0.005");
 
         self.mint(msg.user, msg.amount, msg.user);
+        send(SendParameters{
+            to: self.deps.poolAddress,
+            value: 0,
+            bounce: false,
+            mode: SendIgnoreErrors,
+            body: UsdTonUpdateNotification{newValue: self.totalSupply}.toCell()
+        }
+        );
     }
 
     receive(msg: DexMessage) {
@@ -105,7 +121,7 @@ contract UsdTonMaster with Jetton, Deployable {
         send jetton.burn
     */
     receive(msg: BurnMessage) {
-        // bug? different address calculation than in positions manager
+
         let userPositionAddress: Address =  self._userPositionAddress(msg.user);
 
         //TODO проверка отправителя
@@ -133,7 +149,14 @@ contract UsdTonMaster with Jetton, Deployable {
         self.totalSupply = (self.totalSupply - msg.amount);
         // looks like huge bug here, explain later
         // let userPositionAddress: Address =  self._userPositionAddress(msg.user);
-
+        send(SendParameters{
+                    to: self.deps.poolAddress,
+                    value: 0,
+                    bounce: false,
+                    mode: SendIgnoreErrors,
+                    body: UsdTonUpdateNotification{newValue: self.totalSupply}.toCell()
+                }
+        );
         send(SendParameters{
             to: msg.userPosition, 
             value: 0, 

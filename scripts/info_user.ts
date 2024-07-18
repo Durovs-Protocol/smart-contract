@@ -12,7 +12,7 @@ export async function run(provider: NetworkProvider) {
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
     const user = provider.sender().address as Address;
-    
+
     /**
      * User position
      */
@@ -22,10 +22,11 @@ export async function run(provider: NetworkProvider) {
     console.log('User Position address:  ', userPosition.address.toString() + '\n\n');
 
     let tonPrice = await manager.getTonPrice();
-    let healthRate = tonPrice * state.collateral/state.debt;
+    // let healthRate = tonPrice * state.collateral/state.debt;
+    // TODO исправить при / на 0
 
     console.log('Ton price:        ', fromNano(tonPrice).toString());
-    console.log('Health Rate:      ', fromNano(healthRate).toString());
+    // console.log('Health Rate:      ', fromNano(healthRate).toString());
     console.log('\nSupply in TON:    ', fromNano(state.collateral).toString());
     console.log('Borrow by UP:     ', fromNano(state.debt).toString());
 
