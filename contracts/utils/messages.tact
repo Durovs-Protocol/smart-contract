@@ -20,7 +20,6 @@ message BurnUsdTONMessage {
     amount: Int as uint64;
     settings: PoolSettings;
     tonPrice: Int as coins;
-    userRunaCoinAddress: Address;
     deps: Deps;
 }
 message WithdrawCollateralMessage {
@@ -31,19 +30,8 @@ message WithdrawCollateralMessage {
 }
 message FeePayment {
     amount: Int as uint64;
-}
-
-message GetUserRunacoinAddress{
     user: Address;
-    amount: Int as uint64;
 }
-
-message GetUserRunacoinAddressResponse {
-    userRunaCoinAddress: Address;
-    user: Address;
-    amount: Int as uint64;
-}
-
 // usdTonMaster messages
 
 struct JettonData {
