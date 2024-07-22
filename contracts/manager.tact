@@ -17,6 +17,11 @@ contract Manager with Deployable, OwnableTransferable {
     tonPrice: Int;
     lastPositionId: Int as coins = 0;
     state: ManagerState;
+    const allowableError: Int = 800000;
+    //0.0008
+
+
+
     init(owner: Address){
         self.owner = owner;
         self.poolSettings = PoolSettings{liquidationRatio: 0, stabilityFeeRate: 0, liquidationFee: 0, minHealthRate: 0};
@@ -183,6 +188,52 @@ contract Manager with Deployable, OwnableTransferable {
     receive(msg: PoolUpdateNotification){
         self.state.totalSupplyed = msg.newValue;
     }
+
+    /*| Стабилизация */
+    receive(msg: Stabilization) {
+        //0.12
+        let rateDiff: Int = abs(1000000000 - msg.rate);
+        if (rateDiff > self.allowableError) {
+
+        if (msg.rate > 1000000000) {
+
+        let price: Int = (rateDiff * (msg.usdtonAmount / 2));
+        let amount: Int = (price * 1000000000) / self.tonPrice;
+
+        send(SendParameters {
+            to: self.deps.poolAddress, 
+            value: 0,
+            mode: SendRemainingValue,
+            bounce: true,
+            body: DoStabilizationTon{
+                amount: amount,
+                price: price,
+            }.toCell()
+            });
+
+        } else {
+
+        let price: Int = (rateDiff * (msg.usdtonAmount / 2)) / msg.rate;
+        let amount: Int = (price * 1000000000) / self.tonPrice;
+
+            send(SendParameters {
+            to: self.deps.poolAddress, 
+            value: 0,
+            mode: SendRemainingValue,
+            bounce: true,
+            body: DoStabilizationUsdton{
+                amount: amount,
+                price: price,
+            }.toCell()
+            });
+        }
+        } else {
+             self.reply("Stabilization error: usdton is stable".asComment());
+        }
+
+    }
+
+
 
     // receive("EmergencyExit"){
     //     require(sender() == self.owner, "invalid sender");

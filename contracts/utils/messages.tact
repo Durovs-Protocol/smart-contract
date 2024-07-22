@@ -81,9 +81,34 @@ message DexMessage {
     user: Address;
     amount: Int as coins;
 }
+message DexMessageTon {
+    user: Address;
+    amount: Int as coins;
+    price: Int;
+}
 message DexNotification {
     user: Address;
     amount: Int as coins;
+}
+message DoStabilizationTon {
+    amount: Int as coins;
+    price: Int as uint64;
+}
+message DoStabilizationUsdton {
+    amount: Int as coins;
+    price: Int as uint64;
+}
+message SellUsdt {
+    user: Address;
+    amount: Int as coins;
+    price: Int as uint64;
+    userPosition: Address;
+}
+message SellNotification {
+    user: Address;
+    amount: Int as coins;
+    price: Int as uint64;
+    userPosition: Address;
 }
 message BurnMessage {
     user: Address;
@@ -222,4 +247,8 @@ message BurnUsdTONUserMessage {
 message WithdrawCollateralUserMessage {
     user: Address;
     amount: Int as coins;
+}
+message Stabilization {
+    rate: Int;
+    usdtonAmount: Int;
 }
