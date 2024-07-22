@@ -44,6 +44,9 @@
         "info-user": "yarn run-script info_user",
         "info-rune": "yarn run-script info_rune",
 
+        "stabilization": "yarn run-script stabilization",
+
+
         "withdraw-pool": "yarn run-script withdraw_pool"
     },
     "devDependencies": {

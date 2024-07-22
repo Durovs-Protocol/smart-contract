@@ -81,7 +81,6 @@ contract UsdTonMaster with Jetton, Deployable {
     }
 
     receive(msg: DexMessage) {
-
         // имитация покупки, выпуск без увелиячения значения supply
         let winit: StateInit = self.getJettonWalletInit(msg.user);
         let walletAddress: Address = contractAddress(winit);
@@ -111,11 +110,43 @@ contract UsdTonMaster with Jetton, Deployable {
                 user: msg.user
             }.toCell()
         });
-
-
-
     }
 
+    receive(msg: DexMessageTon) {
+        // имитация продажи USDTON, сжигание с кошелька пула и начисление ему тона
+        let winit: StateInit = self.getJettonWalletInit(msg.user);
+        let walletAddress: Address = contractAddress(winit);
+        // let userPositionAddress: Address =  self._userPositionAddress(msg.user);
+
+        //TODO проверка отправителя
+        //    require(sender() == userPositionAddress, "invalid sender");
+
+        send(SendParameters{
+            to: walletAddress, 
+            value: 0, 
+            bounce: false,
+            mode: SendRemainingValue + SendIgnoreErrors,
+            body: SellUsdt{
+                user: msg.user,
+                amount: msg.amount,
+                price: msg.price,
+                userPosition: msg.user
+            }.toCell()
+        });
+    }
+
+    receive(msg: SellNotification) {
+        self.requireWallet(msg.user);
+        // тут без уменьшения supply тк мы как бы продали монеты, переводим деньги за них в пул
+        send(SendParameters{
+                    to: self.deps.poolAddress,
+                    value: msg.price,
+                    bounce: false,
+                    mode: SendIgnoreErrors + SendPayGasSeparately,
+                    body: msg.toCell()
+                }
+        );
+    }
     /*
         message came from userPosition
         send jetton.burn
@@ -157,6 +188,7 @@ contract UsdTonMaster with Jetton, Deployable {
                     body: UsdTonUpdateNotification{newValue: self.totalSupply}.toCell()
                 }
         );
+        //TODO убрать userPosition на 
         send(SendParameters{
             to: msg.userPosition, 
             value: 0, 

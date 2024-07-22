@@ -183,7 +183,6 @@ contract UserPosition  {
 
     /*03 |from usdTonMaster'*/
     receive(msg: UsdTonBurned) {
-
         require(sender() == self.usdTonAddress, "not from usdTon");
 
         // todo check if debt still more than repayment
@@ -209,8 +208,6 @@ contract UserPosition  {
             body: self.message.message.asComment()
         });
         }
-
-
     }
 
     /*04 | Возврат обеспечения (from manager)'*/
@@ -294,7 +291,7 @@ contract UserPosition  {
             bounce: false, 
             value: self.liquidationParams.tonForBurn, 
             mode: SendPayGasSeparately, 
-            body: FeePayment{
+            body: StabilityFeePayment {
                 amount: self.liquidationParams.tonForBurn, 
                 user: self.user
             }.toCell()
@@ -313,8 +310,8 @@ contract UserPosition  {
             }.toCell()
         });
 
-        // считаем комиссию 15%
-        let fee: Int =  ( (self.liquidationParams.liquidationAmount - self.liquidationParams.liquidationDebt) * 150000000) /  self.liquidationParams.tonPrice;
+        // считаем комиссию 5%
+        let fee: Int =  ( (self.liquidationParams.liquidationAmount - self.liquidationParams.liquidationDebt) * 50000000) /  self.liquidationParams.tonPrice;
         let feeDebt: Int = 0;
 
 
@@ -337,7 +334,7 @@ contract UserPosition  {
         
 
         //отправка всего ton в pool комиссии
-        send(SendParameters{to: self.poolAddress, bounce: false, value: 0, mode: SendRemainingBalance, body: StabilityFeePayment{amount: fee, user: myAddress()}.toCell()});
+        send(SendParameters{to: self.poolAddress, bounce: false, value: 0, mode: SendRemainingBalance, body: FeePayment{amount: fee, user: myAddress()}.toCell()});
     }
 
     receive(msg: TokenExcesses) {

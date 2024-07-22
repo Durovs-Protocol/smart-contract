@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, fromNano, toNano } from '@ton/core';
-import { loadAddress, log, saveAddress, timer } from '../utils/helpers';
 import { mintAmount, mintGas } from '../utils/data';
+import { loadAddress, log, saveAddress, timer } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { UsdTonMaster } from '../wrappers/UsdTon';
 import { UsdTonWallet } from '../wrappers/UsdTonWallet';
@@ -31,7 +31,6 @@ export async function run(provider: NetworkProvider) {
     await provider.waitForDeploy(userUsdTonWalletAddress, 30);
 
     await timer(`User stable balance`, 'Mint usdTon', usdtonsBorrowed, userUsdTonWallet.getGetBalance);
-
     await saveAddress('user_usd_ton_wallet', userUsdTonWalletAddress);
     //проверять в обозревателе транзакций
 }
