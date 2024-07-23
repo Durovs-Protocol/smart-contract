@@ -1,0 +1,227 @@
+import "../user_position.tact";
+import "./jetton.tact";
+import "./usd_ton_wallet.tact";
+import "../utils/messages.tact";
+import "@stdlib/deploy";
+
+message Mint {
+    amount: Int;
+}
+
+
+contract UsdTonMaster with Jetton, Deployable {
+    totalSupply: Int as coins;
+    owner: Address;
+    content: Cell?;
+    mintable: Bool;
+    deps: Deps;
+    message: String;
+
+    init(owner: Address, content: Cell?) {
+        self.totalSupply = 0;
+        self.owner = owner;
+        self.mintable = true;
+        self.content = content;
+        self.deps = Deps{
+            usdTonAddress: newAddress(0, 0),
+            poolAddress: newAddress(0, 0),
+            managerAddress: newAddress(0, 0),
+            runecoinAddress: newAddress(0, 0)
+        };
+        self.message = "";
+    }
+
+    receive (msg: SetDeps) {
+        self.requireOwner();
+        self.deps = Deps{
+            managerAddress: msg.managerAddress,
+            poolAddress: msg.poolAddress,
+            usdTonAddress: msg.usdTonAddress,
+            runecoinAddress:  msg.runecoinAddress,
+        };
+        self.reply("usdton's dependencies set".asComment());
+    }
+
+    receive(msg: Mint) {
+        self.requireOwner();
+        self.mint(sender(), msg.amount, sender());
+                send(SendParameters{
+                    to: self.deps.poolAddress,
+                    value: 0,
+                    bounce: false,
+                    mode: SendIgnoreErrors,
+                    body: UsdTonUpdateNotification{newValue: self.totalSupply}.toCell()
+                }
+        );
+    }
+
+    // usdTon handlers
+
+    /*
+        message came from userPosition
+        mint new usdTons for to
+        todo add 
+    */
+    receive(msg: MintMessage) {
+        //let userPositionAddress: Address = self._userPositionAddress(msg.user);
+        //TODO проверка отправителя
+        //require(sender() == userPositionAddress, "invalid sender");
+        // let ctx: Context = context();
+        // let value: Int = ctx.value - ton("0.005");
+
+        self.mint(msg.user, msg.amount, msg.user);
+        send(SendParameters{
+            to: self.deps.poolAddress,
+            value: 0,
+            bounce: false,
+            mode: SendIgnoreErrors,
+            body: UsdTonUpdateNotification{newValue: self.totalSupply}.toCell()
+        }
+        );
+    }
+
+    receive(msg: DexMessage) {
+        // имитация покупки, выпуск без увелиячения значения supply
+        let winit: StateInit = self.getJettonWalletInit(msg.user);
+        let walletAddress: Address = contractAddress(winit);
+        send(SendParameters {
+                to: walletAddress,
+                value: ton("0.03"),
+                bounce: false,
+                body: TokenTransferInternal{
+                    amount: msg.amount,
+                    queryId: 0,
+                    from: myAddress(),
+                    responseAddress: msg.user,
+                    forwardTonAmount: 0,
+                    forwardPayload: emptySlice()
+                }.toCell(),
+                code: winit.code,
+                data: winit.data
+            }
+        );
+        // оповещение об успешной покупке
+        send(SendParameters {
+            to: msg.user, 
+            value: ton("0.07"),
+            bounce: false,
+            body: DexNotification {
+                amount: msg.amount,
+                user: msg.user
+            }.toCell()
+        });
+    }
+
+    receive(msg: DexMessageTon) {
+        // имитация продажи USDTON, сжигание с кошелька пула и начисление ему тона
+        let winit: StateInit = self.getJettonWalletInit(msg.user);
+        let walletAddress: Address = contractAddress(winit);
+        // let userPositionAddress: Address =  self._userPositionAddress(msg.user);
+
+        //TODO проверка отправителя
+        //    require(sender() == userPositionAddress, "invalid sender");
+
+        send(SendParameters{
+            to: walletAddress, 
+            value: 0, 
+            bounce: false,
+            mode: SendRemainingValue + SendIgnoreErrors,
+            body: SellUsdt{
+                user: msg.user,
+                amount: msg.amount,
+                price: msg.price,
+                userPosition: msg.user
+            }.toCell()
+        });
+    }
+
+    receive(msg: SellNotification) {
+        self.requireWallet(msg.user);
+        // тут без уменьшения supply тк мы как бы продали монеты, переводим деньги за них в пул
+        send(SendParameters{
+                    to: self.deps.poolAddress,
+                    value: msg.price,
+                    bounce: false,
+                    mode: SendIgnoreErrors + SendPayGasSeparately,
+                    body: msg.toCell()
+                }
+        );
+    }
+    /*
+        message came from userPosition
+        send jetton.burn
+    */
+    receive(msg: BurnMessage) {
+
+        let userPositionAddress: Address =  self._userPositionAddress(msg.user);
+
+        //TODO проверка отправителя
+        //    require(sender() == userPositionAddress, "invalid sender");
+
+        let winit: StateInit = self.getJettonWalletInit(msg.user);
+        let walletAddress: Address = contractAddress(winit);
+
+        send(SendParameters{
+            to: walletAddress, 
+            value: 0, 
+            bounce: false,
+            mode: SendRemainingValue + SendIgnoreErrors,
+            body: msg.toCell()
+        });
+    }
+
+    /*
+        message came from jetton
+        decrease totalSupply
+        call userPosition.stableBurned(user, amount, fees)
+    */
+    receive(msg: BurnNotification) {
+        self.requireWallet(msg.user);
+        self.totalSupply = (self.totalSupply - msg.amount);
+        // looks like huge bug here, explain later
+        // let userPositionAddress: Address =  self._userPositionAddress(msg.user);
+        send(SendParameters{
+                    to: self.deps.poolAddress,
+                    value: 0,
+                    bounce: false,
+                    mode: SendIgnoreErrors,
+                    body: UsdTonUpdateNotification{newValue: self.totalSupply}.toCell()
+                }
+        );
+        //TODO убрать userPosition на 
+        send(SendParameters{
+            to: msg.userPosition, 
+            value: 0, 
+            bounce: false,
+            mode: SendRemainingValue + SendIgnoreErrors,
+            body: UsdTonBurned{ 
+                amount: msg.amount,
+                user: msg.user,
+            }.toCell()
+        });
+    }
+
+    fun _userPositionAddress(user: Address): Address {
+        let init: StateInit = initOf UserPosition(user, self.deps.usdTonAddress, self.deps.managerAddress, self.deps.poolAddress);
+        let userPositionAddress: Address = contractAddress(init);
+        return userPositionAddress;
+    }
+
+
+    get fun deps(): Deps {
+        return self.deps;
+    }
+
+    get fun totalSupply(): Int {
+        return self.totalSupply;
+    }
+
+    get fun userPositionAddress(user: Address): Address {
+        return self._userPositionAddress(user);
+    }
+
+    get fun message(): String {
+        return self.message;
+    }
+
+}
