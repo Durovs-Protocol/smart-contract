@@ -1,7 +1,7 @@
-import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { toNano } from '@ton/core';
-import { Pool } from '../../wrappers/Pool';
+import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import '@ton/test-utils';
+import { Pool } from '../../wrappers/ReservePool';
 
 describe('Pool', () => {
     let blockchain: Blockchain;
@@ -22,7 +22,7 @@ describe('Pool', () => {
             {
                 $$type: 'Deploy',
                 queryId: 0n,
-            }
+            },
         );
 
         expect(deployResult.transactions).toHaveTransaction({

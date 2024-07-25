@@ -3,14 +3,21 @@ import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import '@ton/test-utils';
 import { buildOnchainMetadata } from '../../utils/helpers';
 import { Manager } from '../../wrappers/Manager';
-import { Pool } from '../../wrappers/Pool';
+import { Pool } from '../../wrappers/ReservePool';
 import { Runecoin } from '../../wrappers/Runecoin';
 
 import { RunecoinWallet } from '../../wrappers/RunecoinWallet';
 
+import {
+    gasFee,
+    liquidationFee,
+    liquidationRatio,
+    stabilityFeeRate,
+    testJettonParams,
+    testRunecoinParams,
+    tonPrice,
+} from '../../utils/data';
 import { UsdTonMaster } from '../../wrappers/UsdTon';
-import { UserPosition } from '../../wrappers/UserPosition';
-import { gasFee, liquidationFee, liquidationRatio, stabilityFeeRate, testJettonParams, testRunecoinParams, tonPrice } from '../../utils/data';
 
 describe('Setup', () => {
     let blockchain: Blockchain;
@@ -24,7 +31,6 @@ describe('Setup', () => {
     let runecoinWallet: SandboxContract<RunecoinWallet>;
 
     beforeAll(async () => {
-
         blockchain = await Blockchain.create();
         deployer = await blockchain.treasury('deployer');
 
@@ -135,7 +141,7 @@ describe('Setup', () => {
             deployer.getSender(),
             { value: toNano(gasFee) },
             {
-                $$type: 'SetPoolSettings',
+                $$type: 'SetSettings',
                 liquidationFee: toNano(liquidationFee),
                 liquidationRatio: toNano(liquidationRatio),
                 stabilityFeeRate: toNano(stabilityFeeRate),
@@ -153,23 +159,23 @@ describe('Setup', () => {
     });
     it('Dependencies set successfully', async () => {
         const usdTonDeps = await usdTon.getDeps();
-        expect(usdTonDeps.poolAddress.toString()).toEqual(pool.address.toString());
-        expect(usdTonDeps.managerAddress.toString()).toEqual(manager.address.toString());
+        expect(usdTondeps.resrvePool.toString()).toEqual(pool.address.toString());
+        expect(usdTondeps.manager.toString()).toEqual(manager.address.toString());
 
         const positionsManagerDeps = await manager.getDeps();
-        expect(positionsManagerDeps.poolAddress.toString()).toEqual(pool.address.toString());
-        expect(positionsManagerDeps.usdTonAddress.toString()).toEqual(usdTon.address.toString());
+        expect(positionsManagerdeps.resrvePool.toString()).toEqual(pool.address.toString());
+        expect(positionsManagerdeps.usdton.toString()).toEqual(usdTon.address.toString());
 
         const poolDeps = await pool.getDeps();
-        expect(poolDeps.usdTonAddress.toString()).toEqual(usdTon.address.toString());
-        expect(poolDeps.managerAddress.toString()).toEqual(manager.address.toString());
+        expect(pooldeps.usdton.toString()).toEqual(usdTon.address.toString());
+        expect(pooldeps.manager.toString()).toEqual(manager.address.toString());
     });
 
     it('Pool settings set successfully', async () => {
-        const poolSettings = await manager.getPoolSettings();
-        expect(poolSettings.liquidationRatio).toEqual(toNano(liquidationRatio));
-        expect(poolSettings.stabilityFeeRate).toEqual(toNano(stabilityFeeRate));
-        expect(poolSettings.liquidationFee).toEqual(toNano(liquidationFee));
+        const settings = await manager.getSettings();
+        expect(settings.liquidationRatio).toEqual(toNano(liquidationRatio));
+        expect(settings.stabilityFeeRate).toEqual(toNano(stabilityFeeRate));
+        expect(settings.liquidationFee).toEqual(toNano(liquidationFee));
     });
 
     it('Initial TON price set successfully', async () => {

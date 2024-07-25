@@ -1,12 +1,12 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { toNano } from '@ton/core';
 import { saveAddress } from '../utils/helpers';
-import { Pool } from '../wrappers/Pool';
+import { ReservePool } from '../wrappers/ReservePool';
 
 export async function run(provider: NetworkProvider) {
-    const poolContract = provider.open(await Pool.fromInit(provider.sender().address!));
+    const reservePool = provider.open(await ReservePool.fromInit(provider.sender().address!));
 
-    await poolContract.send(
+    await reservePool.send(
         provider.sender(),
         {
             value: toNano('0.05'),
@@ -17,12 +17,10 @@ export async function run(provider: NetworkProvider) {
         },
     );
 
-    await provider.waitForDeploy(poolContract.address, 30);
-    await saveAddress('pool', poolContract.address);
+    await provider.waitForDeploy(reservePool.address, 30);
+    await saveAddress('reservePool', reservePool.address);
 
     console.log('=============================================================================');
-    console.log('Pool deployed successfully');
+    console.log('Reserve pools deployed successfully');
     console.log('=============================================================================');
-
-    // run methods on `poolContract`
 }

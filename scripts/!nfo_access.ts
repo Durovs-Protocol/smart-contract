@@ -2,7 +2,8 @@ import { NetworkProvider } from '@ton/blueprint';
 import { Address } from '@ton/core';
 import { loadAddress, log } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
-import { Pool } from '../wrappers/Pool';
+import { ProfitPool } from '../wrappers/ProfitPool';
+import { ReservePool } from '../wrappers/ReservePool';
 import { UsdTonMaster } from '../wrappers/UsdTon';
 
 /**
@@ -18,11 +19,17 @@ export async function run(provider: NetworkProvider) {
     const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
     const usdTonOwner = await usdTon.getOwner();
 
-    const pool = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool'))));
-    const poolOwner = await pool.getOwner();
+    const profitPool = provider.open(await ProfitPool.fromAddress(Address.parse(await loadAddress('profitPool'))));
+    const reservePool = provider.open(await ReservePool.fromAddress(Address.parse(await loadAddress('reservePool'))));
+    const profitPoolOwner = await profitPool.getOwner();
+    const reservePoolOwner = await reservePool.getOwner();
 
-    if (managerOwner.toString() == usdTonOwner.toString() && usdTonOwner.toString() == poolOwner.toString()) {
-        log('Owners of manager, usdTon and pool the same: ' + managerOwner);
+    if (
+        managerOwner.toString() == usdTonOwner.toString() &&
+        usdTonOwner.toString() == profitPoolOwner.toString() &&
+        profitPoolOwner.toString() == reservePoolOwner.toString()
+    ) {
+        log('Owners of manager, usdTon and pools the same: ' + managerOwner);
     } else {
         log(
             'Owners is not the same' +
@@ -30,8 +37,10 @@ export async function run(provider: NetworkProvider) {
                 managerOwner +
                 '\nusdTonOwner:  ' +
                 usdTonOwner +
-                '\npoolOwner:    ' +
-                poolOwner,
+                '\nprofitpool owner:    ' +
+                profitPoolOwner +
+                '\nreservepool owner:    ' +
+                reservePoolOwner,
         );
     }
 }

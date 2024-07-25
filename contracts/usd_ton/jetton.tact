@@ -65,31 +65,6 @@ trait Jetton with OwnableTransferable {
     // Private Methods
     //
 
-    fun mint(to: Address, amount: Int, responseAddress: Address) {
-        // Update total supply
-        self.totalSupply = (self.totalSupply + amount);
-        // Create message
-        let winit: StateInit = self.getJettonWalletInit(to);
-        let walletAddress: Address = contractAddress(winit);
-        send(SendParameters{
-                to: walletAddress,
-                value: 0,
-                mode: SendRemainingValue,
-                bounce: false,
-                body: TokenTransferInternal{
-                    amount: amount,
-                    queryId: 0,
-                    from: myAddress(),
-                    responseAddress: responseAddress,
-                    forwardTonAmount: 0,
-                    forwardPayload: emptySlice()
-                }.toCell(),
-                code: winit.code,
-                data: winit.data
-            }
-        );
-    }
-
     fun requireWallet(owner: Address) {
         let ctx: Context = context();
         let winit: StateInit = self.getJettonWalletInit(owner);

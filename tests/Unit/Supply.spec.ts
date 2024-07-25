@@ -1,19 +1,17 @@
+import { Address, toNano } from '@ton/core';
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
-import { Address, fromNano, toNano } from '@ton/core';
-import { Runecoin } from '../../wrappers/Runecoin';
 import '@ton/test-utils';
-import { addSupplyAmount, addSupplyGas, gasFee, testJettonParams, testnetMintAmount, testRunecoinParams } from '../../utils/data';
+import { addSupplyAmount, addSupplyGas, gasFee, testJettonParams, testRunecoinParams } from '../../utils/data';
+import { buildOnchainMetadata } from '../../utils/helpers';
 import { Manager } from '../../wrappers/Manager';
-import { RunecoinWallet } from '../../wrappers/RunecoinWallet';
-import { buildOnchainMetadata, delay, log, timer } from '../../utils/helpers';
-import { UserPosition } from '../../wrappers/UserPosition';
-import { Pool } from '../../wrappers/Pool';
+import { Pool } from '../../wrappers/ReservePool';
+import { Runecoin } from '../../wrappers/Runecoin';
 import { UsdTonMaster } from '../../wrappers/UsdTon';
 
 describe('Supply', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
-    
+
     let pool: SandboxContract<Pool>;
     let usdTon: SandboxContract<UsdTonMaster>;
     let manager: SandboxContract<Manager>;
@@ -25,12 +23,17 @@ describe('Supply', () => {
 
         manager = blockchain.openContract(await Manager.fromInit(deployer.getSender().address));
         pool = blockchain.openContract(await Pool.fromInit(deployer.getSender().address));
-        usdTon = blockchain.openContract( await UsdTonMaster.fromInit(deployer.getSender().address, buildOnchainMetadata(testJettonParams)),);
-        runecoin = blockchain.openContract( await Runecoin.fromInit(deployer.getSender().address, buildOnchainMetadata(testRunecoinParams)),);
-        
+        usdTon = blockchain.openContract(
+            await UsdTonMaster.fromInit(deployer.getSender().address, buildOnchainMetadata(testJettonParams)),
+        );
+        runecoin = blockchain.openContract(
+            await Runecoin.fromInit(deployer.getSender().address, buildOnchainMetadata(testRunecoinParams)),
+        );
 
-        let deployResult = await manager.send( deployer.getSender(),
-            { value: toNano(gasFee) }, { $$type: 'Deploy', queryId: 0n }
+        let deployResult = await manager.send(
+            deployer.getSender(),
+            { value: toNano(gasFee) },
+            { $$type: 'Deploy', queryId: 0n },
         );
 
         expect(deployResult.transactions).toHaveTransaction({
@@ -40,8 +43,10 @@ describe('Supply', () => {
             success: true,
         });
 
-        deployResult = await pool.send( deployer.getSender(),
-            { value: toNano(gasFee) }, { $$type: 'Deploy', queryId: 0n }
+        deployResult = await pool.send(
+            deployer.getSender(),
+            { value: toNano(gasFee) },
+            { $$type: 'Deploy', queryId: 0n },
         );
 
         expect(deployResult.transactions).toHaveTransaction({
@@ -51,8 +56,10 @@ describe('Supply', () => {
             success: true,
         });
 
-        deployResult = await usdTon.send( deployer.getSender(),
-            { value: toNano(gasFee) }, { $$type: 'Deploy', queryId: 0n }
+        deployResult = await usdTon.send(
+            deployer.getSender(),
+            { value: toNano(gasFee) },
+            { $$type: 'Deploy', queryId: 0n },
         );
 
         expect(deployResult.transactions).toHaveTransaction({
@@ -62,8 +69,10 @@ describe('Supply', () => {
             success: true,
         });
 
-        deployResult = await runecoin.send( deployer.getSender(),
-            { value: toNano(gasFee) }, { $$type: 'Deploy', queryId: 0n }
+        deployResult = await runecoin.send(
+            deployer.getSender(),
+            { value: toNano(gasFee) },
+            { $$type: 'Deploy', queryId: 0n },
         );
 
         expect(deployResult.transactions).toHaveTransaction({
@@ -75,9 +84,8 @@ describe('Supply', () => {
     });
 
     it('Add supply', async () => {
-
         const collateralAmount = toNano(addSupplyAmount);
-    
+
         // Отправляем Supply
         await manager.send(
             deployer.getSender(),
@@ -106,4 +114,3 @@ describe('Supply', () => {
         expect(addSupplyAmount).toEqual(addSupplyAmount);
     });
 });
-

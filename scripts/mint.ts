@@ -1,6 +1,6 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, fromNano, toNano } from '@ton/core';
-import { mintAmount, mintGas } from '../utils/data';
+import { mintAmount } from '../utils/data';
 import { loadAddress, log, saveAddress, timer } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { UsdTonMaster } from '../wrappers/UsdTon';
@@ -16,14 +16,14 @@ export async function run(provider: NetworkProvider) {
     console.log(userUsdTonWalletAddress);
 
     log('2. Пользователь минтит usdTON: ' + fromNano(usdtonsBorrowed).toString());
-    // выставлен оптимальный газ
+
     await manager.send(
         user,
-        { value: toNano(mintGas) },
+        { value: toNano(1) },
         {
             $$type: 'MintUsdTonMessage',
             user: user.address as Address,
-            amount: usdtonsBorrowed,
+            amount: toNano(9.3),
         },
     );
 
