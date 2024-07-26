@@ -60,7 +60,7 @@ contract ReservePool with Deployable, OwnableTransferable {
     // }
     receive(msg: DepositCollateralMessage){
         let ctx: Context = context();
-        let remainingValue: Int = (ctx.value - ((msg.amount + self.MinTonForStorage) + self.GasConsumption));
+        let remainingValue: Int = (ctx.value - (msg.amount + self.GasConsumption));
         send(SendParameters{
                 to: msg.user,
                 bounce: false,
@@ -73,19 +73,66 @@ contract ReservePool with Deployable, OwnableTransferable {
 
     receive(msg: UsdTonBurned){
         require(sender() == self.deps.usdton, "not from usdTon");
+        let ctx: Context = context();
+        let myAddress: Address = myAddress();
+        if (msg.user != myAddress) {
+            send(SendParameters{
+                    to: msg.notificationAddress!!,
+                    value: msg.withdrawalAmount,
+                    mode: SendRemainingValue,
+                    bounce: false,
+                    body: OnBurnComplete{ton: msg.withdrawalAmount, usdton: msg.amount, fee: msg.fee}.toCell()
+                }
+            );
+        } else {
+            send(SendParameters{
+                    to: msg.notificationAddress!!,
+                    value: 0,
+                    mode: SendRemainingValue,
+                    bounce: false,
+                    body: OnLiquidationComplete{amount: msg.amount}.toCell()
+                }
+            );
+        }
+    }
+
+    receive(msg: LiquidationPool){
+        // покупка usdton для последующего сжигания
         send(SendParameters{
-                to: msg.user,
-                value: msg.collateralForWithdrawal,
-                mode: (SendRemainingValue + SendIgnoreErrors),
-                bounce: false,
-                body: "you've paid stables back".asComment()
+                to: self.deps.usdton,
+                value: msg.price,
+                mode: SendRemainingValue,
+                bounce: true,
+                body: DexMessage{
+                    walletOwner: myAddress(),
+                    amount: msg.amount,
+                    position: msg.position,
+                    price: msg.price
+                }.toCell()
+            }
+        );
+    }
+
+    receive(msg: DexNotification){
+        // сжигание купленных токенов с кошелька позиции
+        send(SendParameters{
+                to: self.deps.usdton,
+                value: 0,
+                mode: SendRemainingValue,
+                body: BurnMessage{
+                    user: myAddress(),
+                    amount: msg.amount,
+                    reservePool: myAddress(),
+                    withdrawalAmount: 0,
+                    fee: 0,
+                    notificationAddress: msg.position
+                }.toCell()
             }
         );
     }
 
     receive(msg: FeePayment){
-        // Принимаем TON при ликвидации
-        // TODO: обмен через DEX на RUNA
+        // Принимаем TON при ликвидаци
     }
 
     //=============================================================================

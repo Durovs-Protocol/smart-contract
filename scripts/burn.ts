@@ -20,7 +20,7 @@ export async function run(provider: NetworkProvider) {
 
     let usdTonBalance = await getDebtBalance();
     //комиссия за операцию
-    const fee: number = (burnAmount * 0.01 >= 10 ? burnAmount * 0.01 : 10) / 7.5;
+    const fee: number = (6.8 * 0.01 >= 10 ? 6.8 * 0.01 : 10) / 7.5;
 
     await manager.send(
         user,
@@ -28,16 +28,10 @@ export async function run(provider: NetworkProvider) {
         {
             $$type: 'BurnUsdTONUserMessage',
             user: user.address as Address,
-            amount: toNano(8.8),
+            amount: toNano(6.8),
             fee: toNano(fee),
         },
     );
 
-    await timer(
-        'User stable balance',
-        'Погашение задолжности',
-        usdTonBalance - toNano(burnAmount),
-        getDebtBalance,
-        true,
-    );
+    await timer('User stable balance', 'Погашение задолжности', usdTonBalance - toNano(9.207), getDebtBalance, true);
 }

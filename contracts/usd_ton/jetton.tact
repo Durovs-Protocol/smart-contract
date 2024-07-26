@@ -22,24 +22,6 @@ trait Jetton with OwnableTransferable {
         self.content = msg.content;
     }
 
-    // receive(msg: TokenBurnNotification){
-    //     // Check wallet
-    //     self.requireWallet(msg.owner);
-    //     // Update supply
-    //     self.totalSupply = (self.totalSupply - msg.amount);
-    //     // Cashback
-    //     if (msg.responseAddress != null) {
-    //         send(SendParameters{
-    //                 to: msg.responseAddress!!,
-    //                 value: 0,
-    //                 bounce: false,
-    //                 mode: (SendRemainingValue + SendIgnoreErrors),
-    //                 body: TokenExcesses{queryId: msg.queryId}.toCell()
-    //             }
-    //         );
-    //     }
-    // }
-
     //
     // Get Methods
     //

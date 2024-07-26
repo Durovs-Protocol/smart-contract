@@ -19,7 +19,14 @@ contract Manager with Deployable, OwnableTransferable {
     totalFeesCollected: Int as coins = 0;
     init(owner: Address){
         self.owner = owner;
-        self.settings = Settings{reservePool: 0, reserveMin: 0, burnMin: 0, serviceFeePercent: 0, serviceFee: 0};
+        self.settings = Settings{
+            reservePool: 0,
+            reserveMin: 0,
+            burnMin: 0,
+            serviceFeePercent: 0,
+            serviceFee: 0,
+            liquidationRatio: 0
+        };
         self.deps = Deps{
             manager: newAddress(0, 0),
             profitPool: newAddress(0, 0),
@@ -50,7 +57,8 @@ contract Manager with Deployable, OwnableTransferable {
             reserveMin: msg.reserveMin,
             burnMin: msg.burnMin,
             serviceFeePercent: msg.serviceFeePercent,
-            serviceFee: msg.serviceFee
+            serviceFee: msg.serviceFee,
+            liquidationRatio: msg.liquidationRatio
         };
         self.reply("Settings updated".asComment());
     }
@@ -182,6 +190,18 @@ contract Manager with Deployable, OwnableTransferable {
 
     bounced(msg: bounced<BurnUsdTONMessage>){
         self.bouncedHandler();
+    }
+
+    receive(msg: PositionLiquidationInspectorMessage){
+        require(sender() == self.owner, "invalid sender");
+        send(SendParameters{
+                to: self._userPositionAddress(msg.user),
+                value: 0,
+                mode: (SendRemainingValue + SendBounceIfActionFail),
+                bounce: true,
+                body: PositionLiquidation{settings: self.settings, user: msg.user, tonPrice: self.tonPrice}.toCell()
+            }
+        );
     }
 
     //=============================================================================

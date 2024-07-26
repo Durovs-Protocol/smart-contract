@@ -62,58 +62,68 @@ message SetPositionAddressMessage {
 message MintMessage {
     user: Address;
     amount: Int as coins;
+    notificationAddress: Address?;
+}
+message OnMintComplete {
+    amount: Int as coins;
 }
 message DexMessage {
-    user: Address;
+    walletOwner: Address;
     amount: Int as coins;
+    position: Address;
+    price: Int;
 }
 message DexNotification {
-    user: Address;
     amount: Int as coins;
+    position: Address;
+}
+message OnLiquidationComplete {
+    amount: Int;
 }
 message BurnMessage {
     user: Address;
     amount: Int as coins;
     reservePool: Address;
-    collateralForWithdrawal: Int;
+    withdrawalAmount: Int;
+    fee: Int;
+    notificationAddress: Address?;
 }
+// пересмотреть когда выйдет новая версия
 message BurnNotification {
     user: Address;
     amount: Int as coins;
     reservePool: Address;
-    collateralForWithdrawal: Int;
+    withdrawalAmount: Int;
+    fee: Int;
+    notificationAddress: Address?;
+}
+message PositionLiquidationInspectorMessage {
+    user: Address;
+}
+message PositionLiquidation {
+    settings: Settings;
+    user: Address;
+    tonPrice: Int as coins;
+}
+message LiquidationPool {
+    position: Address;
+    user: Address;
+    amount: Int;
+    price: Int;
 }
 message UsdTonBurned {
     user: Address;
     amount: Int as coins;
-    collateralForWithdrawal: Int;
+    withdrawalAmount: Int;
+    fee: Int;
+    notificationAddress: Address?;
 }
-message RunecoinBurned {
-    user: Address;
-    amount: Int as coins;
-}
-message RuneTransfer {
-    queryId: Int as uint64;
-    amount: Int as coins;
-    destination: Address;
-    usdton: Address;
-    manager: Address;
-    pool: Address;
-    responseDestination: Address?;
-    customPayload: Cell?;
-    forwardTonAmount: Int as coins;
-    forwardPayload: Slice as remaining;
-}
-message RuneTransferInternal {
-    queryId: Int as uint64;
-    amount: Int as coins;
-    from: Address;
-    responseAddress: Address?;
-    forwardTonAmount: Int as coins;
-    forwardPayload: Slice as remaining;
+message OnBurnComplete {
+    ton: Int as coins;
+    usdton: Int as coins;
+    fee: Int;
 }
 // jetton messages
-
 message(0xf8a7ea5) TokenTransfer {
     queryId: Int as uint64;
     amount: Int as coins;
@@ -130,6 +140,16 @@ message(0x178d4519) TokenTransferInternal {
     responseAddress: Address?;
     forwardTonAmount: Int as coins;
     forwardPayload: Slice as remaining;
+    notificationAddress: Address?;
+}
+message TokenTransferInternalDex {
+    queryId: Int as uint64;
+    amount: Int as coins;
+    from: Address;
+    responseAddress: Address?;
+    forwardTonAmount: Int as coins;
+    forwardPayload: Slice as remaining;
+    notificationAddress: Address?;
 }
 message(0x7362d09c) TokenNotification {
     queryId: Int as uint64;
@@ -137,27 +157,11 @@ message(0x7362d09c) TokenNotification {
     from: Address;
     forwardPayload: Slice as remaining;
 }
-// message(0x595f07bc) TokenBurn {
-//     queryId: Int as uint64;
-//     amount: Int as coins;
-//     owner: Address;
-//     responseAddress: Address?;
-// }
-// message(0x7bdd97de) TokenBurnNotification {
-//     queryId: Int as uint64;
-//     amount: Int as coins;
-//     owner: Address;
-//     responseAddress: Address?;
-// }
 message(0xd53276db) TokenExcesses {
     queryId: Int as uint64;
 }
 message TokenUpdateContent {
     content: Cell?;
-}
-message WithdrawFeesMessage {
-    to: Address;
-    amount: Int as coins;
 }
 message SetDeps {
     manager: Address;
@@ -179,6 +183,7 @@ message SetSettings {
     burnMin: Int;
     serviceFeePercent: Int;
     serviceFee: Int;
+    liquidationRatio: Int;
 }
 struct Settings {
     reservePool: Int;
@@ -186,6 +191,7 @@ struct Settings {
     burnMin: Int;
     serviceFeePercent: Int;
     serviceFee: Int;
+    liquidationRatio: Int;
 }
 message UpdateTonPriceMsg {
     price: Int as coins;
@@ -202,8 +208,4 @@ message BurnUsdTONUserMessage {
     user: Address;
     amount: Int as coins;
     fee: Int as uint64;
-}
-message WithdrawCollateralUserMessage {
-    user: Address;
-    amount: Int as coins;
 }

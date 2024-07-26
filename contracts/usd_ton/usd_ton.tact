@@ -44,39 +44,25 @@ contract UsdTonMaster with Jetton, Deployable {
 
     receive(msg: Mint) {
         self.requireOwner();
-        self.mint(sender(), msg.amount, sender());
+        self.mint(sender(), msg.amount, sender(), null);
     }
 
-    // usdTon handlers
-
     /*
-        message came from userPosition
-        mint new usdTons for to
-        todo add 
+        from userPosition
     */
     receive(msg: MintMessage) {
         //let userPositionAddress: Address = self._userPositionAddress(msg.user);
         //TODO проверка отправителя
         //require(sender() == userPositionAddress, "invalid sender");
-        // let ctx: Context = context();
-        // let value: Int = ctx.value - ton("0.005");
-
-        self.mint(msg.user, msg.amount, msg.user);
+        self.mint(msg.user, msg.amount, msg.user, msg.notificationAddress);
     }
 
-
-
     /*
-        message came from userPosition
-        send jetton.burn
+        from userPosition
     */
     receive(msg: BurnMessage) {
-
-        // let userPositionAddress: Address =  self._userPositionAddress(msg.user);
-
         //TODO проверка отправителя
         //    require(sender() == userPositionAddress, "invalid sender");
-
         let winit: StateInit = self.getJettonWalletInit(msg.user);
         let walletAddress: Address = contractAddress(winit);
 
@@ -89,76 +75,64 @@ contract UsdTonMaster with Jetton, Deployable {
         });
     }
 
-    /*
-        message came from jetton
-        decrease totalSupply
-        call userPosition.stableBurned(user, amount, fees)
-    */
+
     receive(msg: BurnNotification) {
         self.requireWallet(msg.user);
         self.totalSupply = (self.totalSupply - msg.amount);
-        // looks like huge bug here, explain later
-        // let userPositionAddress: Address =  self._userPositionAddress(msg.user);
         send(SendParameters{
                     to: self.deps.reservePool,
                     value: 0,
                     bounce: true,
                     mode: SendRemainingValue,
-                    body: UsdTonBurned{ 
+                    body: UsdTonBurned {
                 amount: msg.amount,
                 user: msg.user,
-                collateralForWithdrawal: msg.collateralForWithdrawal
+                withdrawalAmount: msg.withdrawalAmount,
+                fee: msg.fee,
+                notificationAddress: msg.notificationAddress,
             }.toCell()
                 }
         );
-        //TODO убрать userPosition на 
-
     }
-    fun mint(to: Address, amount: Int, responseAddress: Address) {
+    fun mint(to: Address, amount: Int, responseAddress: Address, notificationAddress: Address?) {
         // Update total supply
         self.totalSupply = (self.totalSupply + amount);
-        // send(SendParameters{
-        //             to: self.deps.resrvePool,
-        //             value: 0,
-        //             bounce: false,
-        //             mode: SendIgnoreErrors,
-        //             body: UsdTonUpdateNotification{newValue: self.totalSupply}.toCell()
-        // }
-        // );
-        // Create message
         let winit: StateInit = self.getJettonWalletInit(to);
         let walletAddress: Address = contractAddress(winit);
 
         let winitPool: StateInit = self.getJettonWalletInit(self.deps.profitPool);
         let addressPool: Address = contractAddress(winitPool);
-
+        // for pool
         send(SendParameters{
                 to: addressPool,
                 value: ton("0.4"),
                 bounce: true,
-                body: TokenTransferInternal{
+                body: TokenTransferInternal {
                     amount: (amount * 10000000) / 1000000000,
                     queryId: 0,
                     from: myAddress(),
                     responseAddress: responseAddress,
                     forwardTonAmount: 0,
-                    forwardPayload: emptySlice()
+                    forwardPayload: emptySlice(),
+                    notificationAddress: null
                 }.toCell(),
                 code: winitPool.code,
                 data: winitPool.data
             }
         );
+        // for user
         send(SendParameters {
                 to: walletAddress,
-                value: context().value - ton("0.45"),
+                value: context().value - ton("0.43"),
                 bounce: true,
-                body: TokenTransferInternal{
+                body: TokenTransferInternal { 
                     amount: (amount * 990000000) / 1000000000,
                     queryId: 0,
                     from: myAddress(),
                     responseAddress: responseAddress,
                     forwardTonAmount: 0,
-                    forwardPayload: emptySlice()
+                    forwardPayload: emptySlice(),
+                    notificationAddress: notificationAddress
                 }.toCell(),
                 code: winit.code,
                 data: winit.data
@@ -173,6 +147,32 @@ contract UsdTonMaster with Jetton, Deployable {
                 value: 0,
                 mode: SendRemainingValue + SendIgnoreErrors ,
                 body: "error".asComment()
+            }
+        );
+    }
+    receive(msg: DexMessage) {
+        // имитация покупки, выпуск без увеличения значения supply на кошелек пула
+        let winit: StateInit = self.getJettonWalletInit(msg.walletOwner);
+        let walletAddress: Address = contractAddress(winit);
+
+        let remainingValue: Int = context().value - msg.price;
+
+        send(SendParameters {
+                to: walletAddress,
+                value: remainingValue,
+ 
+                bounce: false,
+                body: TokenTransferInternalDex {
+                    amount: msg.amount,
+                    queryId: 0,
+                    from: myAddress(),
+                    responseAddress: msg.walletOwner,
+                    notificationAddress:  msg.position,
+                    forwardTonAmount: 0,
+                    forwardPayload: emptySlice()
+                }.toCell(),
+                code: winit.code,
+                data: winit.data
             }
         );
     }

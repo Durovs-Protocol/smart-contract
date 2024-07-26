@@ -18,11 +18,12 @@ export async function run(provider: NetworkProvider) {
         { value: toNano(gasFee) },
         {
             $$type: 'SetSettings',
-            reservePool: toNano(1.25), // 100/80
+            reservePool: toNano(1.1), // 100/80
             reserveMin: toNano(10), // $
             burnMin: toNano(10), // $
             serviceFeePercent: toNano(0.1),
             serviceFee: toNano(10), // $
+            liquidationRatio: toNano(0.9),
         },
     );
 

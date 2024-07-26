@@ -23,7 +23,7 @@ export async function run(provider: NetworkProvider) {
         {
             $$type: 'MintUsdTonMessage',
             user: user.address as Address,
-            amount: toNano(9.3),
+            amount: toNano(6.8),
         },
     );
 

@@ -31,6 +31,7 @@ contract UserPosition  {
 
     debt: Int = 0;
     message: Message;
+    
     liquidationParams: LiquidationParams;
 
     init(user: Address, usdTonAddress: Address, managerAddress: Address, poolAddress: Address) {
@@ -44,6 +45,7 @@ contract UserPosition  {
             timestamp: 0,
             message: "Position Created"
         };
+        
         self.liquidationParams = LiquidationParams{
             tonForBurn: 0,
             fee: 0,
