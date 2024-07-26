@@ -33,5 +33,5 @@ export async function run(provider: NetworkProvider) {
         },
     );
 
-    await timer('User stable balance', 'Погашение задолжности', usdTonBalance - toNano(9.207), getDebtBalance, true);
+    await timer('User stable balance', 'Погашение задолжности', usdTonBalance - toNano(6.8), getDebtBalance, true);
 }

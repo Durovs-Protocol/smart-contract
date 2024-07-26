@@ -17,8 +17,8 @@ export async function run(provider: NetworkProvider) {
         { value: toNano(gasFee) },
         {
             $$type: 'UpdateTonPriceMsg',
-            price: toNano(7),
-            //6
+            price: toNano(6),
+            //6///7.5
         },
     );
     await timer(`ton price`, 'Настройка стоимости ton', newTonPrice, getCurrentTonPrice, true);
