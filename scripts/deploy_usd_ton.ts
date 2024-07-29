@@ -1,9 +1,8 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
+import { setupGas, usdTONJettonParams } from '../utils/data';
 import { buildOnchainMetadata, saveAddress } from '../utils/helpers';
 import { UsdTonMaster } from '../wrappers/UsdTon';
-import { usdTONJettonParams } from '../utils/data';
-
 export async function run(provider: NetworkProvider) {
     const owner = provider.sender().address as Address;
     const usdTon = provider.open(await UsdTonMaster.fromInit(owner, buildOnchainMetadata(usdTONJettonParams)));
@@ -11,7 +10,7 @@ export async function run(provider: NetworkProvider) {
     await usdTon.send(
         provider.sender(),
         {
-            value: toNano('0.05'),
+            value: toNano(setupGas),
         },
         {
             $$type: 'Deploy',

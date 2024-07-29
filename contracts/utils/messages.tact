@@ -25,6 +25,7 @@ message BurnUsdTONMessage {
 message FeePayment {
     amount: Int as uint64;
 }
+
 // usdTonMaster messages
 
 struct JettonData {
@@ -40,6 +41,7 @@ struct JettonWalletData {
     master: Address;
     walletCode: Cell;
 }
+
 // userPosition messages
 
 message SetUserPositionDependecyMessage {
@@ -57,6 +59,7 @@ message SetPositionAddressMessage {
     user: Address;
     position: Address;
 }
+
 // usdTonMaster messages
 
 message MintMessage {
@@ -175,6 +178,7 @@ struct Deps {
     reservePool: Address;
     usdton: Address;
 }
+
 // manager
 
 message SetSettings {
@@ -208,4 +212,7 @@ message BurnUsdTONUserMessage {
     user: Address;
     amount: Int as coins;
     fee: Int as uint64;
+}
+message(0x00000000) CommentReciever {
+    text: String;
 }

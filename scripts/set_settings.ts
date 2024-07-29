@@ -1,6 +1,14 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
-import { gasFee } from '../utils/data';
+import {
+    burnMin,
+    liquidationRatio,
+    reserveMin,
+    reservePool,
+    serviceFee,
+    serviceFeePercent,
+    setupGas,
+} from '../utils/data';
 import { loadAddress, timer } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 
@@ -15,15 +23,15 @@ export async function run(provider: NetworkProvider) {
 
     await manager.send(
         provider.sender(),
-        { value: toNano(gasFee) },
+        { value: toNano(setupGas) },
         {
             $$type: 'SetSettings',
-            reservePool: toNano(1.1), // 100/80
-            reserveMin: toNano(10), // $
-            burnMin: toNano(10), // $
-            serviceFeePercent: toNano(0.1),
-            serviceFee: toNano(10), // $
-            liquidationRatio: toNano(0.9),
+            reservePool: toNano(reservePool), // 100/80
+            reserveMin: toNano(reserveMin), // $
+            burnMin: toNano(burnMin), // $
+            serviceFeePercent: toNano(serviceFeePercent),
+            serviceFee: toNano(serviceFee), // $
+            liquidationRatio: toNano(liquidationRatio),
         },
     );
 

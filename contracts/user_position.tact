@@ -260,11 +260,12 @@ contract UserPosition  {
         self.collateral = 0;
         self.debt = 0;
 
+        let remainingValue: Int = myBalance() - self.MinTonsForStorage;
+
         send(SendParameters {
                 to: self.profitPool,
                 bounce: false,
-                value: 0,
-                mode:  SendRemainingBalance + SendDestroyIfZero,
+                value: remainingValue,
                 body: "position liquidated".asComment()
             }
         );
@@ -334,6 +335,9 @@ contract UserPosition  {
     //=============================================================================
     get fun positionUser(): Address {
         return self.user;
+    }
+    get fun getLiquidationParams(): LiquidationParams {
+        return self.liquidationParams;
     }
 
     get fun positionState(): PositionState  {

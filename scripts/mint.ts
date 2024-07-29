@@ -13,7 +13,6 @@ export async function run(provider: NetworkProvider) {
 
     const userUsdTonWalletAddress = await usdTon.getGetWalletAddress(user.address as Address);
     const usdtonsBorrowed = toNano(mintAmount);
-    console.log(userUsdTonWalletAddress);
 
     log('2. Пользователь минтит usdTON: ' + fromNano(usdtonsBorrowed).toString());
 
@@ -23,7 +22,7 @@ export async function run(provider: NetworkProvider) {
         {
             $$type: 'MintUsdTonMessage',
             user: user.address as Address,
-            amount: toNano(6.8),
+            amount: usdtonsBorrowed,
         },
     );
 
