@@ -42,7 +42,8 @@ contract UsdTonWallet
                     from: self.owner,
                     responseAddress: self.owner,
                     forwardTonAmount: msg.forwardTonAmount,
-                    forwardPayload: msg.forwardPayload
+                    forwardPayload: msg.forwardPayload,
+                    notificationAddress: null
                 }.toCell(),
                 code: init.code,
                 data: init.data
@@ -64,7 +65,18 @@ contract UsdTonWallet
         let msgValue: Int = ctx.value;
         let tonBalanceBeforeMsg: Int = (myBalance() - msgValue);
         let storageFee: Int = (self.minTonsForStorage - min(tonBalanceBeforeMsg, self.minTonsForStorage));
-        msgValue = (msgValue - (storageFee + self.gasConsumption));
+        if (msg.notificationAddress != null) {
+            msgValue = (msgValue - (storageFee + self.gasConsumption * 2));
+            send(SendParameters{
+                    to: msg.notificationAddress!!,
+                    value: self.gasConsumption,
+                    bounce: true,
+                    body: OnMintComplete{amount: msg.amount}.toCell()
+                }
+            );
+        } else {
+            msgValue = (msgValue - (storageFee + self.gasConsumption));
+        }
         // Forward ton
         if (msg.forwardTonAmount > 0) {
             let fwdFee: Int = ctx.readForwardFee();
@@ -95,31 +107,26 @@ contract UsdTonWallet
         }
     }
 
-    // receive(msg: TokenBurn){
-    //     // Check sender
-    //     let ctx: Context = context();
-    //     require(ctx.sender == self.owner, "Invalid sender");
-    //     // Update balance
-    //     self.balance = (self.balance - msg.amount);
-    //     require(self.balance >= 0, "Invalid balance");
-    //     // Gas checks
-    //     let fwdFee: Int = ctx.readForwardFee();
-    //     require(ctx.value > ((fwdFee + 2 * self.gasConsumption) + self.minTonsForStorage), "Invalid value");
-    //     // Burn tokens
-    //     send(SendParameters{
-    //             to: self.master,
-    //             value: 0,
-    //             mode: SendRemainingValue,
-    //             bounce: true,
-    //             body: TokenBurnNotification{
-    //                 queryId: msg.queryId,
-    //                 amount: msg.amount,
-    //                 owner: self.owner,
-    //                 responseAddress: self.owner
-    //             }.toCell()
-    //         }
-    //     );
-    // }
+    receive(msg: TokenTransferInternalDex){
+        // Check sender
+        let ctx: Context = context();
+        if (ctx.sender != self.master) {
+            let sinit: StateInit = initOf UsdTonWallet(self.master, msg.from);
+            require(contractAddress(sinit) == ctx.sender, "Invalid sender");
+        }
+        // Update balance
+        self.balance = (self.balance + msg.amount);
+        require(self.balance >= 0, "Invalid balance");
+        // оповещение об успешной покупке
+        send(SendParameters{
+                to: msg.responseAddress!!,
+                value: 0,
+                mode: SendRemainingValue,
+                bounce: false,
+                body: DexNotification{amount: msg.amount, position: msg.notificationAddress!!}.toCell()
+            }
+        );
+    }
 
     bounced(msg: Slice){
         // Parse bounced message
@@ -130,26 +137,6 @@ contract UsdTonWallet
         require(op == 0x178d4519 || op == 0x7bdd97de, "Invalid bounced message");
         // Update balance
         self.balance = (self.balance + jettonAmount);
-    }
-
-    receive(msg: SellUsdt){
-        require(sender() == self.master, "Invalid sender");
-        // todo add bounced handler in master
-        require((self.balance - msg.amount) >= 0, "Invalid balance");
-        self.balance = (self.balance - msg.amount);
-        send(SendParameters{
-                to: self.master,
-                value: 0,
-                mode: (SendRemainingValue + SendIgnoreErrors),
-                bounce: true,
-                body: SellNotification{
-                    amount: msg.amount,
-                    price: msg.price,
-                    user: msg.user,
-                    userPosition: msg.userPosition
-                }.toCell()
-            }
-        );
     }
 
     // usdTon related method
@@ -175,7 +162,14 @@ contract UsdTonWallet
                 value: 0,
                 mode: (SendRemainingValue + SendIgnoreErrors),
                 bounce: true,
-                body: BurnNotification{amount: msg.amount, user: msg.user, userPosition: msg.userPosition}.toCell()
+                body: BurnNotification{
+                    amount: msg.amount,
+                    user: msg.user,
+                    reservePool: msg.reservePool,
+                    withdrawalAmount: msg.withdrawalAmount,
+                    fee: msg.fee,
+                    notificationAddress: msg.notificationAddress
+                }.toCell()
             }
         );
     }

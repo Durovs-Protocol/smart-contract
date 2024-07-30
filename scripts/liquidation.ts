@@ -4,7 +4,6 @@ import { loadAddress, log, timer } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { UsdTonMaster } from '../wrappers/UsdTon';
 import { UserPosition } from '../wrappers/UserPosition';
-import { liquidationGas } from '../utils/data';
 
 export async function run(provider: NetworkProvider) {
     const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
@@ -27,7 +26,7 @@ export async function run(provider: NetworkProvider) {
 
     await manager.send(
         user,
-        { value: toNano(liquidationGas) },
+        { value: toNano(1) },
         {
             $$type: 'PositionLiquidationInspectorMessage',
             user: Address.parse(process.env.USER_WALLET_ADDRESS!),
@@ -37,5 +36,5 @@ export async function run(provider: NetworkProvider) {
     await timer('Position liquidation', 'Ликвидация позиции', 'position liquidated', getMessage, true);
     console.log('total supply after', fromNano(await usdTon.getTotalSupply()));
 
-    console.log(await userPosition.getLiquidationParams());
+    // console.log(await userPosition.getLiquidationParams());
 }

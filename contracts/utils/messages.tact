@@ -1,42 +1,31 @@
-struct PoolSettings {
-    liquidationRatio: Int;
-    stabilityFeeRate: Int;
-    liquidationFee: Int;
-    minHealthRate: Int;
-}
 message DepositCollateralMessage {
     user: Address;
     amount: Int as coins;
-    settings: PoolSettings;
+    settings: Settings;
     tonPrice: Int as coins;
+}
+message DepositNotification {
+    user: Address;
+    amount: Int as coins;
 }
 message MintUsdTon {
     user: Address;
     amount: Int as uint64;
-    settings: PoolSettings;
+    settings: Settings;
     tonPrice: Int as coins;
 }
 message BurnUsdTONMessage {
     user: Address;
     amount: Int as uint64;
-    settings: PoolSettings;
+    settings: Settings;
     tonPrice: Int as coins;
     deps: Deps;
-}
-message WithdrawCollateralMessage {
-    user: Address;
-    amount: Int as coins;
-    settings: PoolSettings;
-    tonPrice: Int as coins;
+    fee: Int as uint64;
 }
 message FeePayment {
     amount: Int as uint64;
-    user: Address;
 }
-message StabilityFeePayment {
-    amount: Int as uint64;
-    user: Address;
-}
+
 // usdTonMaster messages
 
 struct JettonData {
@@ -76,95 +65,68 @@ message SetPositionAddressMessage {
 message MintMessage {
     user: Address;
     amount: Int as coins;
+    notificationAddress: Address?;
+}
+message OnMintComplete {
+    amount: Int as coins;
 }
 message DexMessage {
-    user: Address;
+    walletOwner: Address;
     amount: Int as coins;
-}
-message DexMessageTon {
-    user: Address;
-    amount: Int as coins;
+    position: Address;
     price: Int;
 }
 message DexNotification {
-    user: Address;
     amount: Int as coins;
+    position: Address;
 }
-message DoStabilizationTon {
-    amount: Int as coins;
-    price: Int as uint64;
-}
-message DoStabilizationUsdton {
-    amount: Int as coins;
-    price: Int as uint64;
-}
-message SellUsdt {
-    user: Address;
-    amount: Int as coins;
-    price: Int as uint64;
-    userPosition: Address;
-}
-message SellNotification {
-    user: Address;
-    amount: Int as coins;
-    price: Int as uint64;
-    userPosition: Address;
+message OnLiquidationComplete {
+    amount: Int;
 }
 message BurnMessage {
     user: Address;
     amount: Int as coins;
-    userPosition: Address;
+    reservePool: Address;
+    withdrawalAmount: Int;
+    fee: Int;
+    notificationAddress: Address?;
 }
+// пересмотреть когда выйдет новая версия
 message BurnNotification {
     user: Address;
     amount: Int as coins;
-    userPosition: Address;
-}
-message UsdTonBurned {
-    user: Address;
-    amount: Int as coins;
-}
-message RunecoinBurned {
-    user: Address;
-    amount: Int as coins;
+    reservePool: Address;
+    withdrawalAmount: Int;
+    fee: Int;
+    notificationAddress: Address?;
 }
 message PositionLiquidationInspectorMessage {
     user: Address;
 }
 message PositionLiquidation {
-    settings: PoolSettings;
+    settings: Settings;
     user: Address;
     tonPrice: Int as coins;
 }
-message RuneTransfer {
-    queryId: Int as uint64;
+message LiquidationPool {
+    position: Address;
+    user: Address;
+    amount: Int;
+    price: Int;
+}
+message UsdTonBurned {
+    user: Address;
     amount: Int as coins;
-    destination: Address;
-    usdton: Address;
-    manager: Address;
-    pool: Address;
-    responseDestination: Address?;
-    customPayload: Cell?;
-    forwardTonAmount: Int as coins;
-    forwardPayload: Slice as remaining;
+    withdrawalAmount: Int;
+    fee: Int;
+    notificationAddress: Address?;
 }
-message RuneTransferInternal {
-    queryId: Int as uint64;
-    amount: Int as coins;
-    from: Address;
-    responseAddress: Address?;
-    forwardTonAmount: Int as coins;
-    forwardPayload: Slice as remaining;
+message OnBurnComplete {
+    ton: Int as coins;
+    usdton: Int as coins;
+    fee: Int;
 }
-message PoolUpdateNotification {
-    newValue: Int as coins;
-}
-message UsdTonUpdateNotification {
-    newValue: Int as coins;
-}
-
 // jetton messages
-
 message(0xf8a7ea5) TokenTransfer {
     queryId: Int as uint64;
     amount: Int as coins;
@@ -181,6 +143,16 @@ message(0x178d4519) TokenTransferInternal {
     responseAddress: Address?;
     forwardTonAmount: Int as coins;
     forwardPayload: Slice as remaining;
+    notificationAddress: Address?;
+}
+message TokenTransferInternalDex {
+    queryId: Int as uint64;
+    amount: Int as coins;
+    from: Address;
+    responseAddress: Address?;
+    forwardTonAmount: Int as coins;
+    forwardPayload: Slice as remaining;
+    notificationAddress: Address?;
 }
 message(0x7362d09c) TokenNotification {
     queryId: Int as uint64;
@@ -188,46 +160,42 @@ message(0x7362d09c) TokenNotification {
     from: Address;
     forwardPayload: Slice as remaining;
 }
-// message(0x595f07bc) TokenBurn {
-//     queryId: Int as uint64;
-//     amount: Int as coins;
-//     owner: Address;
-//     responseAddress: Address?;
-// }
-// message(0x7bdd97de) TokenBurnNotification {
-//     queryId: Int as uint64;
-//     amount: Int as coins;
-//     owner: Address;
-//     responseAddress: Address?;
-// }
 message(0xd53276db) TokenExcesses {
     queryId: Int as uint64;
 }
 message TokenUpdateContent {
     content: Cell?;
 }
-message WithdrawFeesMessage {
-    to: Address;
-    amount: Int as coins;
-}
 message SetDeps {
-    managerAddress: Address;
-    poolAddress: Address;
-    usdTonAddress: Address;
-    runecoinAddress: Address;
+    manager: Address;
+    profitPool: Address;
+    reservePool: Address;
+    usdton: Address;
 }
 struct Deps {
-    managerAddress: Address;
-    poolAddress: Address;
-    usdTonAddress: Address;
-    runecoinAddress: Address;
+    manager: Address;
+    profitPool: Address;
+    reservePool: Address;
+    usdton: Address;
 }
+
 // manager
-message SetPoolSettings {
+
+message SetSettings {
+    reservePool: Int;
+    reserveMin: Int;
+    burnMin: Int;
+    serviceFeePercent: Int;
+    serviceFee: Int;
     liquidationRatio: Int;
-    stabilityFeeRate: Int; // 1000000000625 = X**1.000000000627 every second = 2%/yr., look at ./math/math.tact
-    liquidationFee: Int;
-    minHealthRate: Int;
+}
+struct Settings {
+    reservePool: Int;
+    reserveMin: Int;
+    burnMin: Int;
+    serviceFeePercent: Int;
+    serviceFee: Int;
+    liquidationRatio: Int;
 }
 message UpdateTonPriceMsg {
     price: Int as coins;
@@ -243,12 +211,8 @@ message MintUsdTonMessage {
 message BurnUsdTONUserMessage {
     user: Address;
     amount: Int as coins;
+    fee: Int as uint64;
 }
-message WithdrawCollateralUserMessage {
-    user: Address;
-    amount: Int as coins;
-}
-message Stabilization {
-    rate: Int;
-    usdtonAmount: Int;
+message(0x00000000) CommentReciever {
+    text: String;
 }

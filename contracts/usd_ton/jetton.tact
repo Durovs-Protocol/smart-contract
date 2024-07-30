@@ -22,24 +22,6 @@ trait Jetton with OwnableTransferable {
         self.content = msg.content;
     }
 
-    // receive(msg: TokenBurnNotification){
-    //     // Check wallet
-    //     self.requireWallet(msg.owner);
-    //     // Update supply
-    //     self.totalSupply = (self.totalSupply - msg.amount);
-    //     // Cashback
-    //     if (msg.responseAddress != null) {
-    //         send(SendParameters{
-    //                 to: msg.responseAddress!!,
-    //                 value: 0,
-    //                 bounce: false,
-    //                 mode: (SendRemainingValue + SendIgnoreErrors),
-    //                 body: TokenExcesses{queryId: msg.queryId}.toCell()
-    //             }
-    //         );
-    //     }
-    // }
-
     //
     // Get Methods
     //
@@ -64,31 +46,6 @@ trait Jetton with OwnableTransferable {
     //
     // Private Methods
     //
-
-    fun mint(to: Address, amount: Int, responseAddress: Address) {
-        // Update total supply
-        self.totalSupply = (self.totalSupply + amount);
-        // Create message
-        let winit: StateInit = self.getJettonWalletInit(to);
-        let walletAddress: Address = contractAddress(winit);
-        send(SendParameters{
-                to: walletAddress,
-                value: 0,
-                mode: SendRemainingValue,
-                bounce: false,
-                body: TokenTransferInternal{
-                    amount: amount,
-                    queryId: 0,
-                    from: myAddress(),
-                    responseAddress: responseAddress,
-                    forwardTonAmount: 0,
-                    forwardPayload: emptySlice()
-                }.toCell(),
-                code: winit.code,
-                data: winit.data
-            }
-        );
-    }
 
     fun requireWallet(owner: Address) {
         let ctx: Context = context();

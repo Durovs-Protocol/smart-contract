@@ -3,13 +3,13 @@ import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import '@ton/test-utils';
 import { buildOnchainMetadata } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
-import { Pool } from '../wrappers/Pool';
+import { Pool } from '../wrappers/ReservePool';
 import { Runecoin } from '../wrappers/Runecoin';
 import { RunecoinWallet } from '../wrappers/RunecoinWallet';
 
+import { jettonParams } from '../utils/data';
 import { UsdTonMaster } from '../wrappers/UsdTon';
 import { UserPosition } from '../wrappers/UserPosition';
-import { jettonParams, runecoinParams } from '../utils/data';
 
 describe('UserFlow', () => {
     let blockchain: Blockchain;
@@ -23,7 +23,6 @@ describe('UserFlow', () => {
     let userPosition: SandboxContract<UserPosition>;
 
     beforeAll(async () => {
-
         blockchain = await Blockchain.create();
         deployer = await blockchain.treasury('deployer');
 
@@ -134,7 +133,7 @@ describe('UserFlow', () => {
             deployer.getSender(),
             { value: toNano(1) },
             {
-                $$type: 'SetPoolSettings',
+                $$type: 'SetSettings',
                 liquidationFee: toNano(0.15),
                 liquidationRatio: toNano(1.2),
                 stabilityFeeRate: toNano('0.02'),
@@ -153,22 +152,22 @@ describe('UserFlow', () => {
 
     it('deps set ok', async () => {
         const usdTonDeps = await usdTon.getDeps();
-        expect(usdTonDeps.poolAddress.toString()).toEqual(pool.address.toString());
-        expect(usdTonDeps.managerAddress.toString()).toEqual(manager.address.toString());
+        expect(usdTondeps.resrvePool.toString()).toEqual(pool.address.toString());
+        expect(usdTondeps.manager.toString()).toEqual(manager.address.toString());
 
         const positionsManagerDeps = await manager.getDeps();
-        expect(positionsManagerDeps.poolAddress.toString()).toEqual(pool.address.toString());
-        expect(positionsManagerDeps.usdTonAddress.toString()).toEqual(usdTon.address.toString());
+        expect(positionsManagerdeps.resrvePool.toString()).toEqual(pool.address.toString());
+        expect(positionsManagerdeps.usdton.toString()).toEqual(usdTon.address.toString());
 
         const poolDeps = await pool.getDeps();
-        expect(poolDeps.usdTonAddress.toString()).toEqual(usdTon.address.toString());
-        expect(poolDeps.managerAddress.toString()).toEqual(manager.address.toString());
+        expect(pooldeps.usdton.toString()).toEqual(usdTon.address.toString());
+        expect(pooldeps.manager.toString()).toEqual(manager.address.toString());
     });
 
     it('pool settings set ok', async () => {
-        const poolSettings = await manager.getPoolSettings();
-        expect(poolSettings.liquidationRatio).toEqual(toNano(1.2));
-        expect(poolSettings.stabilityFeeRate).toEqual(toNano('0.02'));
+        const settings = await manager.getSettings();
+        expect(settings.liquidationRatio).toEqual(toNano(1.2));
+        expect(settings.stabilityFeeRate).toEqual(toNano('0.02'));
     });
 
     it('initial price set ok', async () => {

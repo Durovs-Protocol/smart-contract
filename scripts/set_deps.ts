@@ -1,66 +1,72 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
-import { gasFee } from '../utils/data';
+import { setupGas } from '../utils/data';
 import { loadAddress, log, timer } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
-import { Pool } from '../wrappers/Pool';
-import { Runecoin } from '../wrappers/Runecoin';
+import { ProfitPool } from '../wrappers/ProfitPool';
+import { ReservePool } from '../wrappers/ReservePool';
 import { UsdTonMaster } from '../wrappers/UsdTon';
 
 export async function run(provider: NetworkProvider) {
     const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
-    const poolContract = provider.open(await Pool.fromAddress(Address.parse(await loadAddress('pool'))));
-    const runeCoin = provider.open(await Runecoin.fromAddress(Address.parse(await loadAddress('runecoin'))));
+    const profitPool = provider.open(await ProfitPool.fromAddress(Address.parse(await loadAddress('profitPool'))));
+    const reservePool = provider.open(await ReservePool.fromAddress(Address.parse(await loadAddress('reservePool'))));
 
     async function setDeps(contract: any, name: string) {
         log(name.toUpperCase());
         await contract.send(
             provider.sender(),
-            { value: toNano(gasFee) },
+            { value: toNano(setupGas) },
             {
                 $$type: 'SetDeps',
-                managerAddress: manager.address,
-                poolAddress: poolContract.address,
-                usdTonAddress: usdTon.address,
-                runecoinAddress: runeCoin.address,
+                manager: manager.address,
+                profitPool: profitPool.address,
+                reservePool: reservePool.address,
+                usdton: usdTon.address,
             },
         );
 
         await timer(`Setup manager address`, `Set deps in ${name}`, manager.address, managerAddress(contract));
-        await timer(`Setup pool address`, `Set deps in ${name}`, poolContract.address, poolAddress(contract));
+        await timer(
+            `Setup reservePool address`,
+            `Set deps in ${name}`,
+            reservePool.address,
+            reservePoolAddress(contract),
+        );
+        await timer(`Setup profitPool address`, `Set deps in ${name}`, profitPool.address, profitPoolAddress(contract));
         await timer(`Setup stable address`, `Set deps in ${name}`, usdTon.address, usdTonAddress(contract));
-        await timer(`Setup runeCoin address`, `Set deps in ${name}`, runeCoin.address, runecoinAddress(contract));
     }
 
     await setDeps(usdTon, 'usdTon');
     await setDeps(manager, 'manager');
-    await setDeps(poolContract, 'pool');
+    await setDeps(reservePool, 'reservePool');
+    await setDeps(profitPool, 'profitPool');
     log('Deps installed successfully');
 }
 
 const managerAddress = function (contract: any) {
     return async function () {
         const deps = await contract.getDeps();
-        return deps.managerAddress.toString();
+        return deps.manager.toString();
     };
 };
-const poolAddress = function (contract: any) {
+
+const reservePoolAddress = function (contract: any) {
     return async function () {
         const deps = await contract.getDeps();
-        return deps.poolAddress.toString();
+        return deps.reservePool.toString();
+    };
+};
+const profitPoolAddress = function (contract: any) {
+    return async function () {
+        const deps = await contract.getDeps();
+        return deps.profitPool.toString();
     };
 };
 const usdTonAddress = function (contract: any) {
     return async function () {
         const deps = await contract.getDeps();
-        return deps.usdTonAddress.toString();
-    };
-};
-
-const runecoinAddress = function (contract: any) {
-    return async function () {
-        const deps = await contract.getDeps();
-        return deps.runecoinAddress.toString();
+        return deps.usdton.toString();
     };
 };

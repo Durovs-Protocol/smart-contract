@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
+import { addSupplyAmount } from '../utils/data';
 import { loadAddress, log, timer } from '../utils/helpers';
-import { addSupplyAmount, addSupplyGas } from '../utils/data';
 import { Manager } from '../wrappers/Manager';
 
 export async function run(provider: NetworkProvider) {
@@ -13,10 +13,10 @@ export async function run(provider: NetworkProvider) {
     const collateralAmount = toNano(addSupplyAmount);
     const currentPositionId = await manager.getLastPositionId();
 
-    // тут передан оптимальный газ
+    // передаем везде газ 1, после получим возврат
     await manager.send(
         user,
-        { value: collateralAmount + toNano(addSupplyGas) },
+        { value: collateralAmount + toNano(1) },
         {
             $$type: 'DepositCollateralUserMessage',
             user: user.address as Address,
@@ -28,6 +28,6 @@ export async function run(provider: NetworkProvider) {
     if (currentPositionId <= 0) {
         await timer(`Position Id`, 'Внесение обеспечения', currentPositionId + 1n, manager.getLastPositionId);
     } else {
-        log('Без проверки supply баланса')
+        log('Без проверки supply баланса');
     }
 }

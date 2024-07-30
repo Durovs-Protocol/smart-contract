@@ -1,6 +1,14 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
-import { gasFee, liquidationFee, liquidationRatio, minHealthRate, stabilityFeeRate } from '../utils/data';
+import {
+    burnMin,
+    liquidationRatio,
+    reserveMin,
+    reservePool,
+    serviceFee,
+    serviceFeePercent,
+    setupGas,
+} from '../utils/data';
 import { loadAddress, timer } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 
@@ -8,22 +16,24 @@ export async function run(provider: NetworkProvider) {
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
 
     let getliquidRatio = async function () {
-        const settings = await manager.getPoolSettings();
-        const liquidationRatio = settings.liquidationRatio;
-        return liquidationRatio;
+        const settings = await manager.getSettings();
+        const reservePool = settings.reservePool;
+        return reservePool;
     };
 
     await manager.send(
         provider.sender(),
-        { value: toNano(gasFee) },
+        { value: toNano(setupGas) },
         {
-            $$type: 'SetPoolSettings',
+            $$type: 'SetSettings',
+            reservePool: toNano(reservePool), // 100/80
+            reserveMin: toNano(reserveMin), // $
+            burnMin: toNano(burnMin), // $
+            serviceFeePercent: toNano(serviceFeePercent),
+            serviceFee: toNano(serviceFee), // $
             liquidationRatio: toNano(liquidationRatio),
-            stabilityFeeRate: toNano(stabilityFeeRate),
-            liquidationFee: toNano(liquidationFee),
-            minHealthRate: toNano(minHealthRate),
         },
     );
 
-    await timer(`liquid ratio`, 'Настройка пула', toNano(liquidationRatio), getliquidRatio);
+    await timer(`reserve pool`, 'Настройка пула', toNano(1.25), getliquidRatio);
 }

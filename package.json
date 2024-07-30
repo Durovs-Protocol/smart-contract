@@ -6,20 +6,20 @@
         "run-script": "npx blueprint run --testnet --mnemonic --tonviewer",
         "action": "blueprint run",
         "blueprint-build": "blueprint build",
-        "build": "rm -rf build && blueprint build manager && blueprint build pool  && blueprint build usdTon  && blueprint build userPosition && blueprint build usdTonWallet && blueprint build runecoin && blueprint build runecoinWallet && blueprint build runeInfo && blueprint build fakeWallet",
+        "build": "rm -rf build && blueprint build manager && blueprint build profitPool && blueprint build reservePool && blueprint build usdTon  && blueprint build userPosition && blueprint build usdTonWallet",
 
         "test": "jest --verbose",
 
         "install": "yarn build && yarn deploy && yarn setup",
 
-        "deploy-pool": "yarn run-script deploy_pool",
+        "deploy-profit": "yarn run-script deploy_profit",
+        "deploy-reserve": "yarn run-script deploy_reserve",
+
         "deploy-manager": "yarn run-script deploy_manager",
         "deploy-usdton": "yarn run-script deploy_usd_ton",
-        "deploy-runes": "yarn run-script deploy_runecoin",
 
-        "deploy": "yarn deploy-pool && yarn deploy-manager && yarn deploy-usdton",
+        "deploy": "yarn deploy-reserve && yarn deploy-profit && yarn deploy-usdton && yarn deploy-manager",
 
-        
         "set-deps": "yarn run-script set_deps",
         "set-settings": "yarn run-script set_settings",
         "set-price": "yarn run-script set_price",
@@ -39,10 +39,9 @@
         "withdraw": "yarn run-script withdraw",
         "liquidation": "yarn run-script liquidation",
 
-        "info-access": "yarn run-script info_access",
-        "info-system": "yarn run-script info_system",
-        "info-user": "yarn run-script info_user",
-        "info-rune": "yarn run-script info_rune",
+        "info-access": "yarn run-script !nfo_access",
+        "info-system": "yarn run-script !nfo_system",
+        "info-user": "yarn run-script !nfo_user",
 
         "stabilization": "yarn run-script stabilization",
 
