@@ -1,15 +1,15 @@
 /**
  * Общие настройки
  */
-export const tonPrice: number = 7.5;
+export const tonPrice: number = 6.5;
 export const gas: number = 1;
 export const setupGas: number = 0.03;
-export const liquidationRatio: number = 0.9;
-export const reservePool: number = 1.1;
-export const reserveMin: number = 10;
-export const burnMin: number = 10;
+export const liquidationRatio: number = 1;
+export const reservePool: number = 1.5;
+export const reserveMin: number = 5; // $
+export const burnMin: number = 1; // $
 export const serviceFeePercent: number = 0.1;
-export const serviceFee: number = 10;
+export const serviceFee: number = 2; // $
 
 /**
  * Supply
@@ -18,11 +18,11 @@ export const addSupplyAmount: number = 1;
 /**
  * Mint
  */
-export const mintAmount: number = 6.8; // Минт, отправка на кошелек, обновление UserPosition
+export const mintAmount: number = tonPrice; // Минт, отправка на кошелек, обновление UserPosition
 /**
  * Burn
  */
-export const burnAmount: number = 6.8;
+export const burnAmount: number = tonPrice;
 /**
  * Withdraw
  */

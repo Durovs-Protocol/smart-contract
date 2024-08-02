@@ -106,8 +106,8 @@ contract Manager with Deployable, OwnableTransferable {
     receive(msg: DepositCollateralUserMessage){
         require(sender() == msg.user, "Invalid sender");
         let ctx: Context = context();
-        require(ctx.value >= ((msg.amount + self.GasConsumption) + self.MinTonForStorage), "not enough tons sent");
-        require(msg.amount < self.settings.reserveMin, "tons amount is less than minimum possible");
+        require(ctx.value >= ((msg.amount + self.GasConsumption) + self.MinTonForStorage), "not enough TONs sent");
+        require(msg.amount < self.settings.reserveMin, "TONs amount is less than minimum possible");
 
         //TODO рассчитать газ для всех дальнейших операций сразу
 
