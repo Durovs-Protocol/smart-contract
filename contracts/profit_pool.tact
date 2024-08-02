@@ -42,9 +42,9 @@ contract ProfitPool with Deployable, OwnableTransferable {
         // TODO: обмен через DEX на RUNA
     }
 
-    receive(msg: CommentReciever){
-        // приимаем остатки тона потраченного на газ вместе с комментарием
-    }
+    // receive(msg: CommentReciever){
+    //     // приимаем остатки тона потраченного на газ вместе с комментарием
+    // }
 
     //=============================================================================
     // Helpers
