@@ -33,17 +33,12 @@ export async function run(provider: NetworkProvider) {
     let tonPrice = await manager.getTonPrice();
 
     log(
-        'Reserve pool:  ' +
-            fromNano(settings.reservePool) +
-            '\nReserve min: ' +
-            fromNano(settings.reserveMin) +
-            '\nService fee percent:' +
-            fromNano(settings.serviceFeePercent) +
-            '\nService fee min:' +
-            fromNano(settings.serviceFee) +
-            '\nTon price:' +
-            fromNano(tonPrice) +
-            '\nBurn min:' +
-            fromNano(settings.burnMin),
+        'Reserve pool %:      ' + fromNano(settings.reservePool) +
+        
+        '\nReserve min (ton): ' + fromNano(settings.reserveMin)  +
+        '\nService fee %:     ' + fromNano(settings.serviceFeePercent) +
+        '\nService fee min:   ' + fromNano(settings.serviceFee) +
+        '\nTon price:         ' + fromNano(tonPrice) + ' $' +
+        '\nBurn min (ton):    ' + fromNano(settings.burnMin),
     );
 }

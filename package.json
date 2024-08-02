@@ -1,5 +1,5 @@
 {
-    "name": "wallet-loans",
+    "name": "runa-protocol",
     "version": "1.0.0",
     "private": true,
     "scripts": {
@@ -12,11 +12,11 @@
 
         "install": "yarn build && yarn deploy && yarn setup",
 
-        "deploy-profit": "yarn run-script deploy_profit",
         "deploy-reserve": "yarn run-script deploy_reserve",
+        "deploy-profit": "yarn run-script deploy_profit",
 
-        "deploy-manager": "yarn run-script deploy_manager",
         "deploy-usdton": "yarn run-script deploy_usd_ton",
+        "deploy-manager": "yarn run-script deploy_manager",
 
         "deploy": "yarn deploy-reserve && yarn deploy-profit && yarn deploy-usdton && yarn deploy-manager",
 
@@ -39,9 +39,9 @@
         "withdraw": "yarn run-script withdraw",
         "liquidation": "yarn run-script liquidation",
 
-        "info-access": "yarn run-script !nfo_access",
-        "info-system": "yarn run-script !nfo_system",
-        "info-user": "yarn run-script !nfo_user",
+        "info-access": "yarn run-script info_access",
+        "info-system": "yarn run-script info_system",
+        "info-user": "yarn run-script info_user",
 
         "stabilization": "yarn run-script stabilization",
 

@@ -11,14 +11,15 @@ export async function run(provider: NetworkProvider) {
         return await manager.getTonPrice();
     };
 
+    const newTonPrice = toNano(tonPrice);
+
     await manager.send(
         provider.sender(),
         { value: toNano(setupGas) },
         {
             $$type: 'UpdateTonPriceMsg',
-            price: toNano(6),
-            //6//tonPrice
+            price: newTonPrice,
         },
     );
-    await timer(`ton price`, 'Настройка стоимости ton', tonPrice, getCurrentTonPrice, true);
+    await timer(`ton price`, 'Настройка стоимости ton', newTonPrice, getCurrentTonPrice, true);
 }

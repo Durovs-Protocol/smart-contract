@@ -6,7 +6,7 @@ export const gas: number = 1;
 export const setupGas: number = 0.03;
 export const liquidationRatio: number = 1;
 export const reservePool: number = 1.5;
-export const reserveMin: number = 5; // $
+export const reserveMin: number = 1; // TON
 export const burnMin: number = 1; // $
 export const serviceFeePercent: number = 0.1;
 export const serviceFee: number = 2; // $
@@ -14,7 +14,7 @@ export const serviceFee: number = 2; // $
 /**
  * Supply
  */
-export const addSupplyAmount: number = 1;
+export const addSupplyAmount: number = 1.1;
 /**
  * Mint
  */
