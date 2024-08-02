@@ -1,6 +1,6 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
-import { addSupplyAmount } from '../utils/data';
+import { addSupplyAmount, gas } from '../utils/data';
 import { loadAddress, log, timer } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 
@@ -16,7 +16,7 @@ export async function run(provider: NetworkProvider) {
     // передаем везде газ 1, после получим возврат
     await manager.send(
         user,
-        { value: collateralAmount + toNano(1) },
+        { value: collateralAmount + toNano(gas) },
         {
             $$type: 'DepositCollateralUserMessage',
             user: user.address as Address,
