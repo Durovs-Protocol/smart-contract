@@ -37,7 +37,7 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     //=============================================================================
-    // Settings
+    // Set Deps
     //=============================================================================
     receive(msg: SetDeps){
         self.requireOwner();
@@ -50,6 +50,9 @@ contract Manager with Deployable, OwnableTransferable {
         self.reply("manager's dependencies set".asComment());
     }
 
+    //=============================================================================
+    // Set Settings
+    //=============================================================================
     receive(msg: SetSettings){
         self.requireOwner();
         self.settings = Settings{
@@ -107,7 +110,7 @@ contract Manager with Deployable, OwnableTransferable {
         require(sender() == msg.user, "Invalid sender");
         let ctx: Context = context();
         require(ctx.value >= ((msg.amount + self.GasConsumption) + self.MinTonForStorage), "not enough TONs sent");
-        require(msg.amount < self.settings.reserveMin, "TONs amount is less than minimum possible");
+        require(msg.amount >= self.settings.reserveMin, "TONs amount is less than minimum possible");
 
         //TODO рассчитать газ для всех дальнейших операций сразу
 
@@ -170,7 +173,7 @@ contract Manager with Deployable, OwnableTransferable {
 
     /*03 | Burn usdTON */
     receive(msg: BurnUsdTONUserMessage){
-        require(msg.amount < self.settings.burnMin, "burn amount is less than minimum possible");
+        require(msg.amount >= self.settings.burnMin, "burn amount is less than minimum possible");
         send(SendParameters{
                 to: self._userPositionAddress(msg.user),
                 value: 0,

@@ -9,24 +9,26 @@ export const reservePool: number = 1.5;
 export const reserveMin: number = 1; // TON
 export const burnMin: number = 1; // $
 export const serviceFeePercent: number = 0.1;
-export const serviceFee: number = 2; // $
+export const serviceFee: number = 1; // $
 
 /**
  * Supply
  */
 export const addSupplyAmount: number = 1.1;
+
 /**
  * Mint
  */
-export const mintAmount: number = tonPrice; // Минт, отправка на кошелек, обновление UserPosition
+export const mintAmount: number = Number((tonPrice / reservePool).toFixed(2)); // Минт, отправка на кошелек, обновление UserPosition
+
 /**
  * Burn
  */
-export const burnAmount: number = tonPrice;
+export const burnAmount: number = 4.2867;//mintAmount;
 /**
  * Withdraw
  */
-export const withdrawAmount: number = 1;
+export const withdrawAmount: number = addSupplyAmount;
 /**
  * Liquidation
  */

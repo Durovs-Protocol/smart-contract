@@ -19,14 +19,10 @@ export async function run(provider: NetworkProvider) {
     const reservePool = provider.open(await ReservePool.fromAddress(Address.parse(await loadAddress('reservePool'))));
 
     log(
-        'Manager address: ' +
-            manager.address.toString() +
-            '\nprofit pool address   : ' +
-            profitPool.address.toString() +
-            '\nreserve pool address : ' +
-            reservePool.address.toString() +
-            '\nusdTon address : ' +
-            usdTon.address.toString(),
+        'Manager:        ' + manager.address.toString() +
+        '\nprofit pool:  ' + profitPool.address.toString() +
+        '\nreserve pool: ' + reservePool.address.toString() +
+        '\nusdTon:       ' + usdTon.address.toString(),
     );
 
     let settings = await manager.getSettings();

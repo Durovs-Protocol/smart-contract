@@ -92,7 +92,7 @@ contract UserPosition  {
     // }
     receive(msg: DepositCollateralMessage) {
 
-        require(sender() == self.manager, "not from positionsManager");
+        // require(sender() == self.manager, "not from positionsManager");
         let remainingValue: Int = myBalance() - (self.MinTonsForStorage + self.GasConsumption);
         if (remainingValue < msg.amount) {
             self.errorHandler("not enough tone for deposit and service fee");
@@ -152,14 +152,14 @@ contract UserPosition  {
         require(sender() == self.manager, "not from position manager");
 
         if (self.debt < ((msg.settings.burnMin * 1000000000) / msg.tonPrice)) {
-        send(SendParameters {
-            to: self.user, 
-            value: 0,
-            bounce: false,
-            mode: SendIgnoreErrors,
-            body: "Your debt is less than minimum possible".asComment()
-        });
-        return;
+            send(SendParameters {
+                to: self.user, 
+                value: 0,
+                bounce: false,
+                mode: SendIgnoreErrors,
+                body: "Your debt is less than minimum possible".asComment()
+            });
+            return;
         }
         let amountToBurn: Int = msg.amount;
         // todo add bounced handler in sender to pay ctx.value back to sender

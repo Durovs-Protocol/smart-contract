@@ -1,6 +1,6 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
-import { burnAmount } from '../utils/data';
+import { burnAmount, gas, serviceFee, serviceFeePercent, tonPrice } from '../utils/data';
 import { loadAddress, log, timer } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { UserPosition } from '../wrappers/UserPosition';
@@ -8,8 +8,8 @@ import { UserPosition } from '../wrappers/UserPosition';
 export async function run(provider: NetworkProvider) {
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const user = provider.sender();
-
-    log('03 | Пользователь возвращает usdTon | Burn amount: ' + burnAmount);
+    const burn = toNano(burnAmount);
+    log('03 | Пользователь возвращает usdTon | Burn amount: ' + burn);
 
     const getDebtBalance = async function () {
         const userPositionAddress = await manager.getUserPositionAddress(user.address as Address);
@@ -20,18 +20,24 @@ export async function run(provider: NetworkProvider) {
 
     let usdTonBalance = await getDebtBalance();
     //комиссия за операцию
-    const fee: number = (6.8 * 0.01 >= 10 ? 6.8 * 0.01 : 10) / 7.5;
+    const fee: number = 
+        burnAmount * serviceFeePercent >= serviceFee ? 
+        burnAmount * serviceFeePercent :
+        serviceFee;
+
+    console.log('BurnAmount: ', burnAmount);
+    console.log('Fee: ', fee);
 
     await manager.send(
         user,
-        { value: toNano(1 + fee) },
+        { value: toNano(gas + fee) },
         {
             $$type: 'BurnUsdTONUserMessage',
             user: user.address as Address,
-            amount: toNano(6.8),
+            amount: burn,
             fee: toNano(fee),
         },
     );
 
-    await timer('User stable balance', 'Погашение задолжности', usdTonBalance - toNano(6.8), getDebtBalance, true);
+    await timer('User stable balance', 'Погашение задолжности', usdTonBalance - burn, getDebtBalance, true);
 }
