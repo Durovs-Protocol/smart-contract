@@ -22,7 +22,7 @@ export const addSupplyAmount: number = 1.1;
 export const mintAmount: number = Number((tonPrice / reservePool).toFixed(2)); // Минт, отправка на кошелек, обновление UserPosition
 
 /**
- * Burn
+ * Burnx
  */
 export const burnAmount: number = 4.2867;//mintAmount;
 /**
@@ -52,7 +52,7 @@ export const runecoinParams = {
 
 export const usdTONJettonParams = {
     name: `ton-usd-${Date.now()}`,
-    symbol: 'TUSD',
+    symbol: 'RunaUSD',
     description: 'Algorithmic Stable coin (USD) on TON',
     image: 'https://ipfs.io/ipfs/QmPSGcz4TyDo3qShEymZRQRavKKRRbiLPHYs9GUgbtwEwx',
 };
@@ -62,7 +62,7 @@ export const usdTONJettonParams = {
  */
 export const testJettonParams = {
     name: `ton-usd-${Date.now()}`,
-    symbol: 'TUSD',
+    symbol: 'RunaUSD',
     description: 'Algorithmic Stable coin (USD) on TON',
     image: '',
 };
