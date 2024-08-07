@@ -14,12 +14,12 @@ export async function run(provider: NetworkProvider) {
     const currentPositionId = await manager.getLastPositionId();
 
     // передаем везде газ 1, после получим возврат
+
     await manager.send(
         user,
         { value: collateralAmount + toNano(gas) },
         {
-            $$type: 'DepositCollateralUserMessage',
-            user: user.address as Address,
+            $$type: 'DepositMessage',
             amount: collateralAmount,
         },
     );

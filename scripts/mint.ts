@@ -21,7 +21,6 @@ export async function run(provider: NetworkProvider) {
         { value: toNano(1) },
         {
             $$type: 'MintUsdTonMessage',
-            user: user.address as Address,
             amount: usdtonsBorrowed,
         },
     );

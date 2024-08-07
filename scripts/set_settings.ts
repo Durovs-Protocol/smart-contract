@@ -4,7 +4,7 @@ import {
     burnMin,
     liquidationRatio,
     reserveMin,
-    reservePool,
+    reserveRatio,
     serviceFee,
     serviceFeePercent,
     setupGas,
@@ -17,8 +17,8 @@ export async function run(provider: NetworkProvider) {
 
     let getliquidRatio = async function () {
         const settings = await manager.getSettings();
-        const reservePool = settings.reservePool;
-        return reservePool;
+        const reserveRatio = settings.reserveRatio;
+        return reserveRatio;
     };
 
     await manager.send(
@@ -26,7 +26,7 @@ export async function run(provider: NetworkProvider) {
         { value: toNano(setupGas) },
         {
             $$type: 'SetSettings',
-            reservePool: toNano(reservePool), // 100/80
+            reserveRatio: toNano(reserveRatio), // 100/80
             reserveMin: toNano(reserveMin), // $
             burnMin: toNano(burnMin), // $
             serviceFeePercent: toNano(serviceFeePercent),
