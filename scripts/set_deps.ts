@@ -5,10 +5,12 @@ import { loadAddress, log, timer } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { ProfitPool } from '../wrappers/ProfitPool';
 import { ReservePool } from '../wrappers/ReservePool';
+import { RunaCoupon } from '../wrappers/RunaCoupon';
 import { UsdTonMaster } from '../wrappers/UsdTon';
 
 export async function run(provider: NetworkProvider) {
     const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
+    const runaCoupon = provider.open(await RunaCoupon.fromAddress(Address.parse(await loadAddress('runaCoupon'))));
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const profitPool = provider.open(await ProfitPool.fromAddress(Address.parse(await loadAddress('profitPool'))));
     const reservePool = provider.open(await ReservePool.fromAddress(Address.parse(await loadAddress('reservePool'))));
@@ -24,6 +26,7 @@ export async function run(provider: NetworkProvider) {
                 profitPool: profitPool.address,
                 reservePool: reservePool.address,
                 usdton: usdTon.address,
+                runaCoupon: runaCoupon.address,
             },
         );
 

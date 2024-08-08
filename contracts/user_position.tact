@@ -30,6 +30,7 @@ contract UserPosition  {
     profitPool: Address;
     debt: Int;
     debtBeforeBurn: Int = 0;
+    accrualedJettons: Int = 0;
     collateral: Int;
     collateralBefore: Int = 0;
     message: Message;
@@ -77,8 +78,8 @@ contract UserPosition  {
     //=============================================================================
     // Actions
     //=============================================================================
-    /*01 | Deposit TON */
-    // receive(msg: DepositNotification) {
+    /*01 | Supply TON */
+    // receive(msg: SupplyNotification) {
     //     require(sender() == self.reservePool, "not from reserve pool");
     //     self.collateral = self.collateral + msg.amount;
     //     let remainingValue: Int = myBalance() - (self.MinTonsForStorage + self.GasConsumption);
@@ -90,7 +91,7 @@ contract UserPosition  {
     //         body: "Collateral added".asComment()
     //     });
     // }
-    receive(msg: DepositCollateralMessage) {
+    receive(msg: Supply) {
 
         // require(sender() == self.manager, "not from positionsManager");
         let remainingValue: Int = myBalance() - (self.MinTonsForStorage + self.GasConsumption);
@@ -109,7 +110,7 @@ contract UserPosition  {
         self.collateral = self.collateral + msg.amount;
     }
 
-    bounced(msg: bounced<DepositCollateralMessage>) {
+    bounced(msg: bounced<Supply>) {
         self.collateral = self.collateralBefore;
         self.bouncedHandler();
     }
@@ -133,7 +134,7 @@ contract UserPosition  {
             body: MintMessage{
                 user: msg.user,
                 amount: msg.amount,
-                notificationAddress: myAddress()
+                notificationAddress: myAddress(),
             }.toCell()
         });
 
@@ -141,35 +142,48 @@ contract UserPosition  {
     }
 
     receive(msg: OnMintComplete) {
+        let comment: StringBuilder = beginString();
+
         self.debt += msg.amount;
+        comment.append("Runa Protocol: You have minted");
+        comment.append(msg.amount.toString());
+     
+        send(SendParameters {
+            to: self.user, 
+            value: 0,
+            mode: SendRemainingValue + SendIgnoreErrors,
+            bounce: false,
+            body: comment.toString().asComment()
+        });
     }
+
     bounced(msg: bounced<MintMessage>) {
         self.bouncedHandler();
     }
 
     /*03 | Burn usdTON */
-    receive(msg: BurnUsdTONMessage) {
+    receive(msg: BurnUsdTon) {
         require(sender() == self.manager, "not from position manager");
 
-        if (self.debt < ((msg.settings.burnMin * 1000000000) / msg.tonPrice)) {
-            send(SendParameters {
-                to: self.user, 
-                value: 0,
-                bounce: false,
-                mode: SendIgnoreErrors,
-                body: "Your debt is less than minimum possible".asComment()
-            });
-            return;
-        }
         let amountToBurn: Int = msg.amount;
         // todo add bounced handler in sender to pay ctx.value back to sender
         if (self.debt < msg.amount) {
             self.setMessage("Your debt is less than you want to repay, charge sent back");
             amountToBurn = self.debt;
         }
+        if (amountToBurn < ((msg.settings.burnMin * 1000000000) / msg.tonPrice)) {
+            send(SendParameters {
+                to: self.user, 
+                value: 0,
+                mode: SendRemainingValue + SendIgnoreErrors,
+                bounce: false,
+                body: "Your debt is less than minimum possible".asComment()
+            });
+            return;
+        }
+        
 
-
-        let withdrawalAmount: Int = (msg.amount * msg.settings.reservePool) /  msg.tonPrice;
+        let withdrawalAmount: Int = (msg.amount * msg.settings.reserveRatio) /  msg.tonPrice;
 
         self.setMessage("stables are going to burn...");
         // осталвяем средства для оплаты комиссии на балансе, также оставляем средства для оплаты газа 
@@ -190,16 +204,49 @@ contract UserPosition  {
             }.toCell()
         });
     }
-
+    bounced(msg: bounced<BurnMessage>) {
+        self.bouncedHandler();
+    }
     receive(msg: OnBurnComplete) {
     self.debt = self.debt - msg.usdton;
-    self.collateral = self.collateral - msg.ton;
-    let unusedTonFee: Int = myBalance() - (msg.ton + msg.fee + self.MinTonsForStorage + (self.GasConsumption * 2));
-    send(SendParameters{to: self.user, value: msg.ton + unusedTonFee, mode: SendIgnoreErrors + SendPayGasSeparately, bounce: false});
-    send(SendParameters{to: self.profitPool, value: msg.fee, mode: SendPayGasSeparately, bounce: false, body: FeePayment{amount: msg.fee}.toCell()});
+    let remainingValue: Int = myBalance() - (self.MinTonsForStorage + self.GasConsumption + msg.fee); 
+    send(SendParameters{to: self.profitPool, value: msg.fee + remainingValue,  bounce: false, body: FeePayment{amount: msg.fee, user: self.user}.toCell()});
     }
 
-    bounced(msg: bounced<BurnMessage>) {
+    
+    receive(msg: Withdraw) {
+        require(sender() == self.manager, "not from position manager");
+
+        let collateralAfterWithdraw: Int = self.collateral - msg.amount;
+        
+        if (!self.isHealthyForWithdraw(collateralAfterWithdraw, self.debt, msg.tonPrice, msg.settings)) {
+            self.unhealthyPositionHandler(msg.user);
+            return;
+        }
+
+        let remainingValue: Int = myBalance() - (self.MinTonsForStorage + self.GasConsumption); 
+        send(SendParameters{
+            to: self.reservePool,
+            value: remainingValue,
+            bounce: true,
+            mode: SendBounceIfActionFail,
+            body: WithdrawRequest {
+                amount: msg.amount
+            }.toCell()
+        });
+    }
+
+    receive(msg: WithdrawResponce) {
+    self.collateral -=  msg.amount;
+
+    let ctx: Context = context();
+    let remainingValue: Int = ctx.value - (self.MinTonsForStorage + (self.GasConsumption * 2) + msg.amount); 
+    send(SendParameters{to: self.user, value: msg.amount, mode: SendIgnoreErrors + SendPayGasSeparately, bounce: false});
+    send(SendParameters{to: self.user, value: remainingValue, bounce: false});
+    }
+
+
+    bounced(msg: bounced<Withdraw>) {
         self.bouncedHandler();
     }
         /*05 | Ликвидация (from manager)'*/
@@ -274,14 +321,74 @@ contract UserPosition  {
     receive(msg: TokenExcesses) {
         self.collateral = self.collateralBefore;
     }
+    
+    receive(msg: AccrualJetton) {
 
+        let myPercent: Int = self.collateral * 1000000000 / msg.total;
+        let myPart: Int = (myPercent * msg.total) / 1000000000;
+        let comment: StringBuilder = beginString();
+        comment.append("Runa protokol: you recieved runa-usdton:");
+        comment.append(self.accrualedJettons.toString());
+        self.accrualedJettons += myPart;
+            send(SendParameters{
+                to: self.user,
+                bounce: false,
+                value: 0,
+                mode: SendIgnoreErrors ,
+                body: comment.toString().asComment()
+            }
+            
+        );
+    }
+    receive(msg: GetAccrual) {
+        require(sender() == self.manager, "not from position Manager");
+        send(SendParameters{
+            to: self.usdton, 
+            value: 0,
+            mode: (SendRemainingValue + SendBounceIfActionFail), 
+            bounce: true,
+            body: AccrualMessage {
+                user: self.user,
+                amount: self.accrualedJettons,
+                notificationAddress: myAddress(),
+            }.toCell()
+        });
 
+        self.setMessage("UsdToncoins sent");
+    }
+    
+    receive(msg: OnAccrualComplete) {
+        let comment: StringBuilder = beginString();
+
+        self.accrualedJettons = 0;
+        comment.append("Runa Protocol: You have recieved incentive payment:");
+        comment.append(msg.amount.toString());
+        
+        send(SendParameters {
+            to: self.user, 
+            value: 0,
+            mode: SendRemainingValue + SendIgnoreErrors,
+            bounce: false,
+            body: comment.toString().asComment()
+        });
+    }
+    
     //=============================================================================
     // Helpers
     //=============================================================================
 
     fun isHealthyForMint(collateral: Int, debt: Int, tonPrice: Int, settings: Settings): Bool {
-        return (collateral * tonPrice / 1000000000)  >= debt * settings.reservePool / 1000000000;
+        if (collateral == 0) {
+            return false;
+        }
+        return (collateral * tonPrice / 1000000000)  >= debt * settings.reserveRatio / 1000000000;
+    }
+    fun isHealthyForWithdraw(collateral: Int, debt: Int, tonPrice: Int, settings: Settings): Bool {
+        if (debt == 0) {
+            return true;
+        }
+        
+        return collateral * tonPrice / self.debt >= settings.liquidationRatio;
     }
     fun isLiquid(collateral: Int, debt: Int, tonPrice: Int, settings: Settings): Bool {
         return collateral * tonPrice / self.debt >= settings.liquidationRatio;
@@ -346,10 +453,28 @@ contract UserPosition  {
             debt: self.debt
         };
     }
-
-    get fun message(): Message {
-        return self.message;
+    get fun maxForWithdraw(tonPrice: Int, liquidationRatio: Int): Int {
+        if (self.debt == 0) {
+            return self.collateral;
+        } else {
+            let debtRatio: Int = self.collateral * tonPrice / self.debt;
+            if (debtRatio < liquidationRatio) {
+                return 0;
+            } else {
+                return ((debtRatio - liquidationRatio) * self.collateral) / 1000000000;
+            }
+        }
     }
+    get fun maxForMint(tonPrice: Int, reserveRatio: Int): Int {
 
-
+        if (self.debt == 0) {
+            return self.collateral * tonPrice / reserveRatio;
+        } else {
+           let collateralInUsd: Int = self.collateral * tonPrice / 1000000000;
+           return (collateralInUsd  * 1000000000) / reserveRatio;
+        }
+    }
+    get fun maxForBurn(): Int {
+        return self.debt;
+    }
 }

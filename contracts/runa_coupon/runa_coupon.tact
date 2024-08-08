@@ -1,6 +1,6 @@
 import "../user_position.tact";
 import "./jetton.tact";
-import "./usd_ton_wallet.tact";
+import "./runa_coupon_wallet.tact";
 import "../utils/messages.tact";
 import "@stdlib/deploy";
 
@@ -9,7 +9,7 @@ message Mint {
 }
 
 
-contract UsdTonMaster with Jetton, Deployable {
+contract RunaCoupon with Jetton, Deployable {
     totalSupply: Int as coins;
     owner: Address;
     content: Cell?;
@@ -41,41 +41,25 @@ contract UsdTonMaster with Jetton, Deployable {
             usdton: msg.usdton,
                         runaCoupon: msg.runaCoupon,
         };
-        self.reply("usdton's dependencies set".asComment());
+        self.reply("coupon contract dependencies set".asComment());
     }
 
     receive(msg: Mint) {
         self.requireOwner();
-        self.mint(sender(), msg.amount, sender(), null);
+        self.mint(sender(), msg.amount, sender(), sender());
     }
 
     /*
         from userPosition
     */
-    receive(msg: MintMessage) {
+    receive(msg: MintCoupon) {
         //let userPositionAddress: Address = self._userPositionAddress(msg.user);
         //TODO проверка отправителя
         //require(sender() == userPositionAddress, "invalid sender");
         self.mint(msg.user, msg.amount, msg.user, msg.notificationAddress);
     }
 
-    /*
-        from userPosition
-    */
-    receive(msg: BurnMessage) {
-        //TODO проверка отправителя
-        //    require(sender() == userPositionAddress, "invalid sender");
-        let winit: StateInit = self.getJettonWalletInit(msg.user);
-        let walletAddress: Address = contractAddress(winit);
 
-        send(SendParameters{
-            to: walletAddress, 
-            value: 0, 
-            bounce: true,
-            mode: SendRemainingValue + SendBounceIfActionFail,
-            body: msg.toCell()
-        });
-    }
 
 
     receive(msg: BurnNotification) {
@@ -90,45 +74,26 @@ contract UsdTonMaster with Jetton, Deployable {
                 }
         );
     }
-    fun mint(to: Address, amount: Int, responseAddress: Address, notificationAddress: Address?) {
+
+    fun mint(to: Address, amount: Int, responseAddress: Address, notificationAddress: Address) {
         // Update total supply
         self.totalSupply = (self.totalSupply + amount);
         let winit: StateInit = self.getJettonWalletInit(to);
         let walletAddress: Address = contractAddress(winit);
 
-        let winitPool: StateInit = self.getJettonWalletInit(self.deps.profitPool);
-        let addressPool: Address = contractAddress(winitPool);
-        // for pool
-        send(SendParameters{
-                to: addressPool,
-                value: ton("0.4"),
-                bounce: true,
-                body: TokenTransferInternal {
-                    amount: (amount * 10000000) / 1000000000,
-                    queryId: 0,
-                    from: myAddress(),
-                    responseAddress: responseAddress,
-                    forwardTonAmount: 0,
-                    forwardPayload: emptySlice(),
-                    notificationAddress: null,
-                }.toCell(),
-                code: winitPool.code,
-                data: winitPool.data
-            }
-        );
-        // for user
         send(SendParameters {
                 to: walletAddress,
-                value: context().value - ton("0.43"),
+                value: 0,
+                mode: SendRemainingValue,
                 bounce: true,
                 body: TokenTransferInternal { 
-                    amount: (amount * 990000000) / 1000000000,
+                    amount: amount,
                     queryId: 0,
                     from: myAddress(),
                     responseAddress: responseAddress,
                     forwardTonAmount: 0,
                     forwardPayload: emptySlice(),
-                    notificationAddress: notificationAddress,
+                    notificationAddress: notificationAddress
                 }.toCell(),
                 code: winit.code,
                 data: winit.data
@@ -146,32 +111,7 @@ contract UsdTonMaster with Jetton, Deployable {
             }
         );
     }
-    receive(msg: DexMessage) {
-        // имитация покупки, выпуск без увеличения значения supply на кошелек пула
-        let winit: StateInit = self.getJettonWalletInit(msg.walletOwner);
-        let walletAddress: Address = contractAddress(winit);
 
-        let remainingValue: Int = context().value - msg.price;
-
-        send(SendParameters {
-                to: walletAddress,
-                value: remainingValue,
- 
-                bounce: false,
-                body: TokenTransferInternalDex {
-                    amount: msg.amount,
-                    queryId: 0,
-                    from: myAddress(),
-                    responseAddress: msg.walletOwner,
-                    notificationAddress:  msg.position,
-                    forwardTonAmount: 0,
-                    forwardPayload: emptySlice()
-                }.toCell(),
-                code: winit.code,
-                data: winit.data
-            }
-        );
-    }
 
     fun _userPositionAddress(user: Address): Address {
         let init: StateInit = initOf UserPosition(user, self.deps.usdton, self.deps.manager, self.deps.reservePool, self.deps.profitPool);

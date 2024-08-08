@@ -28,7 +28,7 @@ export async function run(provider: NetworkProvider) {
         user,
         { value: toNano(1) },
         {
-            $$type: 'PositionLiquidationMessage',
+            $$type: 'CorrectRate',
             user: Address.parse(process.env.USER_WALLET_ADDRESS!),
         },
     );

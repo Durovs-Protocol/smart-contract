@@ -176,16 +176,16 @@ describe('UserFlow', () => {
     });
 
     it('user flow', async () => {
-        const collateralDepositAmount = toNano(1);
+        const collateralSupplyAmount = toNano(1);
         // const currentPositionId = await manager.getLastPositionId();
 
         await manager.send(
             deployer.getSender(),
-            { value: collateralDepositAmount + toNano(2) },
+            { value: collateralSupplyAmount + toNano(2) },
             {
-                $$type: 'DepositCollateralUserMessage',
+                $$type: 'SupplyCollateralUserMessage',
                 user: deployer.getSender().address,
-                amount: collateralDepositAmount,
+                amount: collateralSupplyAmount,
             },
         );
 
@@ -214,7 +214,7 @@ describe('UserFlow', () => {
         // );
         // let positionState = await userPositionContract.getPositionState();
 
-        // expect(positionState.collateral).toEqual(collateralDepositAmount);
+        // expect(positionState.collateral).toEqual(collateralSupplyAmount);
 
         //     // -- user draw usdTons
         //     const initialTotalSupply = await usdTon.getTotalSupply();

@@ -15,7 +15,8 @@ contract ProfitPool with Deployable, OwnableTransferable {
             manager: newAddress(0, 0),
             profitPool: newAddress(0, 0),
             reservePool: newAddress(0, 0),
-            usdton: newAddress(0, 0)
+            usdton: newAddress(0, 0),
+            runaCoupon: newAddress(0, 0)
         };
     }
 
@@ -28,7 +29,8 @@ contract ProfitPool with Deployable, OwnableTransferable {
             manager: msg.manager,
             profitPool: msg.profitPool,
             reservePool: msg.reservePool,
-            usdton: msg.usdton
+            usdton: msg.usdton,
+            runaCoupon: msg.runaCoupon
         };
         self.reply("pool's dependencies set".asComment());
     }
@@ -38,13 +40,21 @@ contract ProfitPool with Deployable, OwnableTransferable {
     //=============================================================================
 
     receive(msg: FeePayment){
-        // Принимаем TON при ликвидации
-        // TODO: обмен через DEX на RUNA
+        let ctx: Context = context();
+        let remainingValue: Int = (ctx.value - msg.amount);
+        send(SendParameters{
+                to: msg.user,
+                value: remainingValue,
+                bounce: false,
+                mode: SendIgnoreErrors,
+                body: "You have paid back".asComment()
+            }
+        );
     }
 
-    // receive(msg: CommentReciever){
-    //     // приимаем остатки тона потраченного на газ вместе с комментарием
-    // }
+    receive(str: String){
+        // приимаем текстовые сообщения
+    }
 
     //=============================================================================
     // Helpers

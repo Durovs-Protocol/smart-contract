@@ -1,10 +1,35 @@
-message DepositCollateralMessage {
+message SupplyMessage {
+    amount: Int as coins;
+}
+message Supply {
     user: Address;
     amount: Int as coins;
     settings: Settings;
     tonPrice: Int as coins;
 }
-message DepositNotification {
+message MintUsdTonMessage {
+    amount: Int as coins;
+}
+message BurnUsdTonMessage {
+    amount: Int as coins;
+    fee: Int as uint64;
+}
+message WithdrawMessage {
+    amount: Int as coins;
+}
+message Withdraw {
+    user: Address;
+    amount: Int as coins;
+    settings: Settings;
+    tonPrice: Int;
+}
+message WithdrawResponce {
+    amount: Int as coins;
+}
+message WithdrawRequest {
+    amount: Int as coins;
+}
+message SupplyNotification {
     user: Address;
     amount: Int as coins;
 }
@@ -14,7 +39,7 @@ message MintUsdTon {
     settings: Settings;
     tonPrice: Int as coins;
 }
-message BurnUsdTONMessage {
+message BurnUsdTon {
     user: Address;
     amount: Int as uint64;
     settings: Settings;
@@ -24,7 +49,21 @@ message BurnUsdTONMessage {
 }
 message FeePayment {
     amount: Int as uint64;
+    user: Address;
 }
+message CorrectRate {
+}
+message GetAccrual {
+}
+message AccrualJetton {
+    total: Int;
+    jettonAmount: Int;
+}
+message SetAddress {
+    user: Address;
+    position: Address;
+}
+
 // usdTonMaster messages
 
 struct JettonData {
@@ -40,6 +79,7 @@ struct JettonWalletData {
     master: Address;
     walletCode: Cell;
 }
+
 // userPosition messages
 
 message SetUserPositionDependecyMessage {
@@ -57,6 +97,14 @@ message SetPositionAddressMessage {
     user: Address;
     position: Address;
 }
+message CreateCoupons {
+}
+message DeleteCoupons {
+}
+message BuyCoupons {
+    amount: Int;
+}
+
 // usdTonMaster messages
 
 message MintMessage {
@@ -64,7 +112,23 @@ message MintMessage {
     amount: Int as coins;
     notificationAddress: Address?;
 }
+message AccrualMessage {
+    user: Address;
+    amount: Int as coins;
+    notificationAddress: Address?;
+}
+message OnAccrualComplete {
+    amount: Int as coins;
+}
+message MintCoupon {
+    user: Address;
+    amount: Int as coins;
+    notificationAddress: Address;
+}
 message OnMintComplete {
+    amount: Int as coins;
+}
+message OnMintCouponsComplete {
     amount: Int as coins;
 }
 message DexMessage {
@@ -97,7 +161,7 @@ message BurnNotification {
     fee: Int;
     notificationAddress: Address?;
 }
-message PositionLiquidationInspectorMessage {
+message PositionLiquidationMessage {
     user: Address;
 }
 message PositionLiquidation {
@@ -168,17 +232,20 @@ message SetDeps {
     profitPool: Address;
     reservePool: Address;
     usdton: Address;
+    runaCoupon: Address;
 }
 struct Deps {
     manager: Address;
     profitPool: Address;
     reservePool: Address;
     usdton: Address;
+    runaCoupon: Address;
 }
+
 // manager
 
 message SetSettings {
-    reservePool: Int;
+    reserveRatio: Int;
     reserveMin: Int;
     burnMin: Int;
     serviceFeePercent: Int;
@@ -186,7 +253,7 @@ message SetSettings {
     liquidationRatio: Int;
 }
 struct Settings {
-    reservePool: Int;
+    reserveRatio: Int;
     reserveMin: Int;
     burnMin: Int;
     serviceFeePercent: Int;
@@ -196,19 +263,7 @@ struct Settings {
 message UpdateTonPriceMsg {
     price: Int as coins;
 }
-message DepositCollateralUserMessage {
-    user: Address;
-    amount: Int as coins;
-}
-message MintUsdTonMessage {
-    user: Address;
-    amount: Int as coins;
-}
-message BurnUsdTONUserMessage {
-    user: Address;
-    amount: Int as coins;
-    fee: Int as uint64;
-}
+
 // message(0x00000000) CommentReciever {
 //     text: String;
 // }
