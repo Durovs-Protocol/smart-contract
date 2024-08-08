@@ -24,39 +24,55 @@
 
 ## Add Supply: 1 TON
 
-User: - 2TON
+profit pool 0.996226118 TON
+reserve pool 0.008591058 TON
+manager: 0
+usdton: 0
+up: 0
+User: - 2 TON
 
--   Reserve pool: 1.004 TON
--   GAS + ton for storage: 0.0677132 TON
+-   Reserve pool: 1.013 TON TON
+-   GAS + ton for storage: 0.0690656 TON
 
-## User: + 0.9322868
+User: + 0.9309344
+
+--------------------info:
+Max for mint: 3.833333333
+Max for burn: 0
+Max for withdraw: 1
+Ton price: 5.75
 
 Supply in TON: 1
 Borrow by UP: 0
 Borrow by wallet: no data
 
----
-
-## Mint: 6.8 usdTON, ton price 7.5
+## Mint: 3.8 usdTON, ton price 5.75
 
 User: - 1 TON
 
 -   USDT master 6.8 TUSD (max supply)
--   User wallet 6.732 TUSD
--   Pool wallet 0.068 TUSD
--   GAS: 0.1249056 TON
+-   User wallet 3.7917 TUSD // TODO почему не отображается в обозревателе jetton и тип контракта? (видно только через запрос к контракту)
+-   Pool wallet 0.0383 TUSD // TODO почему не отображается в обозревателе jetton и тип контракта? (видно только через запрос к контракту)
+-   GAS: 0.1235144 TON
 
-## User: + 0.8750944 TON
+User: + 0.8764856 TON
+
+--------------------info:
+Max for mint: 3.833333333 // TODO учесть в расчете долг
+Max for burn: 3.7917
+Max for withdraw: 0.516470184
+Ton price: 5.75
 
 Supply in TON: 1
-Borrow by UP: 6.732
-Borrow by wallet: 6.732
+Borrow by UP: 3.7917
+Borrow by wallet: 3.7917
 
----
+## Burn: 4.2867 usdTON fee1 fee
 
-## Burn: 6.8 usdTON
+-TODO в случае если сжигать нечего весь тон переданный за комиссию остается в up
+-TODO не доходит возврат газа пользователю (правки внесены, проверить)
 
-User: -2.333 TON (1.333 комиссия за сжигание 10$, остальное на газ)
+User: -2 TON (1 комиссия за сжигание, остальное на газ)
 
 -   Reserve Pool: + 0.930048672 TON / -1.921 TON (возврат и излишки тона на газ)
 -   Profit Pool: +1.33 TON
@@ -64,7 +80,7 @@ User: -2.333 TON (1.333 комиссия за сжигание 10$, осталь
 -   User wallet 0 TUSD
 -   GAS: 0.009 TON
 
-User: + 1.909 TON (возврат и излишки тона на газ)
+User: + 0
 
 ## Ликвидация
 

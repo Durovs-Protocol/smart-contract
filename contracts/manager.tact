@@ -20,7 +20,7 @@ contract Manager with Deployable, OwnableTransferable {
     init(owner: Address){
         self.owner = owner;
         self.settings = Settings{
-            reservePool: 0,
+            reserveRatio: 0,
             reserveMin: 0,
             burnMin: 0,
             serviceFeePercent: 0,
@@ -56,7 +56,7 @@ contract Manager with Deployable, OwnableTransferable {
     receive(msg: SetSettings){
         self.requireOwner();
         self.settings = Settings{
-            reservePool: msg.reservePool,
+            reserveRatio: msg.reserveRatio,
             reserveMin: msg.reserveMin,
             burnMin: msg.burnMin,
             serviceFeePercent: msg.serviceFeePercent,
@@ -94,7 +94,7 @@ contract Manager with Deployable, OwnableTransferable {
     //             value: valueToSendForward,
     //             mode: SendBounceIfActionFail,
     //             bounce: true,
-    //             body: DepositCollateralMessage{
+    //             body: DepositMessage{
     //                 user: msg.user,
     //                 amount: msg.amount,
     //                 settings: self.settings,
@@ -106,8 +106,7 @@ contract Manager with Deployable, OwnableTransferable {
     //     );
     //     self.totalCollateralAmount = (self.totalCollateralAmount + msg.amount);
     // }
-    receive(msg: DepositCollateralUserMessage){
-        require(sender() == msg.user, "Invalid sender");
+    receive(msg: DepositMessage){
         let ctx: Context = context();
         require(ctx.value >= ((msg.amount + self.GasConsumption) + self.MinTonForStorage), "not enough TONs sent");
         require(msg.amount >= self.settings.reserveMin, "TONs amount is less than minimum possible");
@@ -115,7 +114,7 @@ contract Manager with Deployable, OwnableTransferable {
         //TODO рассчитать газ для всех дальнейших операций сразу
 
         let valueToSendForward: Int = ((context().value - self.MinTonForStorage) - self.GasConsumption);
-        let init: StateInit = initOf UserPosition(msg.user,
+        let init: StateInit = initOf UserPosition(sender(),
             self.deps.usdton,
             self.deps.manager,
             self.deps.reservePool,
@@ -127,8 +126,8 @@ contract Manager with Deployable, OwnableTransferable {
                 value: valueToSendForward,
                 mode: SendBounceIfActionFail,
                 bounce: true,
-                body: DepositCollateralMessage{
-                    user: msg.user,
+                body: Deposit{
+                    user: sender(),
                     amount: msg.amount,
                     settings: self.settings,
                     tonPrice: self.tonPrice
@@ -140,7 +139,7 @@ contract Manager with Deployable, OwnableTransferable {
         self.totalCollateralAmount = (self.totalCollateralAmount + msg.amount);
     }
 
-    bounced(msg: bounced<DepositCollateralMessage>){
+    bounced(msg: bounced<Deposit>){
         self.bouncedHandler();
     }
 
@@ -153,12 +152,12 @@ contract Manager with Deployable, OwnableTransferable {
     /*02 | Mint usdTON */
     receive(msg: MintUsdTonMessage){
         send(SendParameters{
-                to: self._userPositionAddress(msg.user),
+                to: self._userPositionAddress(sender()),
                 value: 0,
                 mode: (SendRemainingValue + SendBounceIfActionFail),
                 bounce: true,
                 body: MintUsdTon{
-                    user: msg.user,
+                    user: sender(),
                     amount: msg.amount,
                     settings: self.settings,
                     tonPrice: self.tonPrice
@@ -172,15 +171,15 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     /*03 | Burn usdTON */
-    receive(msg: BurnUsdTONUserMessage){
+    receive(msg: BurnUsdTonMessage){
         require(msg.amount >= self.settings.burnMin, "burn amount is less than minimum possible");
         send(SendParameters{
-                to: self._userPositionAddress(msg.user),
+                to: self._userPositionAddress(sender()),
                 value: 0,
                 mode: (SendRemainingValue + SendBounceIfActionFail),
                 bounce: true,
-                body: BurnUsdTONMessage{
-                    user: msg.user,
+                body: BurnUsdTon{
+                    user: sender(),
                     amount: msg.amount,
                     settings: self.settings,
                     tonPrice: self.tonPrice,
@@ -191,7 +190,28 @@ contract Manager with Deployable, OwnableTransferable {
         );
     }
 
-    bounced(msg: bounced<BurnUsdTONMessage>){
+    bounced(msg: bounced<BurnUsdTon>){
+        self.bouncedHandler();
+    }
+
+    /*04 | withdraw TON */
+    receive(msg: WithdrawMessage){
+        send(SendParameters{
+                to: self._userPositionAddress(sender()),
+                value: 0,
+                mode: (SendRemainingValue + SendBounceIfActionFail),
+                bounce: true,
+                body: Withdraw{
+                    user: sender(),
+                    amount: msg.amount,
+                    settings: self.settings,
+                    tonPrice: self.tonPrice
+                }.toCell()
+            }
+        );
+    }
+
+    bounced(msg: bounced<Withdraw>){
         self.bouncedHandler();
     }
 

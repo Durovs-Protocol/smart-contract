@@ -36,7 +36,7 @@ contract ReservePool with Deployable, OwnableTransferable {
     //=============================================================================
     // Actions
     //=============================================================================
-    // receive(msg: DepositCollateralMessage){
+    // receive(msg: DepositMessage){
     //     require(sender() == self.deps.manager, "not from positionsManager");
     //     let ctx: Context = context();
     //     let init: StateInit = initOf UserPosition(msg.user,
@@ -58,7 +58,7 @@ contract ReservePool with Deployable, OwnableTransferable {
     //         }
     //     );
     // }
-    receive(msg: DepositCollateralMessage){
+    receive(msg: Deposit){
         let ctx: Context = context();
         let remainingValue: Int = (ctx.value - (msg.amount + self.GasConsumption));
         send(SendParameters{
@@ -73,28 +73,47 @@ contract ReservePool with Deployable, OwnableTransferable {
 
     receive(msg: UsdTonBurned){
         require(sender() == self.deps.usdton, "not from usdTon");
-        let ctx: Context = context();
-        let myAddress: Address = myAddress();
-        if (msg.user != myAddress) {
-            send(SendParameters{
-                    to: msg.notificationAddress!!,
-                    value: msg.withdrawalAmount,
-                    mode: SendRemainingValue,
-                    bounce: false,
-                    body: OnBurnComplete{ton: msg.withdrawalAmount, usdton: msg.amount, fee: msg.fee}.toCell()
-                }
-            );
-        } else {
-            send(SendParameters{
-                    to: msg.notificationAddress!!,
-                    value: 0,
-                    mode: SendRemainingValue,
-                    bounce: false,
-                    body: OnLiquidationComplete{amount: msg.amount}.toCell()
-                }
-            );
-        }
+        // let ctx: Context = context();
+        // let myAddress: Address = myAddress();
+        // if (msg.user != myAddress) {
+        //     send(SendParameters{
+        //             to: msg.notificationAddress!!,
+        //             value: msg.withdrawalAmount,
+        //             mode: SendRemainingValue,
+        //             bounce: false,
+        //             body: OnBurnComplete{ton: msg.withdrawalAmount, usdton: msg.amount, fee: msg.fee}.toCell()
+        //         }
+        //     );
+        // } else {
+        send(SendParameters{
+                to: msg.notificationAddress!!,
+                value: 0,
+                mode: SendRemainingValue,
+                bounce: false,
+                body: OnLiquidationComplete{amount: msg.amount}.toCell()
+            }
+        );
+        // }
     }
+
+    receive(msg: WithdrawRequest){
+        // TODO !!! дыра! после выхода новой версии сделать проверку на то что контракт вызван up!!!
+        let ctx: Context = context();
+        let remainingValue: Int = (ctx.value - self.GasConsumption);
+        send(SendParameters{
+                to: sender(),
+                value: (msg.amount + remainingValue),
+                mode: SendBounceIfActionFail,
+                bounce: true,
+                body: WithdrawResponce{amount: msg.amount}.toCell()
+            }
+        );
+    }
+
+    // bounced(msg: bounced<WithdrawResponce>){
+    //This message is small enough for bounce receiver, you need to remove bounced modifier. ??
+    //TODO
+    // }
 
     receive(msg: LiquidationPool){
         // покупка usdton для последующего сжигания

@@ -20,8 +20,16 @@ export async function run(provider: NetworkProvider) {
     const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
     const state = await userPosition.getPositionState();
     console.log('User Position address:  ', userPosition.address.toString() + '\n\n');
-
     let tonPrice = await manager.getTonPrice();
+    let settings = await manager.getSettings();
+
+    const maxForMint = await userPosition.getMaxForMint(tonPrice, settings.reserveRatio);
+    const maxForBurn = await userPosition.getMaxForBurn();
+    const maxForWithdraw = await userPosition.getMaxForWithdraw(tonPrice, settings.liquidationRatio);
+    console.log('Max for mint:        ', fromNano(maxForMint).toString());
+    console.log('Max for burn:        ', fromNano(maxForBurn).toString());
+    console.log('Max for withdraw:        ', fromNano(maxForWithdraw).toString());
+
     // let healthRate = tonPrice * state.collateral/state.debt;
     // TODO исправить при / на 0
 

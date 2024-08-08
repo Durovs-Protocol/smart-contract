@@ -80,17 +80,11 @@ contract UsdTonMaster with Jetton, Deployable {
         self.requireWallet(msg.user);
         self.totalSupply = (self.totalSupply - msg.amount);
         send(SendParameters{
-                    to: self.deps.reservePool,
+                    to: msg.notificationAddress!!,
                     value: 0,
                     bounce: true,
                     mode: SendRemainingValue,
-                    body: UsdTonBurned {
-                amount: msg.amount,
-                user: msg.user,
-                withdrawalAmount: msg.withdrawalAmount,
-                fee: msg.fee,
-                notificationAddress: msg.notificationAddress,
-            }.toCell()
+                    body: OnBurnComplete{ton: msg.withdrawalAmount, usdton: msg.amount, fee: msg.fee}.toCell()
                 }
         );
     }

@@ -38,13 +38,21 @@ contract ProfitPool with Deployable, OwnableTransferable {
     //=============================================================================
 
     receive(msg: FeePayment){
-        // Принимаем TON при ликвидации
-        // TODO: обмен через DEX на RUNA
+        let ctx: Context = context();
+        let remainingValue: Int = (ctx.value - msg.amount);
+        send(SendParameters{
+                to: msg.user,
+                value: remainingValue,
+                bounce: false,
+                mode: SendIgnoreErrors,
+                body: "You have paid back".asComment()
+            }
+        );
     }
 
-    // receive(msg: CommentReciever){
-    //     // приимаем остатки тона потраченного на газ вместе с комментарием
-    // }
+    receive(str: String){
+        // приимаем текстовые сообщения
+    }
 
     //=============================================================================
     // Helpers
