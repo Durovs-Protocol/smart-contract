@@ -192,11 +192,22 @@ contract UserPosition  {
     }
 
     receive(msg: OnBurnComplete) {
-    self.debt = self.debt - msg.usdton;
-    self.collateral = self.collateral - msg.ton;
-    let unusedTonFee: Int = myBalance() - (msg.ton + msg.fee + self.MinTonsForStorage + (self.GasConsumption * 2));
-    send(SendParameters{to: self.user, value: msg.ton + unusedTonFee, mode: SendIgnoreErrors + SendPayGasSeparately, bounce: false});
-    send(SendParameters{to: self.profitPool, value: msg.fee, mode: SendPayGasSeparately, bounce: false, body: FeePayment{amount: msg.fee}.toCell()});
+        self.debt = self.debt - msg.usdton;
+        // self.collateral = self.collateral - msg.ton; TODO: должно быть в выводе
+        let unusedTonFee: Int = myBalance() - (msg.ton + msg.fee + self.MinTonsForStorage + (self.GasConsumption * 2));
+        send(SendParameters{
+            to: self.user,
+            value: msg.ton + unusedTonFee,
+            mode: SendIgnoreErrors + SendPayGasSeparately,
+            bounce: false
+        });
+        send(SendParameters{
+            to: self.profitPool,
+            value: msg.fee,
+            mode: SendPayGasSeparately,
+            bounce: false,
+            body: FeePayment{amount: msg.fee}.toCell()
+        });
     }
 
     bounced(msg: bounced<BurnMessage>) {
