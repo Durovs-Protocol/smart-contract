@@ -24,12 +24,26 @@
 
 ## Add Supply: 1 TON
 
+<<<<<<< HEAD
 User: - 2 TON
 
 -   Reserve pool: 1.004 TON
 -   GAS + ton for storage: 0.0693424 TON
 
 User: + 0.9306576
+=======
+profit pool 0.996226118 TON
+reserve pool 0.008591058 TON
+manager: 0
+usdton: 0
+up: 0
+User: - 2 TON
+
+-   Reserve pool: 1.013 TON TON
+-   GAS + ton for storage: 0.0690656 TON
+
+User: + 0.9309344
+>>>>>>> master
 
 --------------------info:
 Max for mint: 3.833333333
@@ -64,6 +78,12 @@ Borrow by wallet: 3.7917
 
 ## Burn: 4.2867 usdTON fee1 fee
 
+<<<<<<< HEAD
+=======
+-TODO в случае если сжигать нечего весь тон переданный за комиссию остается в up
+-TODO не доходит возврат газа пользователю (правки внесены, проверить)
+
+>>>>>>> master
 User: -2 TON (1 комиссия за сжигание, остальное на газ)
 
 -   Reserve Pool: + 0.930048672 TON / -1.921 TON (возврат и излишки тона на газ)
