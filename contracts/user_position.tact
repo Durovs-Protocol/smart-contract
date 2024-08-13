@@ -6,10 +6,7 @@ struct PositionState {
     debt: Int as uint64;
 }
 
-struct Message {
-    timestamp: Int as uint64;
-    message: String;
-}
+
             struct LiquidationParams {
     tonForBurn: Int as uint64;
     fee: Int as uint64;
@@ -131,7 +128,7 @@ contract UserPosition  {
             value: 0,
             mode: (SendRemainingValue + SendBounceIfActionFail), 
             bounce: true,
-            body: MintMessage{
+            body: MintRequest{
                 user: msg.user,
                 amount: msg.amount,
                 notificationAddress: myAddress(),
@@ -157,7 +154,7 @@ contract UserPosition  {
         });
     }
 
-    bounced(msg: bounced<MintMessage>) {
+    bounced(msg: bounced<MintRequest>) {
         self.bouncedHandler();
     }
 
@@ -194,23 +191,39 @@ contract UserPosition  {
             value: remainingValue,
             bounce: true,
             mode: SendBounceIfActionFail,
-            body: BurnMessage {
+            body: BurnRequest {
                 user: msg.user,
                 amount: amountToBurn,
-                reservePool: self.reservePool,
                 withdrawalAmount: withdrawalAmount,
                 fee: msg.fee,
                 notificationAddress: myAddress()
             }.toCell()
         });
     }
-    bounced(msg: bounced<BurnMessage>) {
+    bounced(msg: bounced<BurnRequest>) {
         self.bouncedHandler();
     }
     receive(msg: OnBurnComplete) {
-    self.debt = self.debt - msg.usdton;
+
+    if (self.message.message == "liquidation process") {
+        self.collateral = 0;
+        self.debt = 0;
+
+        let remainingValue: Int = myBalance() - self.MinTonsForStorage;
+
+        send(SendParameters {
+                to: self.profitPool,
+                bounce: false,
+                value: remainingValue,
+                body: "position liquidated".asComment()
+            }
+        );
+
+    } else {
+        self.debt = self.debt - msg.usdton;
     let remainingValue: Int = myBalance() - (self.MinTonsForStorage + self.GasConsumption + msg.fee); 
     send(SendParameters{to: self.profitPool, value: msg.fee + remainingValue,  bounce: false, body: FeePayment{amount: msg.fee, user: self.user}.toCell()});
+    }
     }
 
     
@@ -231,7 +244,8 @@ contract UserPosition  {
             bounce: true,
             mode: SendBounceIfActionFail,
             body: WithdrawRequest {
-                amount: msg.amount
+                amount: msg.amount,
+                user: self.user,
             }.toCell()
         });
     }
@@ -274,7 +288,7 @@ contract UserPosition  {
           liquidationDebt = liquidationAmount - ((accountBalance * msg.tonPrice) / 1000000000);
           tonForBurn = accountBalance;
         }
-        self.setMessage("liquidationProcess");
+        self.setMessage("liquidation process");
 
         // записываем параметры ликвидации
         self.setLiquidationParams(LiquidationParams{
@@ -293,7 +307,7 @@ contract UserPosition  {
             value: 0,
             mode: SendRemainingValue,
             bounce: true,
-            body: LiquidationPool{
+            body: DoLiquidation{
                 position: myAddress(),
                 user: self.user,
                 price: tonForBurn,
@@ -303,23 +317,8 @@ contract UserPosition  {
 
     }
     
-    receive(msg: OnLiquidationComplete) {
-        self.collateral = 0;
-        self.debt = 0;
-
-        let remainingValue: Int = myBalance() - self.MinTonsForStorage;
-
-        send(SendParameters {
-                to: self.profitPool,
-                bounce: false,
-                value: remainingValue,
-                body: "position liquidated".asComment()
-            }
-        );
-    }
     
     receive(msg: TokenExcesses) {
-        self.collateral = self.collateralBefore;
     }
     
     receive(msg: AccrualJetton) {
@@ -476,5 +475,8 @@ contract UserPosition  {
     }
     get fun maxForBurn(): Int {
         return self.debt;
+    }
+        get fun message(): Message {
+        return self.message;
     }
 }

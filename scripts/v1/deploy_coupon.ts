@@ -2,11 +2,11 @@ import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { runaUSDCouponParams, setupGas } from '../utils/data';
 import { buildOnchainMetadata, saveAddress } from '../utils/helpers';
-import { RunaUSDCoupon } from '../wrappers/RunaCoupon';
+import { RunaCoupon } from '../wrappers/RunaCoupon';
 
 export async function run(provider: NetworkProvider) {
     const owner = provider.sender().address as Address;
-    const coupon = provider.open(await RunaUSDCoupon.fromInit(owner, buildOnchainMetadata(runaUSDCouponParams)));
+    const coupon = provider.open(await RunaCoupon.fromInit(owner, buildOnchainMetadata(runaUSDCouponParams)));
 
     await coupon.send(
         provider.sender(),

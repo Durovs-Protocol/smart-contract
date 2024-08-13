@@ -38,73 +38,26 @@ contract ReservePool with Deployable, OwnableTransferable {
     //=============================================================================
     // Actions
     //=============================================================================
-    // receive(msg: SupplyMessage){
-    //     require(sender() == self.deps.manager, "not from positionsManager");
-    //     let ctx: Context = context();
-    //     let init: StateInit = initOf UserPosition(msg.user,
-    //         self.deps.usdton,
-    //         self.deps.manager,
-    //         self.deps.reservePool,
-    //         self.deps.profitPool
-    //     );
-    //     let userPosition: Address = contractAddress(init);
-    //     let remainingValue: Int = (ctx.value - ((msg.amount + self.MinTonForStorage) + self.GasConsumption));
-    //     send(SendParameters{
-    //             to: userPosition,
-    //             bounce: false,
-    //             value: remainingValue,
-    //             mode: (SendIgnoreErrors + SendPayGasSeparately),
-    //             body: SupplyNotification{amount: msg.amount, user: msg.user}.toCell(),
-    //             code: init.code,
-    //             data: init.data
-    //         }
-    //     );
-    // }
     receive(msg: Supply){
         let ctx: Context = context();
-        let remainingValue: Int = (ctx.value - (msg.amount + self.GasConsumption));
+        let remainingValue: Int = ctx.value - (msg.amount + self.GasConsumption);
         send(SendParameters{
                 to: msg.user,
                 bounce: false,
                 value: remainingValue,
-                mode: (SendIgnoreErrors + SendPayGasSeparately),
+                mode: SendIgnoreErrors + SendPayGasSeparately,
                 body: "Collateral added".asComment()
             }
         );
     }
 
-    receive(msg: UsdTonBurned){
-        require(sender() == self.deps.usdton, "not from usdTon");
-        // let ctx: Context = context();
-        // let myAddress: Address = myAddress();
-        // if (msg.user != myAddress) {
-        //     send(SendParameters{
-        //             to: msg.notificationAddress!!,
-        //             value: msg.withdrawalAmount,
-        //             mode: SendRemainingValue,
-        //             bounce: false,
-        //             body: OnBurnComplete{ton: msg.withdrawalAmount, usdton: msg.amount, fee: msg.fee}.toCell()
-        //         }
-        //     );
-        // } else {
-        send(SendParameters{
-                to: msg.notificationAddress!!,
-                value: 0,
-                mode: SendRemainingValue,
-                bounce: false,
-                body: OnLiquidationComplete{amount: msg.amount}.toCell()
-            }
-        );
-        // }
-    }
-
     receive(msg: WithdrawRequest){
         // TODO !!! дыра! после выхода новой версии сделать проверку на то что контракт вызван up!!!
         let ctx: Context = context();
-        let remainingValue: Int = (ctx.value - self.GasConsumption);
+        let remainingValue: Int = ctx.value - self.GasConsumption;
         send(SendParameters{
                 to: sender(),
-                value: (msg.amount + remainingValue),
+                value: msg.amount + remainingValue,
                 mode: SendBounceIfActionFail,
                 bounce: true,
                 body: WithdrawResponce{amount: msg.amount}.toCell()
@@ -117,7 +70,7 @@ contract ReservePool with Deployable, OwnableTransferable {
     //TODO
     // }
 
-    receive(msg: LiquidationPool){
+    receive(msg: DoLiquidation){
         // покупка usdton для последующего сжигания
         send(SendParameters{
                 to: self.deps.usdton,
@@ -140,10 +93,9 @@ contract ReservePool with Deployable, OwnableTransferable {
                 to: self.deps.usdton,
                 value: 0,
                 mode: SendRemainingValue,
-                body: BurnMessage{
+                body: BurnRequest{
                     user: myAddress(),
                     amount: msg.amount,
-                    reservePool: myAddress(),
                     withdrawalAmount: 0,
                     fee: 0,
                     notificationAddress: msg.position

@@ -113,7 +113,7 @@ contract Manager with Deployable, OwnableTransferable {
     //     );
     //     self.totalCollateralAmount = (self.totalCollateralAmount + msg.amount);
     // }
-    receive(msg: SupplyMessage){
+    receive(msg: SupplyMessage) {
         let ctx: Context = context();
         require(ctx.value >= ((msg.amount + self.GasConsumption) + self.MinTonForStorage), "not enough TONs sent");
         require(msg.amount >= self.settings.reserveMin, "TONs amount is less than minimum possible");

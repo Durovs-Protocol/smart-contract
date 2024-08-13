@@ -1,10 +1,10 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, fromNano } from '@ton/core';
 import { loadAddress, log } from '../utils/helpers';
-import { Manager } from '../wrappers/V0.Manager';
-
+import { Manager } from '../wrappers/Manager';
+import { ProfitPool } from '../wrappers/ProfitPool';
+import { ReservePool } from '../wrappers/ReservePool';
 import { UsdTonMaster } from '../wrappers/UsdTon';
-import { ReservePool } from '../wrappers/V0.ReservePool';
 
 /**
  *
@@ -15,14 +15,14 @@ export async function run(provider: NetworkProvider) {
 
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
-
+    const profitPool = provider.open(await ProfitPool.fromAddress(Address.parse(await loadAddress('profitPool'))));
     const reservePool = provider.open(await ReservePool.fromAddress(Address.parse(await loadAddress('reservePool'))));
-
-    log('Manager:        ' + (await manager.getDeps()).manager);
 
     log(
         'Manager:        ' +
             manager.address.toString() +
+            '\nprofit pool:  ' +
+            profitPool.address.toString() +
             '\nreserve pool: ' +
             reservePool.address.toString() +
             '\nusdTon:       ' +

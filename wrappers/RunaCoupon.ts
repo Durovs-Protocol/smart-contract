@@ -1,1 +1,1 @@
-export * from '../build/RunaUSDCoupon/tact_RunaCoupon';
+export * from '../build/RunaCoupon/tact_RunaCoupon';

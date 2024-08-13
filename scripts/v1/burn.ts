@@ -35,5 +35,5 @@ export async function run(provider: NetworkProvider) {
         },
     );
 
-    await timer('User stable balance', 'Погашение задолжности', usdTonBalance - burn, getDebtBalance, true);
+    await timer('Погашение задолжности: баланс', usdTonBalance - burn, getDebtBalance, true);
 }

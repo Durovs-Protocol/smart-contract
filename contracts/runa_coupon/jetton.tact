@@ -1,6 +1,6 @@
 import "@stdlib/ownable";
 import "../utils/messages.tact";
-import "./runa_coupon.tact";
+import "./runa_coupon_wallet.tact";
 @interface("org.ton.jetton.master")
 trait Jetton with OwnableTransferable {
     //

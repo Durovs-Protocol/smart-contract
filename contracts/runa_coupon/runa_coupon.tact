@@ -4,10 +4,6 @@ import "./runa_coupon_wallet.tact";
 import "../utils/messages.tact";
 import "@stdlib/deploy";
 
-message Mint {
-    amount: Int;
-}
-
 
 contract RunaCoupon with Jetton, Deployable {
     totalSupply: Int as coins;
@@ -44,10 +40,6 @@ contract RunaCoupon with Jetton, Deployable {
         self.reply("coupon contract dependencies set".asComment());
     }
 
-    receive(msg: Mint) {
-        self.requireOwner();
-        self.mint(sender(), msg.amount, sender(), sender());
-    }
 
     /*
         from userPosition

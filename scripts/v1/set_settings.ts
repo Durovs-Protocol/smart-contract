@@ -35,5 +35,5 @@ export async function run(provider: NetworkProvider) {
         },
     );
 
-    await timer(`reserve pool`, 'Настройка пула', toNano(1.25), getliquidRatio);
+    await timer('Настройка пула', toNano(1.25), getliquidRatio);
 }

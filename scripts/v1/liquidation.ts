@@ -28,12 +28,12 @@ export async function run(provider: NetworkProvider) {
         user,
         { value: toNano(1) },
         {
-            $$type: 'CorrectRate',
+            $$type: 'PositionLiquidationMessage',
             user: Address.parse(process.env.USER_WALLET_ADDRESS!),
         },
     );
 
-    await timer('Position liquidation', 'Ликвидация позиции', 'position liquidated', getMessage, true);
+    await timer('Ликвидация позиции', 'position liquidated', getMessage, true);
     console.log('total supply after', fromNano(await usdTon.getTotalSupply()));
 
     // console.log(await userPosition.getLiquidationParams());

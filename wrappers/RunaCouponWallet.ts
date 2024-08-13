@@ -1,1 +1,1 @@
-export * from '../build/UsdTonWallet/tact_UsdTonWallet';
+export * from '../build/RunaCouponWallet/tact_RunaCouponWallet';

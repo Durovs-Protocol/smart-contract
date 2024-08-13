@@ -1,8 +1,8 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
-import { gas } from '../utils/data';
+import { addSupplyAmount, gas } from '../utils/data';
 import { loadAddress, log, timer } from '../utils/helpers';
-import { Manager } from '../wrappers/V0.Manager';
+import { Manager } from '../wrappers/Manager';
 
 export async function run(provider: NetworkProvider) {
     const user = provider.sender();
@@ -10,7 +10,7 @@ export async function run(provider: NetworkProvider) {
 
     log('1. Пользователь вносит обеспечение, создается/обновляется контракт пользовательской позиции');
 
-    const collateralAmount = toNano(0.2);
+    const collateralAmount = toNano(addSupplyAmount);
     const currentPositionId = await manager.getLastPositionId();
 
     // передаем везде газ 1, после получим возврат
@@ -26,7 +26,7 @@ export async function run(provider: NetworkProvider) {
 
     console.log(`currentPositionId | ${currentPositionId}`);
     if (currentPositionId <= 0) {
-        await timer('Внесение обеспечения: проверка id', currentPositionId + 1n, manager.getLastPositionId);
+        await timer('Внесение обеспечения: id', currentPositionId + 1n, manager.getLastPositionId);
     } else {
         log('Без проверки supply баланса');
     }

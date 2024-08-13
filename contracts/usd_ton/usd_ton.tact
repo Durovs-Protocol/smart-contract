@@ -52,7 +52,7 @@ contract UsdTonMaster with Jetton, Deployable {
     /*
         from userPosition
     */
-    receive(msg: MintMessage) {
+    receive(msg: MintRequest) {
         //let userPositionAddress: Address = self._userPositionAddress(msg.user);
         //TODO проверка отправителя
         //require(sender() == userPositionAddress, "invalid sender");
@@ -62,7 +62,7 @@ contract UsdTonMaster with Jetton, Deployable {
     /*
         from userPosition
     */
-    receive(msg: BurnMessage) {
+    receive(msg: BurnRequest) {
         //TODO проверка отправителя
         //    require(sender() == userPositionAddress, "invalid sender");
         let winit: StateInit = self.getJettonWalletInit(msg.user);
