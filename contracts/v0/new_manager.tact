@@ -68,7 +68,7 @@ contract NewManager with Deployable, OwnableTransferable {
                 body: SetState{
                     collateral: msg.collateral,
                     debt: msg.debt,
-                    possitionAddress: msg.possitionAddress
+                    positionAddress: msg.positionAddress
                 }.toCell(),
                 code: init.code,
                 data: init.data
@@ -144,7 +144,7 @@ contract NewManager with Deployable, OwnableTransferable {
 
     receive(msg: AddPositionId){
         self.lastPositionId = self.lastPositionId + 1;
-        let init: StateInit = initOf NewPositionAddress(self.lastPositionId);
+        let init: StateInit = initOf NewPositionKeeper(self.lastPositionId, myAddress());
         let positionAddress: Address = contractAddress(init);
         send(SendParameters{
                 to: positionAddress,
@@ -183,7 +183,7 @@ contract NewManager with Deployable, OwnableTransferable {
     receive(msg: Migration){
         self.requireOwner();
         let jettonAmount: Int = 0;
-        let init: StateInit = initOf NewPositionAddress(msg.id);
+        let init: StateInit = initOf NewPositionKeeper(msg.id, myAddress());
         let positionAddress: Address = contractAddress(init);
         send(SendParameters{
                 to: positionAddress,
@@ -251,6 +251,11 @@ contract NewManager with Deployable, OwnableTransferable {
     get fun userPositionAddress(user: Address): Address {
         return self._userPositionAddress(user);
     }
+    get fun positionKeeper(id: Int): Address {
+        let init: StateInit = initOf NewPositionKeeper(id, myAddress());
+        let positionKeeper: Address = contractAddress(init);
+        return positionKeeper;
+    }
 
     get fun deps(): Deps {
         return self.deps;
@@ -269,21 +274,24 @@ contract NewManager with Deployable, OwnableTransferable {
     }
 }
 
-contract NewPositionAddress with Deployable {
+contract NewPositionKeeper with Deployable {
     id: Int as uint32;
     position: Address;
     manager: Address;
-    init(id: Int){
+    user: Address;
+
+    init(id: Int, manager: Address) {
         let ctx: Context = context();
+        self.manager = ctx.sender;
+        self.user = newAddress(0, 0);
         self.id = id;
         self.position = newAddress(0, 0);
-        self.manager = ctx.sender;
     }
 
     receive(msg: SetAddress){
-        // require(sender() == self.manager, "Invalid sender");
         require(self.position == newAddress(0, 0), "Already set");
         self.position = msg.position;
+        self.user = msg.user;
         send(SendParameters{
                 to: self.position,
                 bounce: false,
@@ -295,11 +303,21 @@ contract NewPositionAddress with Deployable {
     }
 
     receive(msg: MigrationRequest){
-        require(sender() == self.manager, "Invalid sender");
-        send(SendParameters{to: self.position, value: 0, mode: SendRemainingValue, bounce: true, body: msg.toCell()});
+        send(SendParameters{
+                to: self.position,
+                value: 0,
+                mode: SendRemainingValue + SendBounceIfActionFail,
+                bounce: true,
+                body: msg.toCell()
+            }
+        );
     }
 
-    get fun possition(): Address {
+    get fun position(): Address {
         return self.position;
+    }
+    
+    get fun user(): Address {
+        return self.user;
     }
 }

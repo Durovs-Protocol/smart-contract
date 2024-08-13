@@ -4,11 +4,6 @@ import "../utils/messages.tact";
 import "../utils/math.tact";
 import "../utils/helpers.tact";
 
-struct PositionState {
-    collateral: Int as coins;
-    debt: Int as uint64;
-}
-
 
 struct LiquidationParams {
     tonForBurn: Int as uint64;
@@ -153,7 +148,7 @@ contract UserPosition  {
                 bounce: true,
                 body: BuildPosition {
                     user: self.user,
-                    possitionAddress: self.user,
+                    positionAddress: self.user,
                     owner: msg.owner,
                     collateral: self.collateral,
                     debt: self.debt,

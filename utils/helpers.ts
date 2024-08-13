@@ -127,6 +127,13 @@ export async function loadAddress(name: string, nameSuffix?: string) {
     return await fs.promises.readFile(getFilename(name, nameSuffix), 'utf8');
 }
 
+
+
+export async function saveLog(name: string, log: any) {
+    const filename = `logs/migration/${name}.txt`;
+    await fs.promises.writeFile(filename, log);
+}
+
 export function log(message: string) {
     console.log('\n\n=============================================================================');
     console.log(message);

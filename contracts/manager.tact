@@ -151,7 +151,7 @@ contract Manager with Deployable, OwnableTransferable {
 
     receive(msg: AddPositionId) {
         self.lastPositionId = (self.lastPositionId + 1);
-        let init: StateInit = initOf PositionAddress(self.lastPositionId);
+        let init: StateInit = initOf PositionKeeper(self.lastPositionId);
         let positionAddress: Address = contractAddress(init);
 
         send(SendParameters {
@@ -241,7 +241,7 @@ contract Manager with Deployable, OwnableTransferable {
         let i: Int = 0;
         while (i <= self.lastPositionId) {           
 
-        let init: StateInit = initOf PositionAddress(i);
+        let init: StateInit = initOf PositionKeeper(i);
         let userPosition: Address = contractAddress(init);
         send(SendParameters{
                 to: userPosition,
@@ -381,16 +381,19 @@ contract Manager with Deployable, OwnableTransferable {
 }
 
 
-contract PositionAddress with Deployable {
+contract PositionKeeper with Deployable {
    
     id: Int as uint32;
     position: Address;
     manager: Address;
+    user: Address;
+
 
     init(id: Int) {
         let ctx: Context = context();
         self.id = id; 
         self.position = newAddress(0, 0);
+        self.user = newAddress(0, 0);
         self.manager = ctx.sender;
     }
 
@@ -398,7 +401,7 @@ contract PositionAddress with Deployable {
         require(sender() == self.manager, "Invalid sender");
         require(self.position == newAddress(0,0), "Already set");
         self.position = msg.position; 
-
+        self.user = msg.user;
         send(SendParameters{
             to: msg.user,
             bounce: false,
@@ -407,7 +410,7 @@ contract PositionAddress with Deployable {
         });
     }
 
-    get fun possition(): Address {
+    get fun position(): Address {
         return self.position;
     }
 }

@@ -2,7 +2,7 @@ import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { setupGas, tonPrice } from '../utils/data';
 import { loadAddress, timer } from '../utils/helpers';
-import { Manager } from '../wrappers/Manager';
+import { Manager } from '../wrappers/v1/Manager';
 
 export async function run(provider: NetworkProvider) {
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));

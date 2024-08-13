@@ -1,11 +1,6 @@
 import "./utils/messages.tact";
 import "./utils/helpers.tact";
 
-struct PositionState {
-    collateral: Int as coins;
-    debt: Int as uint64;
-}
-
 
             struct LiquidationParams {
     tonForBurn: Int as uint64;

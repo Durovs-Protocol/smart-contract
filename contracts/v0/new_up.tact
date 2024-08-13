@@ -4,6 +4,8 @@ import "../utils/math.tact";
 import "../utils/messages.tact";
 import "../utils/helpers.tact";
 
+
+
 contract NewUp  {
     const MinTonsForStorage: Int = ton("0.01");
     const GasConsumption: Int = ton("0.01");
@@ -59,5 +61,11 @@ contract NewUp  {
         send(SendParameters{to: self.manager, value: 0, mode: SendRemainingValue, bounce: false, body: OnMigrationComplete{
 
         }.toCell()});
+    }
+        get fun positionState(): PositionState  {
+        return PositionState{
+            collateral: self.collateral,
+            debt: self.debt
+        };
     }
 }

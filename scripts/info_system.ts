@@ -1,10 +1,10 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, fromNano } from '@ton/core';
 import { loadAddress, log } from '../utils/helpers';
-import { Manager } from '../wrappers/V0.Manager';
+import { Manager } from '../wrappers/v0.Manager';
 
-import { UsdTonMaster } from '../wrappers/UsdTon';
-import { ReservePool } from '../wrappers/V0.ReservePool';
+import { ReservePool } from '../wrappers/v0.ReservePool';
+import { UsdTonMaster } from '../wrappers/v1/UsdTon';
 
 /**
  *

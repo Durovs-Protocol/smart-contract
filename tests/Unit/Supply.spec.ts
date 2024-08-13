@@ -3,10 +3,10 @@ import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import '@ton/test-utils';
 import { addSupplyAmount, addSupplyGas, gasFee, testJettonParams, testRunecoinParams } from '../../utils/data';
 import { buildOnchainMetadata } from '../../utils/helpers';
-import { Manager } from '../../wrappers/Manager';
-import { Pool } from '../../wrappers/ReservePool';
 import { Runecoin } from '../../wrappers/Runecoin';
-import { UsdTonMaster } from '../../wrappers/UsdTon';
+import { Manager } from '../../wrappers/v1/Manager';
+import { Pool } from '../../wrappers/v1/ReservePool';
+import { UsdTonMaster } from '../../wrappers/v1/UsdTon';
 
 describe('Supply', () => {
     let blockchain: Blockchain;

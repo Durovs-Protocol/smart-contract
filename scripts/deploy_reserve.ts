@@ -2,7 +2,7 @@ import { NetworkProvider } from '@ton/blueprint';
 import { toNano } from '@ton/core';
 import { setupGas } from '../utils/data';
 import { saveAddress } from '../utils/helpers';
-import { ReservePool } from '../wrappers/V0.ReservePool';
+import { ReservePool } from '../wrappers/v0.ReservePool';
 
 export async function run(provider: NetworkProvider) {
     const reservePool = provider.open(await ReservePool.fromInit(provider.sender().address!));

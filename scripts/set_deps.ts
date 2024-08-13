@@ -2,11 +2,11 @@ import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { setupGas } from '../utils/data';
 import { loadAddress, log, timer } from '../utils/helpers';
-import { UsdTonMaster } from '../wrappers/UsdTon';
-import { Manager } from '../wrappers/V0.Manager';
-import { NewManager } from '../wrappers/V0.NewManager';
+import { Manager } from '../wrappers/v0.Manager';
+import { NewManager } from '../wrappers/v0.NewManager';
+import { UsdTonMaster } from '../wrappers/v1/UsdTon';
 
-import { ReservePool } from '../wrappers/V0.ReservePool';
+import { ReservePool } from '../wrappers/v0.ReservePool';
 
 export async function run(provider: NetworkProvider) {
     const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
@@ -57,7 +57,7 @@ export async function run(provider: NetworkProvider) {
             runaCoupon: runaCoupon.address,
         },
     );
-    await timer(`Setup manager address`, newManager.address, newManagerAddress(newManager));
+    await timer(`Setup new manager address`, newManager.address, newManagerAddress(newManager));
     log('Deps installed successfully');
 }
 

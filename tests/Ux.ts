@@ -2,14 +2,14 @@ import { toNano } from '@ton/core';
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import '@ton/test-utils';
 import { buildOnchainMetadata } from '../utils/helpers';
-import { Manager } from '../wrappers/Manager';
-import { Pool } from '../wrappers/ReservePool';
 import { Runecoin } from '../wrappers/Runecoin';
 import { RunecoinWallet } from '../wrappers/RunecoinWallet';
+import { Manager } from '../wrappers/v1/Manager';
+import { Pool } from '../wrappers/v1/ReservePool';
 
 import { jettonParams } from '../utils/data';
-import { UsdTonMaster } from '../wrappers/UsdTon';
-import { UserPosition } from '../wrappers/UserPosition';
+import { UsdTonMaster } from '../wrappers/v1/UsdTon';
+import { UserPosition } from '../wrappers/v1/UserPosition';
 
 describe('UserFlow', () => {
     let blockchain: Blockchain;

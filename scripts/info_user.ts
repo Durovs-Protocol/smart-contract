@@ -1,13 +1,13 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, fromNano } from '@ton/core';
 import { loadAddress, log } from '../utils/helpers';
-import { UsdTonMaster } from '../wrappers/UsdTon';
-import { UsdTonWallet } from '../wrappers/UsdTonWallet';
-import { Manager } from '../wrappers/V0.Manager';
-import { NewManager } from '../wrappers/V0.NewManager';
+import { Manager } from '../wrappers/v0.Manager';
+import { NewManager } from '../wrappers/v0.NewManager';
+import { NewUp } from '../wrappers/v0.NewUp';
+import { UserPosition } from '../wrappers/v0.UserPosition';
+import { UsdTonMaster } from '../wrappers/v1/UsdTon';
+import { UsdTonWallet } from '../wrappers/v1/UsdTonWallet';
 
-import { NewUp } from '../wrappers/V0.NewUp';
-import { UserPosition } from '../wrappers/V0.UserPosition';
 
 export async function run(provider: NetworkProvider) {
     log('User Position info');

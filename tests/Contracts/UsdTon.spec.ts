@@ -2,7 +2,7 @@ import { toNano } from '@ton/core';
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import '@ton/test-utils';
 import { buildOnchainMetadata } from '../../utils/helpers';
-import { UsdTonMaster } from '../../wrappers/UsdTon';
+import { UsdTonMaster } from '../../wrappers/v1/UsdTon';
 
 describe('UsdToncoin', () => {
     let blockchain: Blockchain;

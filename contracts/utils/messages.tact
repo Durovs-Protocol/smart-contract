@@ -12,6 +12,10 @@ struct JettonWalletData {
     master: Address;
     walletCode: Cell;
 }
+struct PositionState {
+    collateral: Int as coins;
+    debt: Int as uint64;
+}
 struct Message {
     timestamp: Int as uint64;
     message: String;
@@ -145,15 +149,16 @@ message MigrationRequest {
     profitPool: Address;
     usdton: Address;
 }
+
 message SetState {
     collateral: Int;
     debt: Int;
-    possitionAddress: Address;
+    positionAddress: Address;
 }
 message BuildPosition {
     user: Address;
     owner: Address;
-    possitionAddress: Address;
+    positionAddress: Address;
     collateral: Int;
     debt: Int;
     manager: Address;
@@ -165,7 +170,9 @@ message BuildPosition {
 message OnMigrationComplete {
     
 }
-
+message DeleteManager {
+    
+}
 //-----INCREASE POSITION ID & CREATING ADDRESS KEEPER CONTRACT
 message AddPositionId {
     user: Address;

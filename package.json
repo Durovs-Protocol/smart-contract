@@ -23,20 +23,23 @@
         "set-price": "yarn run-script set_price",
 
 
-        "V0-build": "blueprint build V0.manager &&  blueprint build V0.newManager",
-        "V0-deploy": "yarn V0-deploy-manager && yarn V0-deploy-new-manager",
-        "V0-deploy-reserve": "yarn  run-script deploy_reserve",
-        "V0-deploy-manager": "yarn run-script deploy_manager",
-        "V0-deploy-new-manager": "yarn run-script deploy_new_manager",
+        "v0-build": "blueprint build v0.manager &&  blueprint build v0.newManager",
+        "v0-deploy": "yarn v0-deploy-manager && yarn v0-deploy-new-manager",
+        "v0-deploy-reserve": "yarn  run-script deploy_reserve",
+        "v0-deploy-manager": "yarn run-script deploy_manager",
+        "v0-deploy-new-manager": "yarn run-script deploy_new_manager",
 
-        "V0-setup": "yarn V0-set-deps && yarn V0-set-settings && yarn V0-set-price",
-        "V0-set-settings": "yarn run-script set_settings",
-        "V0-set-deps": "yarn run-script set_deps",
-        "V0-set-price": "yarn run-script set_price",
+        "v0-setup": "yarn v0-set-deps && yarn v0-set-settings && yarn v0-set-price",
+        "v0-set-settings": "yarn run-script set_settings",
+        "v0-set-deps": "yarn run-script set_deps",
+        "v0-set-price": "yarn run-script set_price",
 
-        "V0-supply": "yarn run-script supply",
-        "V0-withdraw": "yarn run-scriptt withdraw",
-        "V0-migration": "yarn run-script migration",
+        "v0-supply": "yarn run-script supply",
+        "v0-withdraw": "yarn run-scriptt withdraw",
+        "v0-migration": "yarn run-script migration",
+        "v0-migration-special": "yarn run-script migration_special",
+        "v0-delete-manager": "yarn run-script delete_old_manager",
+
 
         "supply": "yarn run-script supply",
         "mint": "yarn run-script mint",

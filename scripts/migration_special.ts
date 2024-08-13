@@ -12,16 +12,18 @@ export async function run(provider: NetworkProvider) {
     const newManager = provider.open(await NewManager.fromAddress(Address.parse(await loadAddress('new_manager'))));
 
 
-    log('Миграция up');
+    log('Миграция конркетной up');
 
-    const currentPositionId = await manager.getLastPositionId();
+    const specialId: number = 1;
 
-    for (let i = 1; i <= currentPositionId; i++) {
-        const positionKeeperAddress = await manager.getPositionKeeper(BigInt(i))
+    const logName: string = `migration_${specialId}_attempt_${2}`;
+
+
+
+        const positionKeeperAddress = await manager.getPositionKeeper(BigInt(specialId))
         const positionKeeper = provider.open(await PositionKeeper.fromAddress(positionKeeperAddress));
         const userAddress = await positionKeeper.getUser()
         const positionAddress = await positionKeeper.getPosition()
-
 
         try {
             await manager.send(
@@ -30,24 +32,20 @@ export async function run(provider: NetworkProvider) {
                 {
                     $$type: 'Migration',
                     newManager: newManager.address,
-                    id: BigInt(i),
+                    id: BigInt(specialId)
                 },
             );
+            await timer(`Position${specialId} migration process`, specialId, newManager.getLastPositionId);
 
-            await timer(`Position${i} migration process`, i, newManager.getLastPositionId);
-
-            const newPositionKeeperAddress = await newManager.getPositionKeeper(BigInt(i))
+            const newPositionKeeperAddress = await newManager.getPositionKeeper(BigInt(specialId))
             const newPositionKeeper = provider.open(await NewPositionKeeper.fromAddress(newPositionKeeperAddress));
-
-            await provider.waitForDeploy(newPositionKeeper.address, 30);
-
             const userAddressFromUpdatedContract = await newPositionKeeper.getUser()
             const updatedPositionAddress = await newPositionKeeper.getPosition()
 
-            await saveLog(`migration_${i}`, `Migration complete: \n user from old position: ${userAddress};\noldPosition: ${positionAddress};
+            await saveLog(logName, `Migration complete: \n user from old position: ${userAddress};\noldPosition: ${positionAddress};
                 \nuser from new position: ${userAddressFromUpdatedContract}; \nnewPosition: ${updatedPositionAddress}`)
         } catch (error) {
-            await saveLog(`migration_${i}`, `Migration complete with errors:\nUser address: ${userAddress}; \nPosition: ${positionAddress}; \n Error: ${error}`)
+            await saveLog(logName, `Migration complete with errors:\nUser address: ${userAddress}; \nPosition: ${positionAddress}; \n Error: ${error}`)
         }
-    }
+
 }

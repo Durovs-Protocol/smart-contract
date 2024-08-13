@@ -2,7 +2,7 @@ import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { gas } from '../utils/data';
 import { loadAddress, log, timer } from '../utils/helpers';
-import { Manager } from '../wrappers/V0.Manager';
+import { Manager } from '../wrappers/v0.Manager';
 
 export async function run(provider: NetworkProvider) {
     const user = provider.sender();
