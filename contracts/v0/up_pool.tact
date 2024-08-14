@@ -4,31 +4,22 @@ import "../utils/messages.tact";
 import "../utils/math.tact";
 import "../utils/helpers.tact";
 
-
-struct LiquidationParams {
-    tonForBurn: Int as uint64;
-    fee: Int as uint64;
-    accountBalance: Int as uint64;
-    liquidationAmount: Int as uint64;
-    liquidationDebt: Int as uint64;
-    feeDebt: Int as uint64;
-    tonPrice: Int as uint64;
-}
-
 contract UserPosition  {
     const MinTonsForStorage: Int = ton("0.01");
     const GasConsumption: Int = ton("0.01");
+    
+    //settings
     user: Address;
-    manager: Address;
     positionAddress: Address;
+    manager: Address;
     reservePool: Address;
+    
+    //state
+    isActive: Bool = true;
     debt: Int;
     debtBeforeBurn: Int = 0;
-    isActive: Bool = true;
-
     collateral: Int;
     collateralBefore: Int = 0;
-    collateralAfterWithdraw: Int = 0;
 
     message: Message;
 
@@ -37,7 +28,6 @@ contract UserPosition  {
         self.manager = manager;
         self.reservePool = reservePool;
         self.positionAddress = newAddress(0,0);
-
 
         self.collateral = 0;
         self.debt = 0;
@@ -57,10 +47,13 @@ contract UserPosition  {
             }.toCell()
         });
     }
+
     receive(msg: SetPositionAddress) {
+        require(sender() == self.manager, "Runa protocol: not from positions manager");
+        require(msg.user == self.user, "Runa protocol: users mismatch");
 
         if (self.positionAddress == newAddress(0,0)) {
-          self.positionAddress = msg.address;
+            self.positionAddress = msg.address;
         }
         send(SendParameters{to: self.user, value: 0, mode: SendRemainingValue, bounce: false});
     }
@@ -68,9 +61,12 @@ contract UserPosition  {
     /* Supply */
     receive(msg: Supply) {
         require(self.isActive, "position is not active");
-        require(sender() == self.manager, "not from positionsManager");
+        require(sender() == self.manager, "Runa protocol: not from positions manager");
+        require(self.positionAddress != newAddress(0,0), "Runa protocol: position deployed with error");
 
-        let remainingValue: Int = myBalance() - (self.MinTonsForStorage + self.GasConsumption + ton("0.5"));
+        let ctx: Context = context();
+        let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
+
         if (remainingValue < msg.amount) {
             self.errorHandler("not enough tone for deposit and service fee");
             return;
@@ -95,15 +91,18 @@ contract UserPosition  {
     /* Supply */
     receive(msg: Withdraw) {
         require(self.isActive, "position is not active");
-        require(sender() == self.manager, "not from position manager");
-                require(self.positionAddress != newAddress(0,0), "Position deployed wuth error, support: support@yandex.ru");
+        require(sender() == self.manager, "Runa protocol: not from positions manager");
+        require(self.positionAddress != newAddress(0,0), "Runa protocol: position deployed with error");
+
+        let ctx: Context = context();
         let collateralAfterWithdraw: Int = self.collateral - msg.amount;
+
         if (!self.isHealthyForWithdraw(collateralAfterWithdraw, self.debt, msg.tonPrice, msg.settings)) {
             self.unhealthyPositionHandler(msg.user);
             return;
         }
 
-        let remainingValue: Int = myBalance() - (self.MinTonsForStorage + self.GasConsumption); 
+        let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption); 
 
         send(SendParameters{
             to: self.reservePool,
@@ -113,9 +112,12 @@ contract UserPosition  {
             body: WithdrawRequest {
                 amount: msg.amount,
                 user: self.user,
-
             }.toCell()
         });
+    }
+
+    bounced(msg: bounced<WithdrawRequest>) {
+        self.bouncedHandler();
     }
 
     receive(msg: WithdrawResponce) {
@@ -124,9 +126,15 @@ contract UserPosition  {
     self.collateral -= msg.amount;
 
     let ctx: Context = context();
-    let remainingValue: Int = ctx.value - (self.MinTonsForStorage + (self.GasConsumption * 2) + msg.amount); 
-    send(SendParameters{to: self.user, value: msg.amount, mode: SendIgnoreErrors + SendPayGasSeparately, bounce: false});
-    send(SendParameters{to: self.user, value: remainingValue, bounce: false});
+    let forwardValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption + msg.amount);
+
+    let comment: StringBuilder = beginString();
+        comment.append("Runa protocol: you have withdraw ");
+        comment.append(msg.amount.toString());
+        comment.append("and fee refund: ");
+        comment.append(forwardValue.toString());
+
+    send(SendParameters{to: self.user, value: forwardValue + msg.amount, mode: SendIgnoreErrors + SendPayGasSeparately, bounce: false, body: comment.toString().asComment() });
     }
 
 
@@ -136,27 +144,24 @@ contract UserPosition  {
     
     /* Migration */
     receive(msg: MigrationRequest) {
-        require(self.positionAddress != newAddress(0,0), "Position deployed wuth error, support: support@yandex.ru");
-        require(sender() == self.positionAddress, "not from position manager");
+        require(self.positionAddress != newAddress(0,0), "Runa protocol: position deployed with error");
+        require(sender() == self.positionAddress, "Runa protocol: not from position manager");
 
-        let remainingValue: Int = myBalance() - self.MinTonsForStorage;
+        let remainingValue: Int = myBalance() - (self.MinTonsForStorage + self.GasConsumption);
         self.isActive = false;
 
         send(SendParameters {
-                to: msg.manager,
+                to: self.manager,
                 value: remainingValue,
-                bounce: true,
+                bounce: false,
                 body: BuildPosition {
                     user: self.user,
-                    positionAddress: self.user,
-                    owner: msg.owner,
                     collateral: self.collateral,
                     debt: self.debt,
                     manager: msg.manager, 
                     reservePool: msg.reservePool, 
                     usdton: msg.usdton,
                     profitPool: msg.profitPool
-                    
                 }.toCell(),
             }
         );
@@ -178,7 +183,7 @@ contract UserPosition  {
                 bounce: false,
                 value: 0,
                 mode:  SendRemainingValue + SendIgnoreErrors ,
-                body: "error".asComment()
+                body: "Runa protocol: error".asComment()
             }
         );
     }
@@ -200,7 +205,7 @@ contract UserPosition  {
                 bounce: false,
                 value: 0,
                 mode: SendRemainingValue + SendIgnoreErrors,
-                body: "position is not healthy".asComment()
+                body: "Runa protocol: position is not healthy".asComment()
             });
     }
 
@@ -248,7 +253,9 @@ contract UserPosition  {
         return self.isActive;
     }
 }
-////////////////////////////////////////////////////////////////
+
+// ======POOL==================================================================
+
 contract ReservePool with Deployable, OwnableTransferable {
     const MinTonForStorage: Int = ton("0.01");
     const GasConsumption: Int = ton("0.01");
@@ -265,9 +272,7 @@ contract ReservePool with Deployable, OwnableTransferable {
             runaCoupon: newAddress(0, 0)
         };
     }
-    //=============================================================================
-    // Settings
-    //=============================================================================
+    // ------------------------Settings------------------------------------------------
     receive(msg: SetDeps){
         self.requireOwner();
         self.deps = Deps{
@@ -277,26 +282,34 @@ contract ReservePool with Deployable, OwnableTransferable {
             usdton: msg.usdton,
             runaCoupon: msg.runaCoupon
         };
-        self.reply("pool's dependencies set".asComment());
+        
+        self.reply("Runa protocol: pool's dependencies set".asComment());
     }
 
-    receive(msg: Supply){
+    receive(msg: Supply) {
+        let userPositionAddress: Address = self._userPositionAddress(msg.user);
+        require(sender() == userPositionAddress, "Runa protocol: invalid sender");
+
         let ctx: Context = context();
-        let remainingValue: Int = ctx.value - (msg.amount + self.GasConsumption);
+        let remainingValue: Int = ctx.value - (msg.amount + self.GasConsumption + self.MinTonForStorage);
+
+        let comment: StringBuilder = beginString();
+            comment.append("Runa protocol: Collateral added:");
+            comment.append(msg.amount.toString());
 
         send(SendParameters{
                 to: msg.user,
                 bounce: false,
                 value: remainingValue,
                 mode: (SendIgnoreErrors + SendPayGasSeparately),
-                body: "Collateral added".asComment()
+                body: comment.toString().asComment()
             }
         );
     }
 
     receive(msg: WithdrawRequest) {
         let userPositionAddress: Address = self._userPositionAddress(msg.user);
-        require(sender() == userPositionAddress, "invalid sender");
+        require(sender() == userPositionAddress, "Runa protocol: invalid sender");
 
         let ctx: Context = context();
         let remainingValue: Int = (ctx.value - self.GasConsumption);
@@ -310,6 +323,26 @@ contract ReservePool with Deployable, OwnableTransferable {
         );
     }
 
+    receive(msg: TokenNotification) {
+                        // queryId: msg.queryId,
+                        // amount: msg.amount,
+                        // from: msg.from,
+                        // forwardPayload: msg.forwardPayload
+                        
+        // let userPositionAddress: Address = self._userPositionAddress(msg.user);
+        // require(sender() == userPositionAddress, "Runa protocol: invalid sender");
+
+        // let ctx: Context = context();
+        // let remainingValue: Int = (ctx.value - self.GasConsumption);
+        // send(SendParameters{
+        //         to: sender(),
+        //         value: (msg.amount + remainingValue),
+        //         mode: SendBounceIfActionFail,
+        //         bounce: true,
+        //         body: WithdrawResponce{amount: msg.amount}.toCell()
+        //     }
+        // );
+    }
     // bounced(msg: bounced<WithdrawResponce>){
     //This message is small enough for bounce receiver, you need to remove bounced modifier. ??
     //TODO

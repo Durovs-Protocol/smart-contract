@@ -88,7 +88,7 @@ contract Manager with Deployable, OwnableTransferable {
     //=============================================================================
     /*01 | Внесение залога */
     // receive(msg: SupplyCollateralUserMessage){
-    //     require(sender() == msg.user, "Invalid sender");
+    //     require(sender() == msg.user, "Runa protocol: invalid sender");
     //     let ctx: Context = context();
     //     require(ctx.value >= ((msg.amount + self.GasConsumption) + self.MinTonForStorage), "not enough tons sent");
     //     require(msg.amount < self.settings.reserveMin, "tons amount is less than minimum possible");
@@ -305,7 +305,7 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     receive(msg: PositionLiquidationMessage) {
-        require(sender() == self.owner, "invalid sender");
+        require(sender() == self.owner, "Runa protocol: invalid sender");
         send(SendParameters{
                 to: self._userPositionAddress(msg.user),
                 value: 0,
@@ -398,7 +398,7 @@ contract PositionKeeper with Deployable {
     }
 
     receive(msg: SetAddress) {
-        require(sender() == self.manager, "Invalid sender");
+        require(sender() == self.manager, "Runa protocol: invalid sender");
         require(self.position == newAddress(0,0), "Already set");
         self.position = msg.position; 
         self.user = msg.user;

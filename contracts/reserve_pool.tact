@@ -38,9 +38,9 @@ contract ReservePool with Deployable, OwnableTransferable {
     //=============================================================================
     // Actions
     //=============================================================================
-    receive(msg: Supply){
+    receive(msg: Supply) {
         let ctx: Context = context();
-        let remainingValue: Int = ctx.value - (msg.amount + self.GasConsumption);
+        let remainingValue: Int = ctx.value - (msg.amount + self.GasConsumption + self.MinTonForStorage);
         send(SendParameters{
                 to: msg.user,
                 bounce: false,

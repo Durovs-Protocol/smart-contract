@@ -143,7 +143,6 @@ message Migration {
 }
 //up interface
 message MigrationRequest {
-    owner: Address;
     manager: Address;
     reservePool: Address;
     profitPool: Address;
@@ -153,12 +152,9 @@ message MigrationRequest {
 message SetState {
     collateral: Int;
     debt: Int;
-    positionAddress: Address;
 }
 message BuildPosition {
     user: Address;
-    owner: Address;
-    positionAddress: Address;
     collateral: Int;
     debt: Int;
     manager: Address;
@@ -181,9 +177,11 @@ message SetAddress {
     user: Address;
     position: Address;
 }
-//for safety check in up
+//for safety check in up (migration)
 message SetPositionAddress {
     address: Address;
+    user: Address;
+
 }
 
 //-----feedBack handlers

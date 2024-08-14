@@ -85,7 +85,7 @@ contract UserPosition  {
     // }
     receive(msg: Supply) {
 
-        // require(sender() == self.manager, "not from positionsManager");
+        // require(sender() == self.manager, "Runa protocol: not from positions manager");
         let remainingValue: Int = myBalance() - (self.MinTonsForStorage + self.GasConsumption);
         if (remainingValue < msg.amount) {
             self.errorHandler("not enough tone for deposit and service fee");
@@ -260,7 +260,7 @@ contract UserPosition  {
     }
         /*05 | Ликвидация (from manager)'*/
     receive(msg: PositionLiquidation) {
-        require(sender() == self.manager, "not from positions manager");
+        require(sender() == self.manager, "Runa protocol: not from positions manager");
         //проверка попадания позиции под ликвидацию
         if (self.isLiquid(self.collateral, self.debt, msg.tonPrice, msg.settings)) {
             send(SendParameters{

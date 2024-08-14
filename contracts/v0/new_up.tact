@@ -35,6 +35,8 @@ contract NewUp  {
         };
     }
     receive(msg: SetState) {
+        require(sender() == self.manager, "Runa protocol: not from positions manager");
+
         self.collateral = msg.collateral;
         self.debt = msg.debt;
 

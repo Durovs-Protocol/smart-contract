@@ -47,7 +47,7 @@ contract RunaCoupon with Jetton, Deployable {
     receive(msg: MintCoupon) {
         //let userPositionAddress: Address = self._userPositionAddress(msg.user);
         //TODO проверка отправителя
-        //require(sender() == userPositionAddress, "invalid sender");
+        //require(sender() == userPositionAddress, "Runa protocol: invalid sender");
         self.mint(msg.user, msg.amount, msg.user, msg.notificationAddress);
     }
 

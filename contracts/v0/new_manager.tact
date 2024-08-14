@@ -16,13 +16,16 @@ contract NewManager with Deployable, OwnableTransferable {
     deps: Deps;
     settings: Settings;
     owner: Address;
+    oldManager: Address;
+
     lastPositionId: Int as coins = 0;
     tonPrice: Int;
     totalCollateralAmount: Int as coins = 0;
     totalFeesCollected: Int as coins = 0;
     availableCoupons: Int as coins = 0;
-    init(owner: Address){
+    init(owner: Address, oldManager: Address){
         self.owner = owner;
+        self.oldManager = oldManager;
         self.settings = Settings{
             reserveRatio: 0,
             reserveMin: 0,
@@ -44,7 +47,7 @@ contract NewManager with Deployable, OwnableTransferable {
     //=============================================================================
     // Set Deps
     //=============================================================================
-    receive(msg: SetDeps){
+    receive(msg: SetDeps) {
         self.requireOwner();
         self.deps = Deps{
             manager: msg.manager,
@@ -56,10 +59,11 @@ contract NewManager with Deployable, OwnableTransferable {
         self.reply("manager's dependencies set".asComment());
     }
 
-    receive(msg: BuildPosition){
-        require(msg.owner == self.owner, "Invalid contract");
+    receive(msg: BuildPosition) {
+        require(sender() == self.oldManager, "Runa protocol: no access");
         let init: StateInit = initOf NewUp(msg.user, msg.usdton, msg.manager, msg.reservePool, msg.profitPool);
         let newUserPosition: Address = contractAddress(init);
+
         send(SendParameters{
                 to: newUserPosition,
                 value: 0,
@@ -68,7 +72,6 @@ contract NewManager with Deployable, OwnableTransferable {
                 body: SetState{
                     collateral: msg.collateral,
                     debt: msg.debt,
-                    positionAddress: msg.positionAddress
                 }.toCell(),
                 code: init.code,
                 data: init.data
@@ -191,7 +194,6 @@ contract NewManager with Deployable, OwnableTransferable {
                 mode: SendBounceIfActionFail,
                 bounce: true,
                 body: MigrationRequest{
-                    owner: self.owner,
                     manager: self.deps.manager,
                     reservePool: self.deps.reservePool,
                     usdton: self.deps.usdton,
@@ -297,7 +299,7 @@ contract NewPositionKeeper with Deployable {
                 bounce: false,
                 value: 0,
                 mode: SendRemainingValue,
-                body: SetPositionAddress{address: myAddress()}.toCell()
+                body: SetPositionAddress{address: myAddress(), user: self.user}.toCell()
             }
         );
     }

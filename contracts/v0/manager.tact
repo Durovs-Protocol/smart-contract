@@ -41,7 +41,7 @@ contract Manager with Deployable, OwnableTransferable {
     //=============================================================================
     // Set Deps
     //=============================================================================
-    receive(msg: SetDeps){
+    receive(msg: SetDeps) {
         self.requireOwner();
         self.deps = Deps{
             manager: msg.manager,
@@ -56,7 +56,7 @@ contract Manager with Deployable, OwnableTransferable {
     //=============================================================================
     // Set Settings
     //=============================================================================
-    receive(msg: SetSettings){
+    receive(msg: SetSettings) {
         self.requireOwner();
         self.settings = Settings{
             reserveRatio: msg.reserveRatio,
@@ -83,13 +83,11 @@ contract Manager with Deployable, OwnableTransferable {
     // User actions
     //=============================================================================
 
-    receive(msg: SupplyMessage){
+    receive(msg: SupplyMessage) {
         let ctx: Context = context();
-        require(ctx.value >= ((msg.amount + self.GasConsumption) + self.MinTonForStorage), "not enough TONs sent");
-        // require(msg.amount >= self.settings.reserveMin, "TONs amount is less than minimum possible");
-        //TODO рассчитать газ для всех дальнейших операций сразу
+        require(ctx.value >= ((msg.amount + self.GasConsumption) + self.MinTonForStorage), "Runa protocol: not enough TONs sent");
 
-        let valueToSendForward: Int = (context().value - self.MinTonForStorage) - self.GasConsumption;
+        let valueToSendForward: Int = ctx.value - (self.MinTonForStorage + self.GasConsumption);
         let init: StateInit = initOf UserPosition(sender(),
             self.deps.usdton,
             self.deps.manager,
@@ -97,6 +95,7 @@ contract Manager with Deployable, OwnableTransferable {
             self.deps.profitPool
         );
         let userPosition: Address = contractAddress(init);
+
         send(SendParameters{
                 to: userPosition,
                 value: valueToSendForward,
@@ -112,14 +111,15 @@ contract Manager with Deployable, OwnableTransferable {
                 data: init.data
             }
         );
-        self.totalCollateralAmount = self.totalCollateralAmount + msg.amount;
+
     }
 
-    bounced(msg: bounced<Supply>){
-        self.bouncedHandler();
+        // self.totalCollateralAmount = self.totalCollateralAmount + msg.amount;
+    bounced(msg: bounced<Supply>) {
+        self.bouncedHandler("Runa protocol: error in supply");
     }
 
-    receive(msg: AddPositionId){
+    receive(msg: AddPositionId) {
         self.lastPositionId = self.lastPositionId + 1;
         let init: StateInit = initOf PositionKeeper(self.lastPositionId, myAddress());
         let positionAddress: Address = contractAddress(init);
@@ -134,9 +134,12 @@ contract Manager with Deployable, OwnableTransferable {
             }
         );
     }
+    receive(msg: SetPositionAddress) {
+        send(SendParameters{to: msg.user, value: 0, mode: SendRemainingValue, bounce: false, body: msg.toCell()});
+    }
 
     /*04 | withdraw TON */
-    receive(msg: WithdrawMessage){
+    receive(msg: WithdrawMessage) {
         send(SendParameters{
                 to: self._userPositionAddress(sender()),
                 value: 0,
@@ -153,26 +156,37 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     bounced(msg: bounced<Withdraw>){
-        self.bouncedHandler();
+        self.bouncedHandler("Runa protocol: error in withdraw");
     }
 
     /* ==Migration== */
-    receive(msg: Migration){
+    receive(msg: Migration) {
         self.requireOwner();
         let init: StateInit = initOf PositionKeeper(msg.id, myAddress());
         let positionAddress: Address = contractAddress(init);
-        send(SendParameters{
+        send(SendParameters {
                 to: positionAddress,
                 value: 0,
                 mode: SendBounceIfActionFail + SendRemainingValue,
                 bounce: true,
                 body: MigrationRequest{
-                    owner: self.owner,
                     manager: msg.newManager,
                     reservePool: self.deps.reservePool,
                     usdton: self.deps.usdton,
                     profitPool: self.deps.profitPool
                 }.toCell()
+            }
+        );
+    }
+
+
+    receive(msg: BuildPosition) {
+        send(SendParameters{
+                to: msg.manager,
+                value: 0,
+                mode: SendRemainingValue,
+                bounce: true,
+                body: msg.toCell(),
             }
         );
     }
@@ -212,13 +226,13 @@ contract Manager with Deployable, OwnableTransferable {
         return (value - fee) + self.GasConsumption;
     }
 
-    fun bouncedHandler() {
+    fun bouncedHandler(reason: String) {
         send(SendParameters{
-                to: self.deps.profitPool,
+                to: self.deps.reservePool,
                 bounce: false,
                 value: 0,
                 mode: SendRemainingValue + SendBounceIfActionFail,
-                body: "error".asComment()
+                body: reason.asComment()
             }
         );
     }
@@ -262,6 +276,7 @@ contract PositionKeeper with Deployable {
     position: Address;
     manager: Address;
     user: Address;
+
     init(id: Int, manager: Address){
         let ctx: Context = context();
         self.manager = ctx.sender;
@@ -270,22 +285,22 @@ contract PositionKeeper with Deployable {
         self.position = newAddress(0, 0);
     }
 
-    receive(msg: SetAddress){
+    receive(msg: SetAddress) {
         require(self.position == newAddress(0, 0), "Already set");
         self.position = msg.position;
         self.user = msg.user;
 
         send(SendParameters{
-                to: self.position,
+                to: self.manager,
                 bounce: false,
                 value: 0,
                 mode: SendRemainingValue,
-                body: SetPositionAddress{address: myAddress()}.toCell()
+                body: SetPositionAddress{user: self.user, address: myAddress()}.toCell()
             }
         );
     }
 
-    receive(msg: MigrationRequest){
+    receive(msg: MigrationRequest) {
         send(SendParameters{
                 to: self.position,
                 value: 0,
