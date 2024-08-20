@@ -1,6 +1,7 @@
 import { Sha256 } from '@aws-crypto/sha256-js';
 import { Address, Cell, Dictionary, beginCell, toNano } from '@ton/core';
 import fs from 'fs';
+import { assets } from './data';
 
 const ONCHAIN_CONTENT_PREFIX = 0x00;
 const SNAKE_PREFIX = 0x00;
@@ -78,19 +79,22 @@ export async function timer(
     maxAttempts: number = 60,
 ) {
     let currentVal = await checkFunction();
+    console.log(currentVal);
+    console.log(newVal);
+
 
     console.log('=============================================================================');
 
     let attempt = 1;
 
-    if (newVal == currentVal && showLogs) {
+    if (newVal == currentVal) {
         console.log(`Finished | The same value was received | ${newVal} | ${currentVal}`);
         console.log('=============================================================================');
         return;
     }
 
     while (newVal != currentVal) {
-        console.log(`${message}, currentVal: ${currentVal} (attempts: ${attempt})`);
+        console.log(`${message}, currentVal: ${currentVal}, (attempts: ${attempt})`);
         await delay(3000);
         currentVal = await checkFunction();
         attempt++;
@@ -113,7 +117,7 @@ export function delay(ms: number) {
 }
 
 function getFilename(name: string, nameSuffix?: string) {
-    return `deploy${process.env.version === '0' ? '/' : '/v0/'}${name}${nameSuffix ? `_${nameSuffix}` : ''}.address`;
+    return `deploy${process.env.version?.includes('1') ? '/' : '/v0/'}${name}${nameSuffix ? `_${nameSuffix}` : ''}.address`;
 }
 
 export async function saveAddress(name: string, address: Address, nameSuffix?: string) {
@@ -139,3 +143,11 @@ export function log(message: string) {
     console.log(message);
     console.log('=============================================================================\n\n');
 }
+
+
+export const getBalanceValue = function (contract: any, index: number) {
+    return async function () {
+        const allBalances = await contract.getBalances();
+         return (allBalances.get(Address.parse(assets[index].master))) 
+    };
+};

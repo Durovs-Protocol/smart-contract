@@ -1,6 +1,6 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import '@ton/test-utils';
-import { UsdTonWallet } from '../../wrappers/v1/UsdTonWallet';
+import { UsdTonWallet } from '../../wrappers/UsdTonWallet';
 
 describe('UsdToncoinWallet', () => {
     let blockchain: Blockchain;

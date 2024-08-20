@@ -1,4 +1,4 @@
-import "../utils/messages.tact";
+import "../v1/utils/messages.tact";
 
 @interface("org.ton.jetton.wallet")
 contract RunaCouponWallet
@@ -44,8 +44,7 @@ contract RunaCouponWallet
                     from: self.owner,
                     responseAddress: self.owner,
                     forwardTonAmount: msg.forwardTonAmount,
-                    forwardPayload: msg.forwardPayload,
-                    notificationAddress: null
+                    forwardPayload: msg.forwardPayload
                 }.toCell(),
                 code: init.code,
                 data: init.data

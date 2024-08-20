@@ -1,7 +1,7 @@
-import "../user_position.tact";
+import "../v1/user_position.tact";
 import "./jetton.tact";
 import "./runa_coupon_wallet.tact";
-import "../utils/messages.tact";
+import "../v1/utils/messages.tact";
 import "@stdlib/deploy";
 
 

@@ -1,35 +1,40 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
-import { gas, withdrawAmount } from '../utils/data';
-import { loadAddress, log, timer } from '../utils/helpers';
+import { assets } from '../utils/data';
+import { getBalanceValue, loadAddress, log, timer } from '../utils/helpers';
 import { Manager } from '../wrappers/v0.Manager';
 import { UserPosition } from '../wrappers/v0.UserPosition';
 
 export async function run(provider: NetworkProvider) {
-    const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const user = provider.sender();
-    const withdraw = toNano(withdrawAmount);
-    log('03 | Пользователь возвращает залог' + withdrawAmount);
 
-    const getCollateralBalance = async function () {
-        const userPositionAddress = await manager.getUserPositionAddress(user.address as Address);
-        const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
-        const userPositionState = await userPosition.getPositionState();
-        return userPositionState.collateral;
-    };
+    const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
+    const userPositionAddress = await manager.getUserPositionAddress(user.address!!);
+    const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
 
-    let tonBalance = await getCollateralBalance();
+    const withdrawAmount = 1;
+    log('03 | Пользователь возвращает залог ' + withdrawAmount);
+    
+    //3 ton 0 jetton
+    const assetIndex = 0
 
-    console.log('withdrawAmount: ', withdrawAmount);
+    let oldBalance = 0n
+    try {
+        oldBalance =  await (await getBalanceValue(userPosition, assetIndex))()
+    } catch(e) {}
+    let balanceAfterWithdraw = oldBalance - toNano(withdrawAmount)
 
     await manager.send(
         user,
-        { value: toNano(gas) },
+        { value: toNano(1) },
         {
             $$type: 'WithdrawMessage',
-            amount: withdraw,
+            amount: toNano(withdrawAmount),
+            master: Address.parse(assets[assetIndex].master)
         },
     );
+    await timer(`'Погашение задолжности: баланс ${withdrawAmount} ${assets[assetIndex].name} `, balanceAfterWithdraw, getBalanceValue(userPosition, assetIndex));
 
-    await timer('Погашение задолжности: баланс', tonBalance - withdraw, getCollateralBalance, true);
 }
+
+

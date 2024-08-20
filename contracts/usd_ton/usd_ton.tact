@@ -1,13 +1,12 @@
-import "../user_position.tact";
+import "../v1/user_position.tact";
 import "./jetton.tact";
 import "./usd_ton_wallet.tact";
-import "../utils/messages.tact";
+import "../v1/utils/messages.tact";
 import "@stdlib/deploy";
 
 message Mint {
     amount: Int;
 }
-
 
 contract UsdTonMaster with Jetton, Deployable {
     totalSupply: Int as coins;

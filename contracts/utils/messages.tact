@@ -6,6 +6,11 @@ struct JettonData {
     content: Cell?;
     walletCode: Cell;
 }
+struct WithdrawTransactionInfo {
+    queryId: Int as uint64;
+    amount: Int;
+    master: Address;
+}
 struct JettonWalletData {
     balance: Int;
     owner: Address;
@@ -16,10 +21,7 @@ struct PositionState {
     collateral: Int as coins;
     debt: Int as uint64;
 }
-struct Message {
-    timestamp: Int as uint64;
-    message: String;
-}
+
 struct Settings {
     reserveRatio: Int;
     reserveMin: Int;
@@ -44,10 +46,27 @@ message SetSettings {
     liquidationRatio: Int;
 }
 
+struct Asset {
+    name: String;
+    poolWallet: Address;
+    op_code: Int;
+}
+
+message SetAssets {
+    assets:  map<Address, Asset>;
+}
+message SetBalances {
+    balances:  map<Address, Int>;
+}
+
 //-----SUPPLY
 //user interface
 message SupplyMessage {
-    amount: Int as coins;
+    amount: Int;
+    wallet: Address;
+    user: Address;
+    payload: Address;
+
 }
 //up interface
 message Supply {
@@ -55,11 +74,20 @@ message Supply {
     amount: Int as coins;
     settings: Settings;
     tonPrice: Int as coins;
+    wallet: Address;
+    payload: Address;
 }
+
 message SupplyNotification {
     user: Address;
     amount: Int as coins;
 }
+
+struct ManagerState {
+    totalSupplyed: Int;
+    totalMinted: Int;
+}
+
 //-----MINT
 //user interface
 message MintUsdTonMessage {
@@ -102,20 +130,30 @@ message BurnNotification {
 //user interface
 message WithdrawMessage {
     amount: Int as coins;
+    master: Address;
 }
+// message WithdrawNotification  {
+//     amount: Int as coins;
+//     payload: Address;
+//     name: String;
+
+// }
 //up interface
 message Withdraw {
     user: Address;
     amount: Int as coins;
-    settings: Settings;
-    tonPrice: Int;
+    master: Address;
 }
 message WithdrawResponce {
     amount: Int as coins;
+    master: Address;
 }
 message WithdrawRequest {
     amount: Int as coins;
     user: Address;
+    master: Address;
+    queryId: Int;
+
 }
 //-----LIQUIDATION
 //user interface
@@ -150,13 +188,11 @@ message MigrationRequest {
 }
 
 message SetState {
-    collateral: Int;
-    debt: Int;
+    balances: map<Address, Int>;
 }
 message BuildPosition {
     user: Address;
-    collateral: Int;
-    debt: Int;
+    balances: map<Address, Int>;
     manager: Address;
     reservePool: Address;
     profitPool: Address;
@@ -177,12 +213,11 @@ message SetAddress {
     user: Address;
     position: Address;
 }
-//for safety check in up (migration)
-message SetPositionAddress {
-    address: Address;
-    user: Address;
-
+message SetId {
+    id: Int;
 }
+
+
 
 //-----feedBack handlers
 message FeePayment {
@@ -203,7 +238,16 @@ message SetDeps {
 }
 
 
-
+message SetTransactionInfo {
+    amount: Int;
+    user:  Address;
+    master:  Address;
+    queryId:  Int as uint64;
+    position: Address;
+}
+message TonTransfer {
+    queryId: Int as uint64;
+}
 //-----JETTON interface
 message(0xf8a7ea5) TokenTransfer {
     queryId: Int as uint64;
@@ -221,7 +265,6 @@ message(0x178d4519) TokenTransferInternal {
     responseAddress: Address?;
     forwardTonAmount: Int as coins;
     forwardPayload: Slice as remaining;
-    notificationAddress: Address?;
 }
 message(0x7362d09c) TokenNotification {
     queryId: Int as uint64;

@@ -10,31 +10,23 @@ contract UserPosition  {
     
     //settings
     user: Address;
-    positionAddress: Address;
     manager: Address;
     reservePool: Address;
-    
     //state
     isActive: Bool = true;
-    debt: Int;
-    debtBeforeBurn: Int = 0;
-    collateral: Int;
-    collateralBefore: Int = 0;
+    balances: map<Address, Int>;
+    withdrawState: WithdrawTransactionInfo;
 
-    message: Message;
-
-    init(user: Address, usdton: Address, manager: Address, reservePool: Address, profitPool: Address) {
+    init(user: Address, usdton: Address, manager: Address, reservePool: Address, profitPool: Address, balances: map<Address, Int>) {
         self.user = user; 
         self.manager = manager;
         self.reservePool = reservePool;
-        self.positionAddress = newAddress(0,0);
+        self.balances = balances;
 
-        self.collateral = 0;
-        self.debt = 0;
-
-        self.message = Message{
-            timestamp: 0,
-            message: "Position Created"
+        self.withdrawState = WithdrawTransactionInfo{
+            queryId: 0,
+            amount: 0,
+            master: newAddress(0,0)
         };
 
         send(SendParameters {
@@ -48,61 +40,70 @@ contract UserPosition  {
         });
     }
 
-    receive(msg: SetPositionAddress) {
-        require(sender() == self.manager, "Runa protocol: not from positions manager");
-        require(msg.user == self.user, "Runa protocol: users mismatch");
 
-        if (self.positionAddress == newAddress(0,0)) {
-            self.positionAddress = msg.address;
-        }
-        send(SendParameters{to: self.user, value: 0, mode: SendRemainingValue, bounce: false});
-    }
-    
     /* Supply */
     receive(msg: Supply) {
         require(self.isActive, "position is not active");
         require(sender() == self.manager, "Runa protocol: not from positions manager");
-        require(self.positionAddress != newAddress(0,0), "Runa protocol: position deployed with error");
+
+        let ctx: Context = context();
+        let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
+        let currency: String = "";
+
+        let oldBalance: Int? = self.balances.get(msg.payload);
+
+        if (oldBalance != null) {
+
+        let newValue: Int = oldBalance!! + msg.amount;
+
+        self.balances.set(msg.payload, newValue);
+
+        let comment: StringBuilder = beginString();
+        comment.append("Runa protocol: you have supplied ");
+        comment.append(msg.amount.toString());
+
+        send(SendParameters{
+                to: self.user,
+                bounce: false,
+                value: remainingValue,
+                mode:  SendIgnoreErrors,
+                body: comment.toString().asComment()
+            }
+        );
+        } else {
+                    send(SendParameters{
+                to: self.user,
+                bounce: false,
+                value: remainingValue,
+                mode:  SendIgnoreErrors,
+                body: "Runa protocol: asset not found".asComment()
+            }
+        );
+        }
+    }
+
+    /* Withdraw */
+    receive(msg: Withdraw) {
+        require(self.isActive, "Runa protocol: position is not active");
+        require(sender() == self.manager, "Runa protocol: not from positions manager");
 
         let ctx: Context = context();
         let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
 
-        if (remainingValue < msg.amount) {
-            self.errorHandler("not enough tone for deposit and service fee");
+        if (!self.enoughFunds(msg.master, msg.amount)) {
+            send(SendParameters{
+                to: self.user,
+                value: ctx.value,
+                mode: SendIgnoreErrors,
+                bounce: false,
+                body: "Runa protocol:Not enough funds to withdraw".asComment()
+            });
             return;
         }
 
-        self.collateralBefore = self.collateral;
-        self.collateral = self.collateral + msg.amount;
-
-        send(SendParameters{
-                to: self.reservePool,
-                bounce: true,
-                value: remainingValue,
-                body: msg.toCell(),
-        });
-    }
-
-    bounced(msg: bounced<Supply>) {
-        self.collateral = self.collateralBefore;
-        self.bouncedHandler();
-    }
-
-    /* Supply */
-    receive(msg: Withdraw) {
-        require(self.isActive, "position is not active");
-        require(sender() == self.manager, "Runa protocol: not from positions manager");
-        require(self.positionAddress != newAddress(0,0), "Runa protocol: position deployed with error");
-
-        let ctx: Context = context();
-        let collateralAfterWithdraw: Int = self.collateral - msg.amount;
-
-        if (!self.isHealthyForWithdraw(collateralAfterWithdraw, self.debt, msg.tonPrice, msg.settings)) {
-            self.unhealthyPositionHandler(msg.user);
-            return;
-        }
-
-        let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption); 
+        self.withdrawState.queryId = random(0, 18446);
+        self.withdrawState.amount = msg.amount;
+        self.withdrawState.master = msg.master;
 
         send(SendParameters{
             to: self.reservePool,
@@ -111,42 +112,79 @@ contract UserPosition  {
             mode: SendBounceIfActionFail,
             body: WithdrawRequest {
                 amount: msg.amount,
-                user: self.user,
+                user: msg.user,
+                master: msg.master,
+                queryId: self.withdrawState.queryId
             }.toCell()
         });
     }
 
     bounced(msg: bounced<WithdrawRequest>) {
+        //TODO
         self.bouncedHandler();
     }
 
-    receive(msg: WithdrawResponce) {
-    require(sender() == self.reservePool, "message not from reserve pool");
+    receive(msg: TokenExcesses) {
+        let ctx: Context = context();
+        let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
+        if (self.withdrawState.queryId == msg.queryId) {
+            let newValue: Int = self.balances.get(self.withdrawState.master)!! -  self.withdrawState.amount;
+            self.balances.set(self.withdrawState.master, newValue);
+            self.clearTransactionState();
+            send(SendParameters{
+                to: self.user,
+                value: remainingValue,
+                mode: SendIgnoreErrors,
+                bounce: false,
+                body: "Runa protocol: withdraw was successful".asComment()
+            });
+        } else {
+            send(SendParameters{
+                to: self.user,
+                value: remainingValue,
+                mode: SendIgnoreErrors,
+                bounce: false,
+                body: "Runa protocol: unidentified withdraw transaction id".asComment()
+            });
+        }
+    }
+    receive(msg: TonTransfer) {
+        let ctx: Context = context();
+        let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
 
-    self.collateral -= msg.amount;
+        if (self.withdrawState.queryId == msg.queryId) {
+            let newValue: Int = self.balances.get(self.withdrawState.master)!! -  self.withdrawState.amount;
+            self.balances.set(self.withdrawState.master, newValue);
 
-    let ctx: Context = context();
-    let forwardValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption + msg.amount);
+            let comment: StringBuilder = beginString();
+            comment.append("Runa protocol: withdraw of: ");
+            comment.append(self.withdrawState.amount.toString());
+            comment.append(" ");
+            comment.append(self.withdrawState.master.toString());
+            comment.append("was successful");
 
-    let comment: StringBuilder = beginString();
-        comment.append("Runa protocol: you have withdraw ");
-        comment.append(msg.amount.toString());
-        comment.append("and fee refund: ");
-        comment.append(forwardValue.toString());
+            send(SendParameters{
+                to: self.user,
+                value: remainingValue,
+                mode: SendIgnoreErrors,
+                bounce: false,
+                body: comment.toString().asComment()
+            });
 
-    send(SendParameters{to: self.user, value: forwardValue + msg.amount, mode: SendIgnoreErrors + SendPayGasSeparately, bounce: false, body: comment.toString().asComment() });
+            self.clearTransactionState();
+        } else {
+            send(SendParameters{
+                to: self.user,
+                value: remainingValue,
+                mode: SendIgnoreErrors,
+                bounce: false,
+                body: "Runa protocol: unidentified withdraw transaction id".asComment()
+            });
+        }
     }
 
-
-    bounced(msg: bounced<Withdraw>) {
-        self.bouncedHandler();
-    }
-    
     /* Migration */
     receive(msg: MigrationRequest) {
-        require(self.positionAddress != newAddress(0,0), "Runa protocol: position deployed with error");
-        require(sender() == self.positionAddress, "Runa protocol: not from position manager");
-
         let remainingValue: Int = myBalance() - (self.MinTonsForStorage + self.GasConsumption);
         self.isActive = false;
 
@@ -156,8 +194,7 @@ contract UserPosition  {
                 bounce: false,
                 body: BuildPosition {
                     user: self.user,
-                    collateral: self.collateral,
-                    debt: self.debt,
+                    balances: self.balances,
                     manager: msg.manager, 
                     reservePool: msg.reservePool, 
                     usdton: msg.usdton,
@@ -170,12 +207,6 @@ contract UserPosition  {
     // Helpers
     //=============================================================================
 
-    fun isHealthyForWithdraw(collateral: Int, debt: Int, tonPrice: Int, settings: Settings): Bool {
-        if (debt == 0) {
-            return true;
-        }
-        return collateral * tonPrice / self.debt >= settings.liquidationRatio;
-    }
 
     fun bouncedHandler() {
         send(SendParameters{
@@ -187,6 +218,14 @@ contract UserPosition  {
             }
         );
     }
+    fun clearTransactionState() {
+        self.withdrawState = WithdrawTransactionInfo{
+            queryId: 0,
+            amount: 0,
+            master: newAddress(0,0)
+        };
+    }
+
     fun errorHandler(comment: String) {
         send(SendParameters{
                 to: self.user,
@@ -197,57 +236,25 @@ contract UserPosition  {
             }
         );
     }
-    fun unhealthyPositionHandler(user: Address) {
-            self.setMessage("position is not healthy");
-            // pay excess to user
-            send(SendParameters{
-                to: user,
-                bounce: false,
-                value: 0,
-                mode: SendRemainingValue + SendIgnoreErrors,
-                body: "Runa protocol: position is not healthy".asComment()
-            });
-    }
 
-    fun setMessage(msg: String) {
-        let updatedMessage: Message = Message{
-            timestamp: now(),
-            message: msg
-        };
-        self.message = updatedMessage;
+    fun enoughFunds(master: Address, amount: Int): Bool {
+        let currentBalance: Int? = self.balances.get(master);
+        if (currentBalance == null) {
+            return false;
+        } else {
+            return currentBalance!! >= amount;
+        }
     }
 
 
     //=============================================================================
     // Offchain interface
     //=============================================================================
-    get fun positionUser(): Address {
+    get fun user(): Address {
         return self.user;
     }
-    get fun positionAddressContract(): Address {
-        return self.positionAddress;
-    }
-
-    get fun positionState(): PositionState  {
-        return PositionState{
-            collateral: self.collateral,
-            debt: self.debt
-        };
-    }
-    get fun maxForWithdraw(tonPrice: Int, liquidationRatio: Int): Int {
-        if (self.debt == 0) {
-            return self.collateral;
-        } else {
-            let debtRatio: Int = self.collateral * tonPrice / self.debt;
-            if (debtRatio < liquidationRatio) {
-                return 0;
-            } else {
-                return ((debtRatio - liquidationRatio) * self.collateral) / 1000000000;
-            }
-        }
-    }
-    get fun message(): Message {
-        return self.message;
+    get fun balances(): map<Address, Int> {
+        return self.balances;
     }
     get fun status(): Bool {
         return self.isActive;
@@ -261,6 +268,8 @@ contract ReservePool with Deployable, OwnableTransferable {
     const GasConsumption: Int = ton("0.01");
     deps: Deps;
     owner: Address;
+    balances:  map<Address, Int>;
+    assets:  map<Address, Asset>;
 
     init(owner: Address){
         self.owner = owner;
@@ -271,6 +280,8 @@ contract ReservePool with Deployable, OwnableTransferable {
             usdton: newAddress(0, 0),
             runaCoupon: newAddress(0, 0)
         };
+        self.balances = emptyMap();
+        self.assets = emptyMap();
     }
     // ------------------------Settings------------------------------------------------
     receive(msg: SetDeps){
@@ -282,72 +293,127 @@ contract ReservePool with Deployable, OwnableTransferable {
             usdton: msg.usdton,
             runaCoupon: msg.runaCoupon
         };
-        
         self.reply("Runa protocol: pool's dependencies set".asComment());
     }
-
-    receive(msg: Supply) {
-        let userPositionAddress: Address = self._userPositionAddress(msg.user);
-        require(sender() == userPositionAddress, "Runa protocol: invalid sender");
-
+    receive(msg: SetBalances) {
+        self.requireOwner();
+        self.balances = msg.balances;
+        self.reply("Runa protocol: pool Balances template is set".asComment());
+    }
+    receive(msg: SetAssets) {
+        self.requireOwner();
+        self.assets = msg.assets;
+        self.reply("Runa protocol: Pool asset template set.".asComment());
+    }
+    receive(msg: TokenNotification) {
         let ctx: Context = context();
-        let remainingValue: Int = ctx.value - (msg.amount + self.GasConsumption + self.MinTonForStorage);
 
-        let comment: StringBuilder = beginString();
-            comment.append("Runa protocol: Collateral added:");
-            comment.append(msg.amount.toString());
+        let payload: Slice = msg.forwardPayload.preloadRef().beginParse();
+        let master: Address = payload.loadAddress();
+        let op: Int = payload.loadInt(64);
 
-        send(SendParameters{
-                to: msg.user,
-                bounce: false,
+        if (op == 1) {
+        // получение ton
+            if (ctx.value < (self.GasConsumption + self.MinTonForStorage + msg.amount)) {
+                    send(SendParameters{
+                    to: msg.from,
+                    value: ctx.value,
+                    mode: SendIgnoreErrors,
+                    bounce: false,
+                    body: "Runa protocol: error while recieving ton: not enought tons sended".asComment()
+                    });
+                    return 
+            }
+            let remainingValue: Int = ctx.value - (self.GasConsumption + self.MinTonForStorage + msg.amount);
+            send(SendParameters{
+                to: self.deps.manager,
                 value: remainingValue,
-                mode: (SendIgnoreErrors + SendPayGasSeparately),
-                body: comment.toString().asComment()
+                mode: SendBounceIfActionFail,
+                bounce: true,
+                body: SupplyMessage{amount: msg.amount, user: msg.from, wallet: sender(), payload: master }.toCell()
+            });
+        } else if (op == 2) { 
+        // получение jetton
+            let remainingValue: Int = ctx.value - (self.GasConsumption + self.MinTonForStorage);
+            send(SendParameters{
+                to: self.deps.manager,
+                value: remainingValue,
+                mode: SendBounceIfActionFail,
+                bounce: true,
+                body: SupplyMessage{amount: msg.amount, user: msg.from, wallet: sender(), payload: master }.toCell()
+            });
+        } else {
+        send(SendParameters{
+                to: msg.from,
+                value: ctx.value,
+                mode: SendIgnoreErrors,
+                bounce: false,
+                body: "Runa protocol: error while processing payment: unknown op code".asComment()
             }
         );
+        }
     }
 
     receive(msg: WithdrawRequest) {
         let userPositionAddress: Address = self._userPositionAddress(msg.user);
-        require(sender() == userPositionAddress, "Runa protocol: invalid sender");
+        require(sender() == userPositionAddress, "Runa protocol: no access to withdraw funds");
 
         let ctx: Context = context();
-        let remainingValue: Int = (ctx.value - self.GasConsumption);
-        send(SendParameters{
-                to: sender(),
-                value: (msg.amount + remainingValue),
-                mode: SendBounceIfActionFail,
+        let asset: Asset? = self.assets.get(msg.master);
+
+        if (asset != null) {
+            
+            if (msg.master == newAddress(0, 0)) {
+                let remainingValue: Int = msg.amount + (ctx.value - (self.GasConsumption + self.MinTonForStorage));
+
+                if (remainingValue <= myBalance()) {
+                send(SendParameters {
+                    to: sender(),
+                    value: remainingValue,
+                    bounce: true,
+                    body: TonTransfer{queryId: msg.queryId}.toCell()
+                    });
+                } else {
+                send(SendParameters{
+                to: msg.user,
+                value: remainingValue,
+                mode: SendIgnoreErrors,
+                bounce: false,
+                body: "Runa protocol: Error while attempting to withdraw (pull is empty).".asComment()
+            });
+                }
+
+            } else {
+                let remainingValue: Int = ctx.value - (self.GasConsumption + self.MinTonForStorage);
+                send(SendParameters {
+                to: asset!!.poolWallet,
+                value: remainingValue,
                 bounce: true,
-                body: WithdrawResponce{amount: msg.amount}.toCell()
+                body: TokenTransfer {
+                    amount: msg.amount,
+                    queryId: msg.queryId,
+                    destination: msg.user,
+                    responseDestination: sender(),
+                    forwardTonAmount: 0,
+                    forwardPayload: ("withdraw transfer").asSlice(), 
+                }.toCell()
+            });
+            }
+        } else {
+            send(SendParameters{
+                to: msg.user,
+                value: ctx.value,
+                mode: SendIgnoreErrors,
+                bounce: false,
+                body: "Runa protocol: error while withdraw (requested asset not found)".asComment()
             }
         );
+        }
     }
 
-    receive(msg: TokenNotification) {
-                        // queryId: msg.queryId,
-                        // amount: msg.amount,
-                        // from: msg.from,
-                        // forwardPayload: msg.forwardPayload
-                        
-        // let userPositionAddress: Address = self._userPositionAddress(msg.user);
-        // require(sender() == userPositionAddress, "Runa protocol: invalid sender");
-
-        // let ctx: Context = context();
-        // let remainingValue: Int = (ctx.value - self.GasConsumption);
-        // send(SendParameters{
-        //         to: sender(),
-        //         value: (msg.amount + remainingValue),
-        //         mode: SendBounceIfActionFail,
-        //         bounce: true,
-        //         body: WithdrawResponce{amount: msg.amount}.toCell()
-        //     }
-        // );
+    bounced(msg: bounced<TokenTransfer>) {
+        //TODO
     }
-    // bounced(msg: bounced<WithdrawResponce>){
-    //This message is small enough for bounce receiver, you need to remove bounced modifier. ??
-    //TODO
-    // }
-
     //=============================================================================
     // Helpers
     //=============================================================================
@@ -356,20 +422,22 @@ contract ReservePool with Deployable, OwnableTransferable {
             self.deps.usdton,
             self.deps.manager,
             self.deps.reservePool,
-            self.deps.profitPool
+            self.deps.profitPool,
+            self.balances
         );
         return contractAddress(init);
     }
     //=============================================================================
     // Offchain interface
     //=============================================================================
-
-    get fun getBalance(): Int {
-        return myBalance();
+    get fun balances(): map<Address, Int> {
+        return self.balances;
     }
 
     get fun deps(): Deps {
         return self.deps;
     }
-
+    get fun assets(): map<Address, Asset> {
+        return self.assets;
+    }
 }

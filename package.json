@@ -3,14 +3,18 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
-        "run-script": "npx blueprint run --testnet --mnemonic --tonviewer",
+        "run-script": "cd scripts/v1 && npx blueprint run --testnet --mnemonic --tonviewer",
+        "v0-run-script": "npx blueprint run --testnet --mnemonic --tonviewer",
+
         "action": "blueprint run",
-        "blueprint-build": "blueprint build",
-        "build": "rm -rf build && blueprint build manager && blueprint build profitPool && blueprint build reservePool && blueprint build usdTon  && blueprint build userPosition && blueprint build usdTonWallet && blueprint build runaCoupon && blueprint build runaCouponWallet",
+        "blueprint-build": "blueprint build ",
+        "build": "blueprint build manager && blueprint build profitPool && blueprint build reservePool && blueprint build usdTon  && blueprint build userPosition && blueprint build usdTonWallet && blueprint build runaCoupon && blueprint build runaCouponWallet",
         "test": "jest --verbose",
         "install": "yarn build && yarn deploy && yarn setup",
 
         "deploy": "yarn deploy-reserve && yarn deploy-profit && yarn deploy-usdton && yarn deploy-manager",
+
+        
         "deploy-reserve": "yarn run-script deploy_reserve",
         "deploy-profit": "yarn run-script deploy_profit",
         "deploy-usdton": "yarn run-script deploy_usd_ton",
@@ -24,22 +28,23 @@
 
 
         "v0-build": "blueprint build v0.manager &&  blueprint build v0.newManager",
-        "v0-deploy": "yarn v0-deploy-manager && yarn v0-deploy-new-manager",
-        "v0-deploy-reserve": "yarn  run-script deploy_reserve",
-        "v0-deploy-manager": "yarn run-script deploy_manager",
-        "v0-deploy-new-manager": "yarn run-script deploy_new_manager",
+        "v0-deploy": "yarn v0-deploy-manager && yarn v0-deploy-new-manager && yarn v0-deploy-reserve",
+        "v0-deploy-reserve": "yarn  v0-run-script deploy_reserve",
+        "v0-deploy-manager": "yarn v0-run-script deploy_manager",
+        "v0-deploy-new-manager": "yarn v0-run-script deploy_new_manager",
 
-        "v0-setup": "yarn v0-set-deps && yarn v0-set-settings && yarn v0-set-price",
-        "v0-set-settings": "yarn run-script set_settings",
-        "v0-set-deps": "yarn run-script set_deps",
-        "v0-set-price": "yarn run-script set_price",
+        "v0-setup": "yarn v0-set-deps && yarn v0-set-assets",
+        "v0-set-deps": "yarn v0-run-script set_deps",
+        "v0-set-assets": "yarn v0-run-script set_assets",
 
-        "v0-supply": "yarn run-script supply",
-        "v0-withdraw": "yarn run-scriptt withdraw",
-        "v0-migration": "yarn run-script migration",
-        "v0-migration-special": "yarn run-script migration_special",
-        "v0-delete-manager": "yarn run-script delete_old_manager",
-
+        "v0-supply": "yarn v0-run-script supply",
+        "v0-supply-ton": "yarn v0-run-script supply_ton",
+        "v0-withdraw": "yarn v0-run-script withdraw",
+        "v0-migration": "yarn v0-run-script migration",
+        "v0-migration-special": "yarn v0-run-script migration_special",
+        "v0-delete-manager": "yarn v0-run-script delete_old_manager",
+        "v0-info-system": "yarn v0-run-script info_system",
+        "v0-info-user": "yarn v0-run-script info_user",
 
         "supply": "yarn run-script supply",
         "mint": "yarn run-script mint",

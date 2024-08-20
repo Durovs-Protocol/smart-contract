@@ -1,5 +1,5 @@
 import "@stdlib/ownable";
-import "../utils/messages.tact";
+import "../v1/utils/messages.tact";
 import "./usd_ton_wallet.tact";
 @interface("org.ton.jetton.master")
 trait Jetton with OwnableTransferable {

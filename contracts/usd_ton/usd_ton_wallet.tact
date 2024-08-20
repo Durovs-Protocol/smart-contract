@@ -1,4 +1,4 @@
-import "../utils/messages.tact";
+import "../v1/utils/messages.tact";
 
 @interface("org.ton.jetton.wallet")
 contract UsdTonWallet
@@ -53,7 +53,7 @@ contract UsdTonWallet
         );
     }
 
-    receive(msg: TokenTransferInternal){
+    receive(msg: TokenTransferInternal) {
         // Check sender
         let ctx: Context = context();
         if (ctx.sender != self.master) {
