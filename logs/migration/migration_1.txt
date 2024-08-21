@@ -1,0 +1,6 @@
+Migration complete: 
+ user from old position: EQAS_Lm-_bZHA2ws1kywURrlUhc48WVTY1LXz_rlIbCaGZrs;
+oldPosition: EQCimntvG5mcRNR1rrja0THUotIxF_a71XF8iE5ex5AHCjHq;
+                
+user from new position: EQAS_Lm-_bZHA2ws1kywURrlUhc48WVTY1LXz_rlIbCaGZrs; 
+newPosition: EQD72jFQnICSoQW3tHSS-GoJDmyZMOlngGdNVxLQMS-sn19h

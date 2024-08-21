@@ -1,3 +1,6 @@
+
+
+
 /**
  * Общие настройки
  */
@@ -10,6 +13,30 @@ export const reserveMin: number = 1; // TON
 export const burnMin: number = 1; // $
 export const serviceFeePercent: number = 0.1;
 export const serviceFee: number = 1; // $
+//проверку в нотиф
+// это тестовые адреса
+export const assets = [
+    {
+        name: 'stakedTON',
+        master: 'kQB6gF0_-_NAAeH_bBnmEQDUwpYfQbG9tOCnlTfKhFDZtkOd',
+        pool_wallet: 'kQC88eS0BDflRJu-jpdkB8wxs4zi7zvKfZAx2_p7ilu5Hctv'
+    },
+    {
+        name: 'hipoStakedTON',
+        master: 'kQB1BFKmd4h7XzxpkrFZ-JieDRKSFo0JqIn0dy7yj_zGEZ28',
+        pool_wallet: 'kQDZoH57-fWcxWHieZMMbAmS3DV1L6gnhSktYi4ZYnxRpnP3'
+    },
+    {
+        name: 'tonstakers',
+        master: 'kQCTmPSSaqftyLnWCKFF-fXb0sNKXGH0GcKMviMyBG9DIMav',
+        pool_wallet: 'kQDZoH57-fWcxWHieZMMbAmS3DV1L6gnhSktYi4ZYnxRpnP3'
+    },
+    {
+        name: 'toncoin',
+        master: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
+        pool_wallet: 'kQDZoH57-fWcxWHieZMMbAmS3DV1L6gnhSktYi4ZYnxRpnP3'
+    },
+]
 
 /**
  * Supply
@@ -55,6 +82,13 @@ export const usdTONJettonParams = {
     name: `ton-usd-${Date.now()}`,
     symbol: 'RunaUSD',
     description: 'Algorithmic Stable coin (USD) on TON',
+    image: 'https://ipfs.io/ipfs/QmPSGcz4TyDo3qShEymZRQRavKKRRbiLPHYs9GUgbtwEwx',
+};
+
+export const runaUSDCouponParams = {
+    name: `runa-usd-coupon-${Date.now()}`,
+    symbol: 'RunaUSDCoupon',
+    description: 'Coupon for rate stabilization',
     image: 'https://ipfs.io/ipfs/QmPSGcz4TyDo3qShEymZRQRavKKRRbiLPHYs9GUgbtwEwx',
 };
 

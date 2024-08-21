@@ -91,7 +91,7 @@ describe('Supply', () => {
             deployer.getSender(),
             { value: collateralAmount + toNano(addSupplyGas) },
             {
-                $$type: 'DepositCollateralUserMessage',
+                $$type: 'SupplyCollateralUserMessage',
                 user: deployer.getSender().address as Address,
                 amount: toNano(addSupplyAmount),
             },

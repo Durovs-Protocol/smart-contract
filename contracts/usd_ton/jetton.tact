@@ -1,5 +1,5 @@
 import "@stdlib/ownable";
-import "../utils/messages.tact";
+import "../v1/utils/messages.tact";
 import "./usd_ton_wallet.tact";
 @interface("org.ton.jetton.master")
 trait Jetton with OwnableTransferable {
@@ -50,7 +50,7 @@ trait Jetton with OwnableTransferable {
     fun requireWallet(owner: Address) {
         let ctx: Context = context();
         let winit: StateInit = self.getJettonWalletInit(owner);
-        require(contractAddress(winit) == ctx.sender, "Invalid sender");
+        require(contractAddress(winit) == ctx.sender, "Runa protocol: invalid sender");
     }
 
     virtual fun getJettonWalletInit(address: Address): StateInit {

@@ -1,55 +1,85 @@
 import { NetworkProvider } from '@ton/blueprint';
-import { Address, fromNano } from '@ton/core';
+import { Address, Dictionary, fromNano } from '@ton/core';
 import { loadAddress, log } from '../utils/helpers';
-import { Manager } from '../wrappers/Manager';
-import { ProfitPool } from '../wrappers/ProfitPool';
-import { ReservePool } from '../wrappers/ReservePool';
-import { UsdTonMaster } from '../wrappers/UsdTon';
+import { Asset, Manager } from '../wrappers/v0.Manager';
+
+import { assets } from '../utils/data';
+import { ReservePool } from '../wrappers/v0.ReservePool';
+// import { UsdTonMaster } from '../wrappers/v1/UsdTon';
 
 /**
  *
  * @param provider
  */
 export async function run(provider: NetworkProvider) {
-    log('System setting information');
-
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
-    const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));
-    const profitPool = provider.open(await ProfitPool.fromAddress(Address.parse(await loadAddress('profitPool'))));
     const reservePool = provider.open(await ReservePool.fromAddress(Address.parse(await loadAddress('reservePool'))));
 
-    log(
-        'Manager:        ' +
-            manager.address.toString() +
-            '\nprofit pool:  ' +
-            profitPool.address.toString() +
-            '\nreserve pool: ' +
-            reservePool.address.toString() +
-            '\nusdTon:       ' +
-            usdTon.address.toString(),
-    );
+    await showPoolWallets(manager, 'manager')
+    await showPoolWallets(reservePool, 'reservePool')
+
+    await showDeps(manager, 'manager')
+    await showDeps(reservePool, 'reservePool')
 
     let settings = await manager.getSettings();
-    let tonPrice = await manager.getTonPrice();
 
     log(
-        'Reserve pool:    ' +
+        'System setting information'.toUpperCase() +
+        'Reserve pool           :' +
             fromNano(settings.reserveRatio) +
             ' %' +
-            '\nReserve min: ' +
+            '\nReserve min      :' +
             fromNano(settings.reserveMin) +
             ' (ton)' +
-            '\nService fee:       ' +
+            '\nService fee      :' +
             fromNano(settings.serviceFeePercent) +
             ' %' +
-            '\nService fee min:   ' +
+            '\nService fee min  :' +
             fromNano(settings.serviceFee) +
             ' $' +
-            '\nTon price:         ' +
-            fromNano(tonPrice) +
-            ' $' +
-            '\nBurn min:    ' +
+            '\nBurn min         :' +
             fromNano(settings.burnMin) +
             ' (ton)',
     );
+
+    // console.log(await reservePool.getOp())
+    // console.log(await reservePool.getMaster())
+    // console.log(await reservePool.getPayload())
+
+
+
+    async function showPoolWallets(contract: any, name: string) {
+        const allAssets: Dictionary<Address, Asset> = await contract.getAssets();
+        const stakedTON = allAssets.get(Address.parse(assets[0].master))?.poolWallet.toString()
+        const hipoStakedTON = allAssets.get(Address.parse(assets[1].master))?.poolWallet.toString()
+        const tonstakers = allAssets.get(Address.parse(assets[2].master))?.poolWallet.toString()
+        const toncoin = allAssets.get(Address.parse(assets[3].master))?.poolWallet.toString()
+        log(
+            `Assets in ${name}`.toUpperCase() +
+            'Staked TON pool wallet :    ' +
+                stakedTON ?? '' +
+                '\nHipo Staked TON pool wallet: ' +
+                hipoStakedTON ?? '' +
+                '\nTon Stakers pool wallet:       ' +
+                tonstakers ?? '' +
+                '\nToncoin pool wallet:   ' +
+                toncoin ?? ''
+        );
+    }
+    async function showDeps(contract: any, name: string) {
+        const deps = await contract.getDeps();
+
+        log(
+            `deps in ${name}`.toUpperCase() +
+            'manager :    ' +
+                deps.manager.toString() +
+                '\nreservePool: ' +
+                deps.reservePool.toString() +
+                '\nprofitPool:       ' +
+                deps.profitPool.toString() +
+                '\nusdton:   ' +
+                deps.usdton.toString()
+        );
+    }
+
 }

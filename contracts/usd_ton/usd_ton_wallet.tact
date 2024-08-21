@@ -1,4 +1,4 @@
-import "../utils/messages.tact";
+import "../v1/utils/messages.tact";
 
 @interface("org.ton.jetton.wallet")
 contract UsdTonWallet
@@ -17,9 +17,9 @@ contract UsdTonWallet
     receive(msg: TokenTransfer){
         // Check sender
         let ctx: Context = context();
-        require(ctx.sender == self.owner, "Invalid sender");
+        require(ctx.sender == self.owner, "Runa protocol: invalid sender");
         // Update balance
-        self.balance = (self.balance - msg.amount);
+        self.balance = self.balance - msg.amount;
         require(self.balance >= 0, "Invalid balance");
         // Gas checks
         let fwdFee: Int = ctx.readForwardFee();
@@ -27,7 +27,9 @@ contract UsdTonWallet
         if (msg.forwardTonAmount > 0) {
             fwdCount = 2;
         }
-        require(ctx.value > ((fwdCount * fwdFee + 2 * self.gasConsumption) + self.minTonsForStorage), "Invalid value");
+        require(ctx.value > (((fwdCount * fwdFee) + (2 * self.gasConsumption)) + self.minTonsForStorage),
+            "Invalid value"
+        );
         // Send tokens
         let init: StateInit = initOf UsdTonWallet(self.master, msg.destination);
         let walletAddress: Address = contractAddress(init);
@@ -51,20 +53,20 @@ contract UsdTonWallet
         );
     }
 
-    receive(msg: TokenTransferInternal){
+    receive(msg: TokenTransferInternal) {
         // Check sender
         let ctx: Context = context();
         if (ctx.sender != self.master) {
             let sinit: StateInit = initOf UsdTonWallet(self.master, msg.from);
-            require(contractAddress(sinit) == ctx.sender, "Invalid sender");
+            require(contractAddress(sinit) == ctx.sender, "Runa protocol: invalid sender");
         }
         // Update balance
-        self.balance = (self.balance + msg.amount);
+        self.balance = self.balance + msg.amount;
         require(self.balance >= 0, "Invalid balance");
         // Adjust value for gas
         let msgValue: Int = ctx.value;
-        let tonBalanceBeforeMsg: Int = (myBalance() - msgValue);
-        let storageFee: Int = (self.minTonsForStorage - min(tonBalanceBeforeMsg, self.minTonsForStorage));
+        let tonBalanceBeforeMsg: Int = myBalance() - msgValue;
+        let storageFee: Int = self.minTonsForStorage - min(tonBalanceBeforeMsg, self.minTonsForStorage);
         if (msg.notificationAddress != null) {
             msgValue = (msgValue - (storageFee + self.gasConsumption * 2));
             send(SendParameters{
@@ -80,7 +82,7 @@ contract UsdTonWallet
         // Forward ton
         if (msg.forwardTonAmount > 0) {
             let fwdFee: Int = ctx.readForwardFee();
-            msgValue = (msgValue - (msg.forwardTonAmount + fwdFee));
+            msgValue = msgValue - (msg.forwardTonAmount + fwdFee);
             send(SendParameters{
                     to: self.owner,
                     value: msg.forwardTonAmount,
@@ -112,10 +114,10 @@ contract UsdTonWallet
         let ctx: Context = context();
         if (ctx.sender != self.master) {
             let sinit: StateInit = initOf UsdTonWallet(self.master, msg.from);
-            require(contractAddress(sinit) == ctx.sender, "Invalid sender");
+            require(contractAddress(sinit) == ctx.sender, "Runa protocol: invalid sender");
         }
         // Update balance
-        self.balance = (self.balance + msg.amount);
+        self.balance = self.balance + msg.amount;
         require(self.balance >= 0, "Invalid balance");
         // оповещение об успешной покупке
         send(SendParameters{
@@ -136,12 +138,12 @@ contract UsdTonWallet
         let jettonAmount: Int = msg.loadCoins();
         require(op == 0x178d4519 || op == 0x7bdd97de, "Invalid bounced message");
         // Update balance
-        self.balance = (self.balance + jettonAmount);
+        self.balance = self.balance + jettonAmount;
     }
 
     // usdTon related method
 
-    receive(msg: BurnMessage){
+    receive(msg: BurnRequest){
         /* check if called by master
         if balance >= amount
         decrease balance
@@ -150,22 +152,21 @@ contract UsdTonWallet
         if balance < amount - error, userStatus.message(error)
         */
 
-        require(sender() == self.master, "Invalid sender");
+        require(sender() == self.master, "Runa protocol: invalid sender");
         // todo add bounced handler in master
         require((self.balance - msg.amount) >= 0, "Invalid balance");
-        self.balance = (self.balance - msg.amount);
+        self.balance = self.balance - msg.amount;
         // todo error on this check
         // require(ctx.value > fwdFee + 2 * self.GasConsumption + self.MinTonsForStorage, "Invalid value");
 
         send(SendParameters{
                 to: self.master,
                 value: 0,
-                mode: (SendRemainingValue + SendIgnoreErrors),
+                mode: SendRemainingValue + SendIgnoreErrors,
                 bounce: true,
                 body: BurnNotification{
                     amount: msg.amount,
                     user: msg.user,
-                    reservePool: msg.reservePool,
                     withdrawalAmount: msg.withdrawalAmount,
                     fee: msg.fee,
                     notificationAddress: msg.notificationAddress

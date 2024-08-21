@@ -46,7 +46,7 @@ contract Manager with Deployable, OwnableTransferable {
             usdTonAddress: msg.usdTonAddress,
             runecoinAddress: msg.runecoinAddress
         };
-        self.reply("manager's dependencies set".asComment());
+        self.reply("Manager's dependencies set".asComment());
     }
 
     receive(msg: SetPoolSettings){
@@ -57,7 +57,7 @@ contract Manager with Deployable, OwnableTransferable {
             liquidationFee: msg.liquidationFee,
             minHealthRate: msg.minHealthRate
         };
-        self.reply("Pool settings updated".asComment());
+        self.reply("Pool Settings have been updated".asComment());
     }
 
     //=============================================================================
@@ -67,7 +67,7 @@ contract Manager with Deployable, OwnableTransferable {
     receive(msg: UpdateTonPriceMsg){
         self.requireOwner();
         self.tonPrice = msg.price;
-        self.reply("Ton price updated".asComment());
+        self.reply("TON price updated".asComment());
     }
 
     //=============================================================================
@@ -83,7 +83,7 @@ contract Manager with Deployable, OwnableTransferable {
         let userPosition: Address = contractAddress(init);
         require(sender() == msg.user, "Invalid sender");
         let ctx: Context = context();
-        require(ctx.value >= (msg.amount + self.GasConsumption + self.MinTonForStorage), "not enough tons sent");
+        require(ctx.value >= (msg.amount + self.GasConsumption + self.MinTonForStorage), "Insufficient TONs sent");
         //TODO рассчитать газ для всех дальнейших операций сразу
 
         let valueToSendForward: Int = ctx.value - (self.GasConsumption + self.MinTonForStorage);

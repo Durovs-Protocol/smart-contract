@@ -9,13 +9,13 @@ import { Runecoin } from '../../wrappers/Runecoin';
 import { RunecoinWallet } from '../../wrappers/RunecoinWallet';
 
 import {
-    gasFee,
-    liquidationFee,
-    liquidationRatio,
-    stabilityFeeRate,
-    testJettonParams,
-    testRunecoinParams,
-    tonPrice,
+        gasFee,
+        liquidationFee,
+        liquidationRatio,
+        stabilityFeeRate,
+        testJettonParams,
+        testRunecoinParams,
+        tonPrice,
 } from '../../utils/data';
 import { UsdTonMaster } from '../../wrappers/UsdTon';
 

@@ -1,44 +1,116 @@
-message DepositMessage {
-    amount: Int as coins;
+//-----structs
+struct JettonData {
+    totalSupply: Int;
+    mintable: Bool;
+    owner: Address;
+    content: Cell?;
+    walletCode: Cell;
 }
-message Deposit {
+struct WithdrawTransactionInfo {
+    queryId: Int as uint64;
+    amount: Int;
+    master: Address;
+}
+struct JettonWalletData {
+    balance: Int;
+    owner: Address;
+    master: Address;
+    walletCode: Cell;
+}
+struct PositionState {
+    collateral: Int as coins;
+    debt: Int as uint64;
+}
+
+struct Settings {
+    reserveRatio: Int;
+    reserveMin: Int;
+    burnMin: Int;
+    serviceFeePercent: Int;
+    serviceFee: Int;
+    liquidationRatio: Int;
+}
+struct Deps {
+    manager: Address;
+    profitPool: Address;
+    reservePool: Address;
+    usdton: Address;
+    runaCoupon: Address;
+}
+message SetSettings {
+    reserveRatio: Int;
+    reserveMin: Int;
+    burnMin: Int;
+    serviceFeePercent: Int;
+    serviceFee: Int;
+    liquidationRatio: Int;
+}
+
+struct Asset {
+    name: String;
+    poolWallet: Address;
+    op_code: Int;
+}
+
+message SetAssets {
+    assets:  map<Address, Asset>;
+}
+message SetBalances {
+    balances:  map<Address, Int>;
+}
+
+//-----SUPPLY
+//user interface
+message SupplyMessage {
+    amount: Int;
+    wallet: Address;
+    user: Address;
+    payload: Address;
+
+}
+//up interface
+message Supply {
     user: Address;
     amount: Int as coins;
     settings: Settings;
     tonPrice: Int as coins;
+    wallet: Address;
+    payload: Address;
 }
+
+message SupplyNotification {
+    user: Address;
+    amount: Int as coins;
+}
+
+struct ManagerState {
+    totalSupplyed: Int;
+    totalMinted: Int;
+}
+
+//-----MINT
+//user interface
 message MintUsdTonMessage {
     amount: Int as coins;
 }
-message BurnUsdTonMessage {
-    amount: Int as coins;
-    fee: Int as uint64;
-}
-message WithdrawMessage {
-    amount: Int as coins;
-}
-message Withdraw {
-    user: Address;
-    amount: Int as coins;
-    settings: Settings;
-    tonPrice: Int;
-}
-message WithdrawResponce {
-    amount: Int as coins;
-}
-message WithdrawRequest {
-    amount: Int as coins;
-}
-message DepositNotification {
-    user: Address;
-    amount: Int as coins;
-}
+//up interface
 message MintUsdTon {
     user: Address;
     amount: Int as uint64;
     settings: Settings;
     tonPrice: Int as coins;
 }
+
+message OnMintComplete {
+    amount: Int as coins;
+}
+//-----BURN
+//user interface
+message BurnUsdTonMessage {
+    amount: Int as coins;
+    fee: Int as uint64;
+}
+//up interface
 message BurnUsdTon {
     user: Address;
     amount: Int as uint64;
@@ -47,112 +119,136 @@ message BurnUsdTon {
     deps: Deps;
     fee: Int as uint64;
 }
-message FeePayment {
-    amount: Int as uint64;
-    user: Address;
-}
-
-// usdTonMaster messages
-
-struct JettonData {
-    totalSupply: Int;
-    mintable: Bool;
-    owner: Address;
-    content: Cell?;
-    walletCode: Cell;
-}
-struct JettonWalletData {
-    balance: Int;
-    owner: Address;
-    master: Address;
-    walletCode: Cell;
-}
-
-// userPosition messages
-
-message SetUserPositionDependecyMessage {
-    usdTonAddress: Address;
-    managerAddress: Address;
-}
-message SetPositionIdMessage {
-    user: Address;
-    positionId: Int;
-}
-message AddPositionId {
-    user: Address;
-}
-message SetPositionAddressMessage {
-    user: Address;
-    position: Address;
-}
-
-// usdTonMaster messages
-
-message MintMessage {
-    user: Address;
-    amount: Int as coins;
-    notificationAddress: Address?;
-}
-message OnMintComplete {
-    amount: Int as coins;
-}
-message DexMessage {
-    walletOwner: Address;
-    amount: Int as coins;
-    position: Address;
-    price: Int;
-}
-message DexNotification {
-    amount: Int as coins;
-    position: Address;
-}
-message OnLiquidationComplete {
-    amount: Int;
-}
-message BurnMessage {
-    user: Address;
-    amount: Int as coins;
-    reservePool: Address;
-    withdrawalAmount: Int;
-    fee: Int;
-    notificationAddress: Address?;
-}
-// пересмотреть когда выйдет новая версия
 message BurnNotification {
     user: Address;
     amount: Int as coins;
-    reservePool: Address;
     withdrawalAmount: Int;
     fee: Int;
     notificationAddress: Address?;
 }
-message PositionLiquidationInspectorMessage {
+//-----WITHDRAW
+//user interface
+message WithdrawMessage {
+    amount: Int as coins;
+    master: Address;
+}
+// message WithdrawNotification  {
+//     amount: Int as coins;
+//     payload: Address;
+//     name: String;
+
+// }
+//up interface
+message Withdraw {
+    user: Address;
+    amount: Int as coins;
+    master: Address;
+}
+message WithdrawResponce {
+    amount: Int as coins;
+    master: Address;
+}
+message WithdrawRequest {
+    amount: Int as coins;
+    user: Address;
+    master: Address;
+    queryId: Int;
+
+}
+//-----LIQUIDATION
+//user interface
+message PositionLiquidationMessage {
     user: Address;
 }
+//up interface
 message PositionLiquidation {
     settings: Settings;
     user: Address;
     tonPrice: Int as coins;
 }
-message LiquidationPool {
+message DoLiquidation {
     position: Address;
     user: Address;
     amount: Int;
     price: Int;
 }
-message UsdTonBurned {
+
+//-----MIGRATION
+//user interface
+message Migration {
+    newManager: Address;
+    id: Int;
+}
+//up interface
+message MigrationRequest {
+    manager: Address;
+    reservePool: Address;
+    profitPool: Address;
+    usdton: Address;
+}
+
+message SetState {
+    balances: map<Address, Int>;
+}
+message BuildPosition {
     user: Address;
-    amount: Int as coins;
-    withdrawalAmount: Int;
-    fee: Int;
-    notificationAddress: Address?;
+    balances: map<Address, Int>;
+    manager: Address;
+    reservePool: Address;
+    profitPool: Address;
+    usdton: Address;
 }
-message OnBurnComplete {
-    ton: Int as coins;
-    usdton: Int as coins;
-    fee: Int;
+
+message OnMigrationComplete {
+    
 }
-// jetton messages
+message DeleteManager {
+    
+}
+//-----INCREASE POSITION ID & CREATING ADDRESS KEEPER CONTRACT
+message AddPositionId {
+    user: Address;
+}
+message SetAddress {
+    user: Address;
+    position: Address;
+}
+message SetId {
+    id: Int;
+}
+
+
+
+//-----feedBack handlers
+message FeePayment {
+    amount: Int as uint64;
+    user: Address;
+}
+
+//-----SETTINGS
+message UpdateTonPriceMsg {
+    price: Int as coins;
+}
+message SetDeps {
+    manager: Address;
+    profitPool: Address;
+    reservePool: Address;
+    usdton: Address;
+    runaCoupon: Address;
+}
+
+
+message SetTransactionInfo {
+    amount: Int;
+    user:  Address;
+    master:  Address;
+    queryId:  Int as uint64;
+    position: Address;
+}
+message TonTransfer {
+    queryId: Int as uint64;
+}
+//-----JETTON interface
 message(0xf8a7ea5) TokenTransfer {
     queryId: Int as uint64;
     amount: Int as coins;
@@ -169,16 +265,6 @@ message(0x178d4519) TokenTransferInternal {
     responseAddress: Address?;
     forwardTonAmount: Int as coins;
     forwardPayload: Slice as remaining;
-    notificationAddress: Address?;
-}
-message TokenTransferInternalDex {
-    queryId: Int as uint64;
-    amount: Int as coins;
-    from: Address;
-    responseAddress: Address?;
-    forwardTonAmount: Int as coins;
-    forwardPayload: Slice as remaining;
-    notificationAddress: Address?;
 }
 message(0x7362d09c) TokenNotification {
     queryId: Int as uint64;
@@ -192,41 +278,76 @@ message(0xd53276db) TokenExcesses {
 message TokenUpdateContent {
     content: Cell?;
 }
-message SetDeps {
-    manager: Address;
-    profitPool: Address;
-    reservePool: Address;
-    usdton: Address;
+//-----RUNA USDTON interface
+message MintRequest {
+    user: Address;
+    amount: Int as coins;
+    notificationAddress: Address?;
 }
-struct Deps {
-    manager: Address;
-    profitPool: Address;
-    reservePool: Address;
-    usdton: Address;
+//burn/liquidation
+message BurnRequest {
+    user: Address;
+    amount: Int as coins;
+    withdrawalAmount: Int;
+    fee: Int;
+    notificationAddress: Address?;
+}
+message OnBurnComplete {
+    ton: Int as coins;
+    usdton: Int as coins;
+    fee: Int;
+}
+//-----DEX IMITATION
+message DexMessage {
+    walletOwner: Address;
+    amount: Int as coins;
+    position: Address;
+    price: Int;
+}
+message TokenTransferInternalDex {
+    queryId: Int as uint64;
+    amount: Int as coins;
+    from: Address;
+    responseAddress: Address?;
+    forwardTonAmount: Int as coins;
+    forwardPayload: Slice as remaining;
+    notificationAddress: Address?;
+}
+message DexNotification {
+    amount: Int as coins;
+    position: Address;
 }
 
-// manager
 
-message SetSettings {
-    reserveRatio: Int;
-    reserveMin: Int;
-    burnMin: Int;
-    serviceFeePercent: Int;
-    serviceFee: Int;
-    liquidationRatio: Int;
+//-----NEW FEATURES(not complete)-----
+message MintCoupon {
+    user: Address;
+    amount: Int as coins;
+    notificationAddress: Address;
 }
-struct Settings {
-    reserveRatio: Int;
-    reserveMin: Int;
-    burnMin: Int;
-    serviceFeePercent: Int;
-    serviceFee: Int;
-    liquidationRatio: Int;
+message CreateCoupons {
 }
-message UpdateTonPriceMsg {
-    price: Int as coins;
+message DeleteCoupons {
 }
-
-// message(0x00000000) CommentReciever {
-//     text: String;
-// }
+message BuyCoupons {
+    amount: Int;
+}
+message AccrualMessage {
+    user: Address;
+    amount: Int as coins;
+    notificationAddress: Address?;
+}
+message OnAccrualComplete {
+    amount: Int as coins;
+}
+message OnMintCouponsComplete {
+    amount: Int as coins;
+}
+message CorrectRate {
+}
+message GetAccrual {
+}
+message AccrualJetton {
+    total: Int;
+    jettonAmount: Int;
+}

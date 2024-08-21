@@ -1,7 +1,7 @@
-import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { toNano } from '@ton/core';
-import { Manager } from '../../wrappers/Manager';
+import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import '@ton/test-utils';
+import { Manager } from '../../wrappers/Manager';
 
 describe('Manager', () => {
     let blockchain: Blockchain;

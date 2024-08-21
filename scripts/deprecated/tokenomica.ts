@@ -14,6 +14,7 @@ export async function run(provider: NetworkProvider) {
         Dictionary.Keys.Address(),
         Dictionary.Values.BigVarUint(4),
     );
+    
     let holdersInfo: any = {};
 
     for (const holder of holders) {
@@ -23,6 +24,8 @@ export async function run(provider: NetworkProvider) {
         holdersData.set(Address.parse(walletAddress), toNano(holder.percent / 100));
     }
 
+    
+    
     await rune.send(
         user,
         { value: toNano(0.1) },

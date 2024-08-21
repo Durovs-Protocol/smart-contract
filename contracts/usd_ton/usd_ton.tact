@@ -1,13 +1,12 @@
-import "../user_position.tact";
+import "../v1/user_position.tact";
 import "./jetton.tact";
 import "./usd_ton_wallet.tact";
-import "../utils/messages.tact";
+import "../v1/utils/messages.tact";
 import "@stdlib/deploy";
 
 message Mint {
     amount: Int;
 }
-
 
 contract UsdTonMaster with Jetton, Deployable {
     totalSupply: Int as coins;
@@ -26,7 +25,8 @@ contract UsdTonMaster with Jetton, Deployable {
             manager: newAddress(0, 0),
             profitPool: newAddress(0, 0),
             reservePool: newAddress(0, 0),
-            usdton: newAddress(0, 0)
+            usdton: newAddress(0, 0),
+            runaCoupon: newAddress(0, 0),
         };
         self.message = "";
     }
@@ -37,7 +37,8 @@ contract UsdTonMaster with Jetton, Deployable {
             manager: msg.manager,
             profitPool: msg.profitPool,
             reservePool: msg.reservePool,
-            usdton: msg.usdton
+            usdton: msg.usdton,
+                        runaCoupon: msg.runaCoupon,
         };
         self.reply("usdton's dependencies set".asComment());
     }
@@ -50,19 +51,19 @@ contract UsdTonMaster with Jetton, Deployable {
     /*
         from userPosition
     */
-    receive(msg: MintMessage) {
+    receive(msg: MintRequest) {
         //let userPositionAddress: Address = self._userPositionAddress(msg.user);
         //TODO проверка отправителя
-        //require(sender() == userPositionAddress, "invalid sender");
+        //require(sender() == userPositionAddress, "Runa protocol: invalid sender");
         self.mint(msg.user, msg.amount, msg.user, msg.notificationAddress);
     }
 
     /*
         from userPosition
     */
-    receive(msg: BurnMessage) {
+    receive(msg: BurnRequest) {
         //TODO проверка отправителя
-        //    require(sender() == userPositionAddress, "invalid sender");
+        //    require(sender() == userPositionAddress, "Runa protocol: invalid sender");
         let winit: StateInit = self.getJettonWalletInit(msg.user);
         let walletAddress: Address = contractAddress(winit);
 
@@ -108,7 +109,7 @@ contract UsdTonMaster with Jetton, Deployable {
                     responseAddress: responseAddress,
                     forwardTonAmount: 0,
                     forwardPayload: emptySlice(),
-                    notificationAddress: null
+                    notificationAddress: null,
                 }.toCell(),
                 code: winitPool.code,
                 data: winitPool.data
@@ -126,7 +127,7 @@ contract UsdTonMaster with Jetton, Deployable {
                     responseAddress: responseAddress,
                     forwardTonAmount: 0,
                     forwardPayload: emptySlice(),
-                    notificationAddress: notificationAddress
+                    notificationAddress: notificationAddress,
                 }.toCell(),
                 code: winit.code,
                 data: winit.data

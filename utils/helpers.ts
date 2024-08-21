@@ -1,6 +1,7 @@
 import { Sha256 } from '@aws-crypto/sha256-js';
 import { Address, Cell, Dictionary, beginCell, toNano } from '@ton/core';
 import fs from 'fs';
+import { assets } from './data';
 
 const ONCHAIN_CONTENT_PREFIX = 0x00;
 const SNAKE_PREFIX = 0x00;
@@ -71,36 +72,35 @@ export function cell(pram: string) {
 }
 
 export async function timer(
-    message: string, 
-    action: string, 
-    newVal: any, 
-    checkFunction: Function, 
-    showLogs: boolean = false, 
-    maxAttempts: number = 60) {
-
+    message: string,
+    newVal: any,
+    checkFunction: Function,
+    showLogs: boolean = false,
+    maxAttempts: number = 60,
+) {
     let currentVal = await checkFunction();
+    console.log(currentVal);
+    console.log(newVal);
 
-    if(showLogs){
-        console.log(`Started | ${message} | newVal: ${newVal}, currentVal: ${currentVal}`);
-    }
+
     console.log('=============================================================================');
 
     let attempt = 1;
 
-    if (newVal == currentVal && showLogs) {
+    if (newVal == currentVal) {
         console.log(`Finished | The same value was received | ${newVal} | ${currentVal}`);
         console.log('=============================================================================');
         return;
     }
 
     while (newVal != currentVal) {
-        console.log(`${action} (attempts: ${attempt})`);
+        console.log(`${message}, currentVal: ${currentVal}, (attempts: ${attempt})`);
         await delay(3000);
         currentVal = await checkFunction();
         attempt++;
-        if(maxAttempts < attempt){
+        if (maxAttempts < attempt) {
             log('Attemps limit');
-            return;
+            throw new Error('Max attempt exceeded');
         }
     }
 
@@ -109,9 +109,7 @@ export async function timer(
 }
 
 export function numberFormat(val: String) {
-    return new Intl.NumberFormat().format(
-        Number(val),
-      );
+    return new Intl.NumberFormat().format(Number(val));
 }
 
 export function delay(ms: number) {
@@ -119,7 +117,7 @@ export function delay(ms: number) {
 }
 
 function getFilename(name: string, nameSuffix?: string) {
-    return `deploy/${name}${nameSuffix ? `_${nameSuffix}` : ''}.address`;
+    return `deploy${process.env.version?.includes('1') ? '/' : '/v0/'}${name}${nameSuffix ? `_${nameSuffix}` : ''}.address`;
 }
 
 export async function saveAddress(name: string, address: Address, nameSuffix?: string) {
@@ -133,8 +131,23 @@ export async function loadAddress(name: string, nameSuffix?: string) {
     return await fs.promises.readFile(getFilename(name, nameSuffix), 'utf8');
 }
 
-export function log(message: string){
+
+
+export async function saveLog(name: string, log: any) {
+    const filename = `logs/migration/${name}.txt`;
+    await fs.promises.writeFile(filename, log);
+}
+
+export function log(message: string) {
     console.log('\n\n=============================================================================');
     console.log(message);
     console.log('=============================================================================\n\n');
 }
+
+
+export const getBalanceValue = function (contract: any, index: number) {
+    return async function () {
+        const allBalances = await contract.getBalances();
+         return (allBalances.get(Address.parse(assets[index].master))) 
+    };
+};
