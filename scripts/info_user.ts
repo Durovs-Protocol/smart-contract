@@ -2,10 +2,10 @@ import { NetworkProvider } from '@ton/blueprint';
 import { Address, Dictionary, fromNano } from '@ton/core';
 import { assets } from '../utils/data';
 import { loadAddress, log } from '../utils/helpers';
-import { Manager } from '../wrappers/v0.Manager';
-import { NewManager } from '../wrappers/v0.NewManager';
-import { NewUp } from '../wrappers/v0.NewUp';
-import { UserPosition } from '../wrappers/v0.UserPosition';
+import { Manager } from '../wrappers/V0.Manager';
+import { NewManager } from '../wrappers/V0.NewManager';
+import { NewUp } from '../wrappers/V0.NewUp';
+import { UserPosition } from '../wrappers/V0.UserPosition';
 export async function run(provider: NetworkProvider) {
     log('User Position info');
 

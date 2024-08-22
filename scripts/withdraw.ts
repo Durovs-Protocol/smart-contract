@@ -2,8 +2,8 @@ import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { assets } from '../utils/data';
 import { getBalanceValue, loadAddress, log, timer } from '../utils/helpers';
-import { Manager } from '../wrappers/v0.Manager';
-import { UserPosition } from '../wrappers/v0.UserPosition';
+import { Manager } from '../wrappers/V0.Manager';
+import { UserPosition } from '../wrappers/V0.UserPosition';
 
 export async function run(provider: NetworkProvider) {
     const user = provider.sender();
@@ -16,7 +16,7 @@ export async function run(provider: NetworkProvider) {
     log('03 | Пользователь возвращает залог ' + withdrawAmount);
     
     //3 ton 0 jetton
-    const assetIndex = 0
+    const assetIndex = 3
 
     let oldBalance = 0n
     try {

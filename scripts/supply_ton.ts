@@ -4,9 +4,9 @@ import { Address, beginCell, toNano } from '@ton/core';
 import { assets } from '../utils/data';
 import { getBalanceValue, loadAddress, timer } from '../utils/helpers';
 
-import { Manager } from '../wrappers/v0.Manager';
-import { ReservePool } from '../wrappers/v0.ReservePool';
-import { UserPosition } from '../wrappers/v0.UserPosition';
+import { Manager } from '../wrappers/V0.Manager';
+import { ReservePool } from '../wrappers/V0.ReservePool';
+import { UserPosition } from '../wrappers/V0.UserPosition';
 export async function run(provider: NetworkProvider) {
 
 
