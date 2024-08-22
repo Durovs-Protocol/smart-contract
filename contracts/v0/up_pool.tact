@@ -322,7 +322,7 @@ contract ReservePool with Deployable, OwnableTransferable {
                     bounce: false,
                     body: "Runa protocol: error while recieving ton: not enought tons sended".asComment()
                     });
-                    return 
+                    return;
             }
             let remainingValue: Int = ctx.value - (self.GasConsumption + self.MinTonForStorage + msg.amount);
             send(SendParameters{
