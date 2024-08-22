@@ -20,7 +20,7 @@
         "set-deps": "yarn run-script set_deps",
         "set-settings": "yarn run-script set_settings",
         "set-price": "yarn run-script set_price",
-        "v0-build": "blueprint build v0.manager &&  blueprint build v0.newManager",
+        "v0-build": "yarn build && blueprint build v0.manager &&  blueprint build v0.newManager",
         "v0-deploy": "yarn v0-deploy-manager && yarn v0-deploy-new-manager && yarn v0-deploy-reserve",
         "v0-deploy-reserve": "yarn  v0-run-script deploy_reserve",
         "v0-deploy-manager": "yarn v0-run-script deploy_manager",
