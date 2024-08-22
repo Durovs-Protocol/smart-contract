@@ -310,8 +310,8 @@ message TokenTransferInternalDex {
     from: Address;
     responseAddress: Address?;
     forwardTonAmount: Int as coins;
-    forwardPayload: Slice as remaining;
     notificationAddress: Address?;
+    forwardPayload: Slice as remaining;
 }
 message DexNotification {
     amount: Int as coins;

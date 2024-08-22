@@ -382,7 +382,6 @@ contract ReservePool with Deployable, OwnableTransferable {
                 body: "Runa protocol: Error while attempting to withdraw (pull is empty).".asComment()
             });
                 }
-
             } else {
                 let remainingValue: Int = ctx.value - (self.GasConsumption + self.MinTonForStorage);
                 send(SendParameters {
@@ -393,10 +392,10 @@ contract ReservePool with Deployable, OwnableTransferable {
                     amount: msg.amount,
                     queryId: msg.queryId,
                     destination: msg.user,
-                    responseDestination: sender(),
                     forwardTonAmount: 0,
-                    customPayload: emptyCell(),
-                    forwardPayload: ("withdraw transfer").asSlice(), 
+                    customPayload: null,
+                    responseDestination: sender(),
+                    forwardPayload: emptySlice(),
                 }.toCell()
             });
             }

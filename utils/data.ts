@@ -19,7 +19,7 @@ export const assets = [
     {
         name: 'stakedTON',
         master: 'kQB6gF0_-_NAAeH_bBnmEQDUwpYfQbG9tOCnlTfKhFDZtkOd',
-        pool_wallet: '0QAmrmGHZuyhnrjtKxL3UWr-C0WxhYg1xp-4P7uWp-uzsmg3'
+        pool_wallet: 'kQCw8wGtlakbf7AY1JIrvz3bPea_OiMGvy9ZjIPvhoBSyuNq'
     },
     {
         name: 'hipoStakedTON',

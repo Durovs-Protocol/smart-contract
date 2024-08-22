@@ -5,38 +5,29 @@
     "scripts": {
         "run-script": "cd scripts/v1 && npx blueprint run --testnet --mnemonic --tonviewer",
         "v0-run-script": "npx blueprint run --testnet --mnemonic --tonviewer",
-
         "action": "blueprint run",
         "blueprint-build": "blueprint build ",
         "build": "blueprint build manager && blueprint build profitPool && blueprint build reservePool && blueprint build usdTon  && blueprint build userPosition && blueprint build usdTonWallet && blueprint build runaCoupon && blueprint build runaCouponWallet",
         "test": "jest --verbose",
         "install": "yarn build && yarn deploy && yarn setup",
-
         "deploy": "yarn deploy-reserve && yarn deploy-profit && yarn deploy-usdton && yarn deploy-manager",
-
-        
         "deploy-reserve": "yarn run-script deploy_reserve",
         "deploy-profit": "yarn run-script deploy_profit",
         "deploy-usdton": "yarn run-script deploy_usd_ton",
         "deploy-manager": "yarn run-script deploy_manager",
         "deploy-coupon": "yarn run-script deploy_coupon",
-
         "setup": "yarn set-deps && yarn set-settings && yarn set-price",
         "set-deps": "yarn run-script set_deps",
         "set-settings": "yarn run-script set_settings",
         "set-price": "yarn run-script set_price",
-
-
         "v0-build": "blueprint build v0.manager &&  blueprint build v0.newManager",
         "v0-deploy": "yarn v0-deploy-manager && yarn v0-deploy-new-manager && yarn v0-deploy-reserve",
         "v0-deploy-reserve": "yarn  v0-run-script deploy_reserve",
         "v0-deploy-manager": "yarn v0-run-script deploy_manager",
         "v0-deploy-new-manager": "yarn v0-run-script deploy_new_manager",
-
         "v0-setup": "yarn v0-set-deps && yarn v0-set-assets",
         "v0-set-deps": "yarn v0-run-script set_deps",
         "v0-set-assets": "yarn v0-run-script set_assets",
-
         "v0-supply": "yarn v0-run-script supply",
         "v0-supply-ton": "yarn v0-run-script supply_ton",
         "v0-withdraw": "yarn v0-run-script withdraw",
@@ -45,20 +36,17 @@
         "v0-delete-manager": "yarn v0-run-script delete_old_manager",
         "v0-info-system": "yarn v0-run-script info_system",
         "v0-info-user": "yarn v0-run-script info_user",
-
         "supply": "yarn run-script supply",
         "mint": "yarn run-script mint",
         "burn": "yarn run-script burn",
         "withdraw": "yarn run-script withdraw",
         "liquidation": "yarn run-script liquidation",
-
         "info-access": "yarn run-script info_access",
         "info-system": "yarn run-script info_system",
         "info-user": "yarn run-script info_user",
-
         "set-holders": "yarn run-script tokenomica",
         "mint-to-holders": "yarn run-script tokenomica_mint",
-        "generate-fake-wallets":"yarn run-script tokenomica_generate_fa",
+        "generate-fake-wallets": "yarn run-script tokenomica_generate_fa",
         "get-runes": "yarn run-script get_runecoins",
         "stabilization": "yarn run-script stabilization"
     },
@@ -70,7 +58,7 @@
         "@ton/test-utils": "^0.4.2",
         "@ton/ton": "^13.11.1",
         "@types/jest": "^29.5.12",
-        "@types/node": "^20.11.20",
+        "@types/node": "^20.16.1",
         "jest": "^29.7.0",
         "prettier": "^3.2.5",
         "ts-jest": "^29.1.2",
