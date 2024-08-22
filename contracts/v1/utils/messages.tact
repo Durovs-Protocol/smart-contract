@@ -222,8 +222,8 @@ message(0x178d4519) TokenTransferInternal {
     from: Address;
     responseAddress: Address?;
     forwardTonAmount: Int as coins;
-    forwardPayload: Slice as remaining;
     notificationAddress: Address?;
+    forwardPayload: Slice as remaining;
 }
 message(0x7362d09c) TokenNotification {
     queryId: Int as uint64;
@@ -269,8 +269,8 @@ message TokenTransferInternalDex {
     from: Address;
     responseAddress: Address?;
     forwardTonAmount: Int as coins;
-    forwardPayload: Slice as remaining;
     notificationAddress: Address?;
+    forwardPayload: Slice as remaining;
 }
 message DexNotification {
     amount: Int as coins;
