@@ -3,8 +3,8 @@ import { Address, toNano } from '@ton/core';
 import { setupGas } from '../utils/data';
 import { loadAddress, log, timer } from '../utils/helpers';
 import { UsdTonMaster } from '../wrappers/UsdTon';
-import { Manager } from '../wrappers/v0.Manager';
-import { ReservePool } from '../wrappers/v0.ReservePool';
+import { Manager } from '../wrappers/V0.Manager';
+import { ReservePool } from '../wrappers/V0.ReservePool';
 
 export async function run(provider: NetworkProvider) {
     const usdTon = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))));

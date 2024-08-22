@@ -1,10 +1,10 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { loadAddress, log, saveLog, timer } from '../utils/helpers';
-import { Manager } from '../wrappers/v0.Manager';
-import { NewManager } from '../wrappers/v0.NewManager';
-import { NewPositionKeeper } from '../wrappers/v0.NewPositionKeeper';
-import { PositionKeeper } from '../wrappers/v0.PositionKeeper';
+import { Manager } from '../wrappers/V0.Manager';
+import { NewManager } from '../wrappers/V0.NewManager';
+import { NewPositionKeeper } from '../wrappers/V0.NewPositionKeeper';
+import { PositionKeeper } from '../wrappers/V0.PositionKeeper';
 
 export async function run(provider: NetworkProvider) {
     const user = provider.sender();

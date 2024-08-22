@@ -1,1 +1,1 @@
-export * from '../build/v0.NewManager/tact_NewManager';
+export * from '../build/V0.NewManager/tact_NewManager';
