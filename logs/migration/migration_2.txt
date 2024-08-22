@@ -1,6 +1,0 @@
-Migration complete: 
- user from old position: EQBNAja8fRL6yYP32ZuCYGolmlgsIWbbu0GtJRsvxfRo8zVy;
-oldPosition: EQDcmrMfLCDPtmTb5sT7cpIDYOelf2mno0vOwMoywKGXL1cQ;
-                
-user from new position: EQBNAja8fRL6yYP32ZuCYGolmlgsIWbbu0GtJRsvxfRo8zVy; 
-newPosition: EQBSdDe8oy2HXwPcjTXK7HT0ux9_oWlb3UnuD95gr8FaPMBm
