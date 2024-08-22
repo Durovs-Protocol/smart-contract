@@ -277,8 +277,8 @@ contract NewManager with Deployable, OwnableTransferable {
     }
     get fun positionKeeper(id: Int): Address {
         let init: StateInit = initOf NewPositionKeeper(id, myAddress());
-        let positionKeeper: Address = contractAddress(init);
-        return positionKeeper;
+        let posKeeper: Address = contractAddress(init);
+        return posKeeper;
     }
 
     get fun deps(): Deps {

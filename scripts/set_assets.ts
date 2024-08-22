@@ -25,7 +25,7 @@ export async function run(provider: NetworkProvider) {
     })
 
     async function setAssets(contract: any, name: string) {
-        log('Set assets in' + name.toUpperCase());
+        log('Set assets in ' + name.toUpperCase());
 
             await contract.send(
                 provider.sender(),
@@ -39,7 +39,7 @@ export async function run(provider: NetworkProvider) {
     }
 
     async function setBalance(contract: any, name: string) {
-        log('Set balances template in' + name.toUpperCase());
+        log('Set balances template in ' + name.toUpperCase());
             await contract.send(
                 provider.sender(),
                 { value: toNano(setupGas) },
