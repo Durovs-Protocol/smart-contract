@@ -395,6 +395,7 @@ contract ReservePool with Deployable, OwnableTransferable {
                     destination: msg.user,
                     responseDestination: sender(),
                     forwardTonAmount: 0,
+                    customPayload: emptyCell(),
                     forwardPayload: ("withdraw transfer").asSlice(), 
                 }.toCell()
             });
