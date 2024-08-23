@@ -14,7 +14,7 @@ export async function run(provider: NetworkProvider) {
         return minDelay;
     };
 
-    const unixDelay = 600n;
+    const unixDelay = 0n;
     // const unixDelay = 86400n;
     await manager.send(
         provider.sender(),

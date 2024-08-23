@@ -12,7 +12,7 @@ export async function run(provider: NetworkProvider) {
     const userPositionAddress = await manager.getUserPositionAddress(user.address!!);
     const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
 
-    const withdrawAmount = 1;
+    const withdrawAmount = 0.5;
     log('03 | Пользователь возвращает залог ' + withdrawAmount);
 
     //3 ton 0 jetton

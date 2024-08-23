@@ -326,18 +326,14 @@ contract UserPosition  {
             foreach(key, value in info) {
                 if ((now() - key) >= minDelay) {
 
-                    if ((availableAmount + value) <= amount) {
+                    if (availableAmount == amount) {
+                        updatedTimestamps.info.set(key, value);
+                    } else if ((availableAmount + value) <= amount) {
                         availableAmount += value;
-                    }
-
-                    if ((availableAmount + value) > amount) {
+                    } else if ((availableAmount + value) > amount) {
                         let remainderVal: Int = (availableAmount + value) - amount;
                         availableAmount += (value - remainderVal);
                         updatedTimestamps.info.set(key, remainderVal);
-                    }
-
-                    if (availableAmount == amount) {
-                        updatedTimestamps.info.set(key, value);
                     }
 
                     // supplyTimestamps.del(key);
