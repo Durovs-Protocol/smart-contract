@@ -9,62 +9,86 @@ import { Manager } from '../wrappers/V0.Manager';
 import { UserPosition } from '../wrappers/V0.UserPosition';
 
 export async function run(provider: NetworkProvider) {
-  const user = provider.sender();
+    const user = provider.sender();
 
-  const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
-  const userPositionAddress = await manager.getUserPositionAddress(user.address!!);
-  const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
-  
-const reservePool =Address.parse(await loadAddress('reservePool'));
+    const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
+    const userPositionAddress = await manager.getUserPositionAddress(user.address!!);
+    const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
+      
+    const reservePool = Address.parse(await loadAddress('reservePool'));
 
-const supplyAmount = 1
-const assetIndex = 0
+    const supplyAmount = 1
+    const assetIndex = 0
 
-const jettonUserWallet = Address.parse('kQDrMl3jny6a7NkicAt-o868ZjHXKE4HoZl57op2zkx3XEh-')
+	// Адрес кошелька TON Assets
+    const jettonUserWallet = Address.parse('kQAv8filQ-H4tAvcQ4Bpwzt8r14GU8vNVrxYMrpZMghkO6tq')
 
-let assetBuilder = beginCell()
-assetBuilder.storeAddress(Address.parse(assets[assetIndex].master)); // мастер контракт жетона 
-assetBuilder.storeInt(2n, 64).endCell(); // код олперации, в случае supply это 1 
+    let assetBuilder = beginCell()
+		assetBuilder.storeAddress(Address.parse(assets[assetIndex].master)); // мастер контракт жетона 
+		assetBuilder.storeInt(2n, 64).endCell(); // код олперации, в случае supply это 1 
 
-    const client = provider.api()
-    const body = beginCell()
-    .storeUint(0xf8a7ea5, 32) // jetton transfer op code
-    .storeUint(0, 64) // query_id:uint64
-    .storeCoins(toNano(supplyAmount)) // amount:(VarUInteger 16) -  Jetton amount for transfer (decimals = 6 - jUSDT, 9 - default)
-    .storeAddress(reservePool) // destination:MsgAddress
-    .storeAddress(user.address) // response_destination:MsgAddress
-    .storeUint(0, 1) // custom_payload:(Maybe ^Cell)
-    .storeCoins(700000000) // forward_ton_amount:(VarUInteger 16)
-    .storeMaybeRef(assetBuilder)// forward_payload:(Either Cell ^Cell)
-    .endCell();
+		/**
+		 * A: основной кошелек в принципе (WalletV4)
+		 * A->B(подкошлек с самой монетой):
+		 * B->C(reserve pool wallet): отправка в reserve Pool
+		 * С->A: возврат газа
+		 * C->D(reserve pool): сообщение о поступлении
+		 * D->E(manager): SupplyMessage
+		 * E->F(user position): Supply
+		 * F->E(manager): Добавляем PositionId
+		 * E->G(position keeper
+		 * G->A: Возврат газа
+		 */
 
-let keyPair = await mnemonicToPrivateKey("addict ozone kit involve tip person rocket wood curious attack celery question this gentle toast resource laundry brisk gaze brand caught half buzz bonus".split(" "));
+		/**
+		 * A: основной кошелек в принципе (WalletV4)
+		 * A->B(подкошлек с самой монетой):
+		 * B->C(reserve pool wallet): отправка в reserve Pool
+		 * С->A: возврат газа
+		 * C->D(reserve pool): сообщение о поступлении
+		 * D->E(manager): SupplyMessage
+		 * E->F(user position): Supply
+		 * F->A: Возврат газа
+		 */
+	const client = provider.api()
+	const body = beginCell()
+        .storeUint(0xf8a7ea5, 32)
+        .storeUint(0, 64)
+        .storeCoins(toNano(supplyAmount)) // Сумма
+        .storeAddress(reservePool) // Кто получит TON Assets
+        .storeAddress(user.address) // Остаток газа
+        .storeUint(0, 1)
+        .storeCoins(700000000)
+        .storeMaybeRef(assetBuilder)
+        .endCell();
 
-// Create wallet contract
-let workchain = 0; // Usually you need a workchain 0
-let wallet = WalletContractV4.create({ workchain, publicKey: keyPair.publicKey });
-let contract = client.open(wallet);
-let seqno: number = await contract.getSeqno();
+    let keyPair = await mnemonicToPrivateKey("they usual couple intact opinion uniform vessel lazy danger over table urge abuse behind drift garden dolphin city city exact swarm focus moral remove".split(" "));
 
-let oldBalance = 0n
-let positionId = await manager.getLastPositionId()
+    // Create wallet contract
+    let workchain = 0; // Usually you need a workchain 0
+    let wallet = WalletContractV4.create({ workchain, publicKey: keyPair.publicKey }); // Просто кошелек
+    let contract = client.open(wallet);
+    let seqno: number = await contract.getSeqno();
 
-if (positionId != 0n) {
-    oldBalance =  await (await getBalanceValue(userPosition, assetIndex))()
-}
+    let oldBalance = 0n
+    let positionId = await manager.getLastPositionId()
 
-let balanceAfterSupply = oldBalance + toNano(supplyAmount)
+    if (positionId != 0n) {
+        oldBalance =  await (await getBalanceValue(userPosition, assetIndex))()
+    }
+
+    let balanceAfterSupply = oldBalance + toNano(supplyAmount)
 
 
-await contract.sendTransfer({
-  seqno,
-  secretKey: keyPair.secretKey,
-  messages: [internal({
-    value: '1',
-    to: jettonUserWallet,
-    body: body,
-  })]
-});
+    await contract.sendTransfer({
+      seqno,
+      secretKey: keyPair.secretKey,
+      messages: [internal({
+        value: '1',
+        to: jettonUserWallet,
+        body: body,
+      })]
+    });
 
 if (positionId == 0n) {
   await timer(`Supply ${supplyAmount} ${assets[assetIndex].name} `, 1n, manager.getLastPositionId);

@@ -23,7 +23,14 @@ export async function run(provider: NetworkProvider) {
         oldBalance =  await (await getBalanceValue(userPosition, assetIndex))()
     } catch(e) {}
     let balanceAfterWithdraw = oldBalance - toNano(withdrawAmount)
-
+    /**
+	 * A: основной кошелек в принципе (WalletV4)
+	 * A->B(manager): WithdrawMessage
+	 * B->C(user position): Withdraw
+	 * C->D(pool): WithdrawRequest
+     * D->C(user position): TonTransfer
+     * C->A: возврат тона
+	 */
     await manager.send(
         user,
         { value: toNano(1) },

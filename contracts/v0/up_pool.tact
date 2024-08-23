@@ -62,10 +62,13 @@ contract UserPosition  {
         let oldBalance: Int? = self.balances.get(msg.payload);
 
         if (oldBalance != null) {
+            let newValue: Int = oldBalance!! + msg.amount;
 
-        let newValue: Int = oldBalance!! + msg.amount;
+            self.balances.set(msg.payload, newValue);
 
-        self.balances.set(msg.payload, newValue);
+            let comment: StringBuilder = beginString();
+            comment.append("Runa protocol: you have supplied ");
+            comment.append(msg.amount.toString());
 
         let comment: StringBuilder = beginString();
         comment.append("Runa protocol: you have supplied ");
@@ -426,11 +429,11 @@ contract ReservePool with Deployable, OwnableTransferable {
         // получение ton
             if (ctx.value < (self.GasConsumption + self.MinTonForStorage + msg.amount)) {
                     send(SendParameters{
-                    to: msg.from,
-                    value: ctx.value,
-                    mode: SendIgnoreErrors,
-                    bounce: false,
-                    body: "Runa protocol: error while recieving ton: not enought tons sended".asComment()
+                        to: msg.from,
+                        value: ctx.value,
+                        mode: SendIgnoreErrors,
+                        bounce: false,
+                        body: "Runa protocol: error while recieving ton: not enought tons sended".asComment()
                     });
                     return;
             }
@@ -453,14 +456,14 @@ contract ReservePool with Deployable, OwnableTransferable {
                 body: SupplyMessage{amount: msg.amount, user: msg.from, payload: master }.toCell()
             });
         } else {
-        send(SendParameters{
-                to: msg.from,
-                value: ctx.value,
-                mode: SendIgnoreErrors,
-                bounce: false,
-                body: "Runa protocol: error while processing payment: unknown op code".asComment()
-            }
-        );
+            send(SendParameters{
+                    to: msg.from,
+                    value: ctx.value,
+                    mode: SendIgnoreErrors,
+                    bounce: false,
+                    body: "Runa protocol: error while processing payment: unknown op code".asComment()
+                }
+            );
         }
     }
 
@@ -481,20 +484,20 @@ contract ReservePool with Deployable, OwnableTransferable {
                 let remainingValue: Int = msg.amount + (ctx.value - (self.GasConsumption + self.MinTonForStorage));
 
                 if (remainingValue <= myBalance()) {
-                send(SendParameters {
-                    to: sender(),
-                    value: remainingValue,
-                    bounce: true,
-                    body: TonTransfer{queryId: msg.queryId}.toCell()
+                    send(SendParameters {
+                        to: sender(),
+                        value: remainingValue,
+                        bounce: true,
+                        body: TonTransfer{queryId: msg.queryId}.toCell()
                     });
                 } else {
-                send(SendParameters{
-                to: msg.user,
-                value: remainingValue,
-                mode: SendIgnoreErrors,
-                bounce: false,
-                body: "Runa protocol: Error while attempting to withdraw (pull is empty).".asComment()
-            });
+                    send(SendParameters{
+                        to: msg.user,
+                        value: remainingValue,
+                        mode: SendIgnoreErrors,
+                        bounce: false,
+                        body: "Runa protocol: Error while attempting to withdraw (pull is empty).".asComment()
+                    });
                 }
             } else {
                 let remainingValue: Int = ctx.value - (self.GasConsumption + self.MinTonForStorage);

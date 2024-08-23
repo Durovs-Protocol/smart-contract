@@ -35,8 +35,8 @@ export async function run(provider: NetworkProvider) {
                     assets: assetsData,
                 },
             );
-        await assetTimer(contract, name)
-    }
+        // await assetTimer(contract, name)
+    } 
 
     async function setBalance(contract: any, name: string) {
         log('Set balances template in ' + name.toUpperCase());
