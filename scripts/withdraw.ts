@@ -12,18 +12,25 @@ export async function run(provider: NetworkProvider) {
     const userPositionAddress = await manager.getUserPositionAddress(user.address!!);
     const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
 
-    const withdrawAmount = 1;
+    const withdrawAmount = 2;
     log('03 | Пользователь возвращает залог ' + withdrawAmount);
     
     //3 ton 0 jetton
-    const assetIndex = 3
+    const assetIndex = 0
 
     let oldBalance = 0n
     try {
         oldBalance =  await (await getBalanceValue(userPosition, assetIndex))()
     } catch(e) {}
     let balanceAfterWithdraw = oldBalance - toNano(withdrawAmount)
-
+    /**
+	 * A: основной кошелек в принципе (WalletV4)
+	 * A->B(manager): WithdrawMessage
+	 * B->C(user position): Withdraw
+	 * C->D(pool): WithdrawRequest
+     * D->C(user position): TonTransfer
+     * C->A: возврат тона
+	 */
     await manager.send(
         user,
         { value: toNano(1) },

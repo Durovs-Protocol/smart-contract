@@ -17,9 +17,9 @@ export const serviceFee: number = 1; // $
 // это тестовые адреса
 export const assets = [
     {
-        name: 'stakedTON',
+        name: 'stakedTON', // Свой токен
         master: 'kQB6gF0_-_NAAeH_bBnmEQDUwpYfQbG9tOCnlTfKhFDZtkOd',
-        pool_wallet: 'kQCw8wGtlakbf7AY1JIrvz3bPea_OiMGvy9ZjIPvhoBSyuNq'
+        pool_wallet: 'kQAUyqNnHlI12B7-HdHUEMtWhxbH7Erbxnu_nr15ti0CwN1S'
     },
     {
         name: 'hipoStakedTON',
