@@ -4,6 +4,7 @@ import { setupGas } from '../utils/data';
 import { loadAddress, log, timer } from '../utils/helpers';
 import { UsdTonMaster } from '../wrappers/UsdTon';
 import { Manager } from '../wrappers/V0.Manager';
+import { NewManager } from '../wrappers/V0.NewManager';
 import { ReservePool } from '../wrappers/V0.ReservePool';
 
 export async function run(provider: NetworkProvider) {
@@ -11,8 +12,7 @@ export async function run(provider: NetworkProvider) {
     const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
     const profitPool = provider.open(await UsdTonMaster.fromAddress(Address.parse(await loadAddress('profitPool'))));
     const reservePool = provider.open(await ReservePool.fromAddress(Address.parse(await loadAddress('reservePool'))));
-
-    // const newManager = provider.open(await NewManager.fromAddress(Address.parse(await loadAddress('new_manager'))));
+    const newManager = provider.open(await NewManager.fromAddress(Address.parse(await loadAddress('new_manager'))));
 
     async function setDeps(contract: any, name: string) {
         log(name.toUpperCase());
@@ -42,19 +42,19 @@ export async function run(provider: NetworkProvider) {
     // await setDeps(usdTon, 'usdTon');
     
     // часть миграции
-    // await newManager.send(
-    //     provider.sender(),
-    //     { value: toNano(setupGas) },
-    //     {
-    //         $$type: 'SetDeps',
-    //         manager: newManager.address,
-    //         profitPool: manager.address,
-    //         reservePool: reservePool.address,
-    //         usdton: manager.address,
-    //         runaCoupon: manager.address,
-    //     },
-    // );
-    // await timer(`Setup new manager address`, newManager.address, newManagerAddress(newManager));
+    await newManager.send(
+        provider.sender(),
+        { value: toNano(setupGas) },
+        {
+            $$type: 'SetDeps',
+            manager: newManager.address,
+            profitPool: manager.address,
+            reservePool: reservePool.address,
+            usdton: usdTon.address,
+            runaCoupon: manager.address,
+        },
+    );
+    await timer(`Setup new manager address`, newManager.address, newManagerAddress(newManager));
     log('Deps installed successfully');
 }
 

@@ -14,9 +14,9 @@ export async function run(provider: NetworkProvider) {
 
     const withdrawAmount = 1;
     log('03 | Пользователь возвращает залог ' + withdrawAmount);
-    
+
     //3 ton 0 jetton
-    const assetIndex = 3
+    const assetIndex = 0
 
     let oldBalance = 0n
     try {
@@ -33,7 +33,7 @@ export async function run(provider: NetworkProvider) {
             master: Address.parse(assets[assetIndex].master)
         },
     );
-    await timer(`'Погашение задолжности: баланс ${withdrawAmount} ${assets[assetIndex].name} `, balanceAfterWithdraw, getBalanceValue(userPosition, assetIndex));
+    await timer(`'Обработка запроса на вывод средств: баланс ${withdrawAmount} ${assets[assetIndex].name} `, balanceAfterWithdraw, getBalanceValue(userPosition, assetIndex));
 
 }
 

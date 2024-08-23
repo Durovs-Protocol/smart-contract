@@ -18,12 +18,9 @@ contract Manager with Deployable, OwnableTransferable {
     init(owner: Address){
         self.owner = owner;
         self.settings = Settings{
-            reserveRatio: 0,
-            reserveMin: 0,
-            burnMin: 0,
-            serviceFeePercent: 0,
-            serviceFee: 0,
-            liquidationRatio: 0
+            minDelay: 0,
+            newManager: newAddress(0, 0),
+            maxAmount: 0
         };
         self.deps = Deps{
             manager: newAddress(0, 0),
@@ -60,12 +57,10 @@ contract Manager with Deployable, OwnableTransferable {
     receive(msg: SetSettings) {
         self.requireOwner();
         self.settings = Settings{
-            reserveRatio: msg.reserveRatio,
-            reserveMin: msg.reserveMin,
-            burnMin: msg.burnMin,
-            serviceFeePercent: msg.serviceFeePercent,
-            serviceFee: msg.serviceFee,
-            liquidationRatio: msg.liquidationRatio
+            minDelay: msg.minDelay,
+            newManager: msg.newManager,
+            maxAmount: msg.maxAmount,
+
         };
         self.reply("Settings have been updated".asComment());
     }
@@ -95,7 +90,7 @@ contract Manager with Deployable, OwnableTransferable {
 
     receive(msg: SupplyMessage) {
         let ctx: Context = context();
-        require(sender() == self.deps.reservePool, "Runa protocol: Insufficient TONs sent");
+        require(sender() == self.deps.reservePool, "Runa protocol: no access for supply");
         let valueToSendForward: Int = ctx.value - (self.MinTonForStorage + self.GasConsumption);
         let init: StateInit = initOf UserPosition(msg.user,
             self.deps.usdton,
@@ -114,11 +109,7 @@ contract Manager with Deployable, OwnableTransferable {
                 body: Supply{
                     user: msg.user,
                     amount: msg.amount,
-                    settings: self.settings,
-                    tonPrice: self.tonPrice,
-                    wallet: msg.wallet,
                     payload: msg.payload,
-                    
                 }.toCell(),
                 code: init.code,
                 data: init.data
@@ -127,8 +118,6 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     bounced(msg: bounced<Supply>) {
-
-
         self.bouncedHandler("Runa protocol: Error in supply.");
     }
 
@@ -160,6 +149,7 @@ contract Manager with Deployable, OwnableTransferable {
                     user: sender(),
                     amount: msg.amount,
                     master: msg.master,
+                    minDelay: self.settings.minDelay
                 }.toCell()
             }
         );
@@ -168,6 +158,8 @@ contract Manager with Deployable, OwnableTransferable {
     bounced(msg: bounced<Withdraw>){
         self.bouncedHandler("Runa protocol: Error in withdrawal");
     }
+
+
 
     /* ==Migration== */
     receive(msg: Migration) {
@@ -179,20 +171,29 @@ contract Manager with Deployable, OwnableTransferable {
                 value: 0,
                 mode: SendBounceIfActionFail + SendRemainingValue,
                 bounce: true,
+                body: InformationRequest{
+
+                }.toCell()
+            }
+        );
+    }
+    
+    receive(msg: InformationResponce) {
+        send(SendParameters{
+                to: self._userPositionAddress(msg.user),
+                value: 0,
+                mode: SendRemainingValue + SendBounceIfActionFail,
+                bounce: true,
                 body: MigrationRequest{
-                    manager: msg.newManager,
-                    reservePool: self.deps.reservePool,
-                    usdton: self.deps.usdton,
-                    profitPool: self.deps.profitPool
                 }.toCell()
             }
         );
     }
 
-
     receive(msg: BuildPosition) {
+        require(sender() == self._userPositionAddress(msg.user), "Runa protocol: no access for migration");
         send(SendParameters{
-                to: msg.manager,
+                to: self.settings.newManager,
                 value: 0,
                 mode: SendRemainingValue,
                 bounce: true,
@@ -227,15 +228,6 @@ contract Manager with Deployable, OwnableTransferable {
         return contractAddress(init);
     }
 
-    fun payBack(user: Address) {
-        send(SendParameters{to: user, bounce: false, value: 0, mode: SendRemainingValue + SendIgnoreErrors});
-    }
-
-    fun service(value: Int): Int {
-        let balance: Int = myBalance() - value;
-        let fee: Int = self.MinTonForStorage - min(balance, self.MinTonForStorage);
-        return (value - fee) + self.GasConsumption;
-    }
 
     fun bouncedHandler(reason: String) {
         send(SendParameters{
@@ -310,13 +302,17 @@ contract PositionKeeper {
         );
     }
 
-    receive(msg: MigrationRequest) {
+    receive(msg: InformationRequest) {
+        require(self.manager == sender(), "Runa protocol: no access for information request");
         send(SendParameters{
-                to: self.position,
+                to: self.manager,
                 value: 0,
                 mode: SendRemainingValue + SendBounceIfActionFail,
                 bounce: true,
-                body: msg.toCell()
+                body: InformationResponce{
+                    user: self.user,
+                    position: self.position
+                }.toCell()
             }
         );
     }

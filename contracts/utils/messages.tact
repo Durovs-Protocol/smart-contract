@@ -7,7 +7,6 @@ struct JettonData {
     walletCode: Cell;
 }
 struct WithdrawTransactionInfo {
-    queryId: Int as uint64;
     amount: Int;
     master: Address;
 }
@@ -23,12 +22,9 @@ struct PositionState {
 }
 
 struct Settings {
-    reserveRatio: Int;
-    reserveMin: Int;
-    burnMin: Int;
-    serviceFeePercent: Int;
-    serviceFee: Int;
-    liquidationRatio: Int;
+    minDelay: Int;
+    newManager: Address;
+    maxAmount: Int;
 }
 struct Deps {
     manager: Address;
@@ -38,12 +34,9 @@ struct Deps {
     runaCoupon: Address;
 }
 message SetSettings {
-    reserveRatio: Int;
-    reserveMin: Int;
-    burnMin: Int;
-    serviceFeePercent: Int;
-    serviceFee: Int;
-    liquidationRatio: Int;
+    minDelay: Int;
+    newManager: Address;
+    maxAmount: Int;
 }
 
 struct Asset {
@@ -63,18 +56,13 @@ message SetBalances {
 //user interface
 message SupplyMessage {
     amount: Int;
-    wallet: Address;
     user: Address;
     payload: Address;
-
 }
 //up interface
 message Supply {
     user: Address;
     amount: Int as coins;
-    settings: Settings;
-    tonPrice: Int as coins;
-    wallet: Address;
     payload: Address;
 }
 
@@ -143,6 +131,7 @@ message Withdraw {
     user: Address;
     amount: Int as coins;
     master: Address;
+    minDelay: Int;
 }
 message WithdrawResponce {
     amount: Int as coins;
@@ -181,22 +170,19 @@ message Migration {
 }
 //up interface
 message MigrationRequest {
-    manager: Address;
-    reservePool: Address;
-    profitPool: Address;
-    usdton: Address;
 }
-
+message InformationRequest {
+}
+message InformationResponce {
+    user: Address;
+    position: Address;
+}
 message SetState {
     balances: map<Address, Int>;
 }
 message BuildPosition {
     user: Address;
     balances: map<Address, Int>;
-    manager: Address;
-    reservePool: Address;
-    profitPool: Address;
-    usdton: Address;
 }
 
 message OnMigrationComplete {

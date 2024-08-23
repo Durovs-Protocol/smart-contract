@@ -117,7 +117,7 @@ export function delay(ms: number) {
 }
 
 function getFilename(name: string, nameSuffix?: string) {
-    return `deploy${process.env.version?.includes('1') ? '/' : '/v0/'}${name}${nameSuffix ? `_${nameSuffix}` : ''}.address`;
+    return `${process.env.version?.includes('1') ? '../../deploy/' : 'deploy/v0/'}${name}${nameSuffix ? `_${nameSuffix}` : ''}.address`;
 }
 
 export async function saveAddress(name: string, address: Address, nameSuffix?: string) {
@@ -138,10 +138,10 @@ export async function saveLog(name: string, log: any) {
     await fs.promises.writeFile(filename, log);
 }
 
-export function log(message: string) {
+export function log(message: any) {
     console.log('\n\n=============================================================================');
     console.log(message);
-    console.log('=============================================================================\n\n');
+    console.log('==================================================================================');
 }
 
 

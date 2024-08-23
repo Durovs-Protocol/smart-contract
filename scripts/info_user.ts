@@ -2,7 +2,7 @@ import { NetworkProvider } from '@ton/blueprint';
 import { Address, Dictionary, fromNano } from '@ton/core';
 import { assets } from '../utils/data';
 import { loadAddress, log } from '../utils/helpers';
-import { Manager } from '../wrappers/V0.Manager';
+import { Manager, SupplyTimestamp } from '../wrappers/V0.Manager';
 import { NewManager } from '../wrappers/V0.NewManager';
 import { NewUp } from '../wrappers/V0.NewUp';
 import { UserPosition } from '../wrappers/V0.UserPosition';
@@ -27,6 +27,8 @@ export async function run(provider: NetworkProvider) {
     } else {
         console.log('User Position address:  ', userPosition.address.toString() + '\n\n');
         await showBalancves()
+        await withdrawState()
+        await supplyTimestamps()
     }
 
     async function showBalancves() {
@@ -45,6 +47,28 @@ export async function run(provider: NetworkProvider) {
                 '\nToncoin:   ' +
                 fromNano(toncoin)
         );
+    }
+    async function withdrawState() {
+        const withdrawStates = await userPosition.getWithdrawState();
+        if ( withdrawStates) {
+            console.log(withdrawStates)
+            // нужно id
+        }
+    }
+    async function supplyTimestamps() {
+        const supplyTimestamps: Dictionary<Address, SupplyTimestamp> = await userPosition.getSupplyTimestamps();
+        const stakedTON = supplyTimestamps.get(Address.parse(assets[0].master)) ?? 0
+        const hipoStakedTON = supplyTimestamps.get(Address.parse(assets[1].master)) ?? 0
+        const tonstakers = supplyTimestamps.get(Address.parse(assets[2].master)) ?? 0
+        const toncoin = supplyTimestamps.get(Address.parse(assets[3].master)) ?? 0
+        log('Supply timestamps staked TON:');
+        console.log(stakedTON != 0 ? stakedTON.info : '')
+        log('Supply timestamps hipo');
+        console.log(hipoStakedTON != 0 ? hipoStakedTON.info : '' )
+        log('Supply timestamps ton Stakers ');
+        console.log(tonstakers != 0 ? tonstakers.info : '' )
+        log('Supply timestamps toncoin: ');
+        console.log(toncoin != 0 ? toncoin.info : '')
     }
     log('Finished');
 }
