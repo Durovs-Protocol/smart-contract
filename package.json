@@ -25,7 +25,7 @@
         "v0-deploy-reserve": "yarn  v0-run-script deploy_reserve",
         "v0-deploy-manager": "yarn v0-run-script deploy_manager",
         "v0-deploy-new-manager": "yarn v0-run-script deploy_new_manager",
-        "v0-setup": "yarn v0-set-deps && yarn v0-set-assets",
+        "v0-setup": "yarn v0-set-deps && yarn v0-set-assets && yarn v0-set-settings",
         "v0-set-deps": "yarn v0-run-script set_deps",
         "v0-set-settings": "yarn v0-run-script set_settings",
         "v0-set-assets": "yarn v0-run-script set_assets",

@@ -69,10 +69,6 @@ contract UserPosition  {
             let comment: StringBuilder = beginString();
             comment.append("Runa protocol: you have supplied ");
             comment.append(msg.amount.toString());
-
-        let comment: StringBuilder = beginString();
-        comment.append("Runa protocol: you have supplied ");
-        comment.append(msg.amount.toString());
         
         let supplyTimestamp: SupplyTimestamp? = self.supplyTimestamps.get(msg.payload);
 
@@ -161,10 +157,10 @@ contract UserPosition  {
         let max: Int = 2^64 - 1;
         let randomId: Int = random(0, max);
 
-         self.withdrawState.set(randomId, WithdrawTransactionInfo{
+        self.withdrawState.set(randomId, WithdrawTransactionInfo{
             amount: msg.amount,
             master: msg.master
-         });
+        });
 
 
         send(SendParameters{
