@@ -1,4 +1,6 @@
-Migration complete with errors:
-User address: EQBNAja8fRL6yYP32ZuCYGolmlgsIWbbu0GtJRsvxfRo8zVy; 
-Position: EQCvnufpMqNO8frzirNVvLTgDKuL0pcknWzhT8bjTLucZdZM; 
- Error: AxiosError: timeout of 5000ms exceeded
+Migration complete: 
+ user from old position: EQC5xG015g2DI9bGhwerKyLVITFlW88vCT_b4j2rt0Yww0_h;
+oldPosition: EQAGrE-nNr0KHDXI7zhz8_8VWCtb7-CQpFId-Y5qWOe2oMxv;
+                
+user from new position: EQC5xG015g2DI9bGhwerKyLVITFlW88vCT_b4j2rt0Yww0_h; 
+newPosition: EQB_9Mcr8dOMEPzYiZwvprT82pWiCokU-_3po-vgP24qamtn

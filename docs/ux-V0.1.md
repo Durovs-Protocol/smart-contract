@@ -11,9 +11,9 @@
     - `yarn v0-deploy-reserve`
     - `yarn v0-deploy-manager`
     - `yarn v0-deploy-new-manager`
-
     - Проверить выполнение: в папке вида `deploy/v0/{contract_name}.address` должны лежать все адреса контрактов
     - newManager деплоится исключительно для проверки миграции, он и контракт new up упрощены по функционалу и не будут использоваться
+    - `yarn v0-deploy-new-pool`
 
 4. `yarn v0-setup`
     - `yarn v0-set-deps`: имея адреса контрактов: usdTon, manager, poolContract
@@ -33,5 +33,7 @@
 1. `yarn v0-supply` (Внесение обеспечения)
 2. `yarn v0-withdraw` (Возврат обеспечения пользователю)
 
- <!-- - `yarn v0-migration` (Запуск миграции от владельца контракта  менеджер)
+# Миграция
+1. `yarn v0-migration-pool` 
+2. `yarn v0-migration` (Запуск миграции от владельца контракта  менеджер)
  - `v0-delete-manager` (После успешной миграции удаляем старый контракт менеджера) -->

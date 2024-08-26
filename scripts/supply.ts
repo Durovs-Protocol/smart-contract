@@ -17,11 +17,11 @@ export async function run(provider: NetworkProvider) {
       
     const reservePool = Address.parse(await loadAddress('reservePool'));
 
-    const supplyAmount = 1
+    const supplyAmount = 10
     const assetIndex = 0
 
 	// Адрес кошелька TON Assets
-    const jettonUserWallet = Address.parse('kQDrMl3jny6a7NkicAt-o868ZjHXKE4HoZl57op2zkx3XEh-')
+    const jettonUserWallet = Address.parse('kQAv8filQ-H4tAvcQ4Bpwzt8r14GU8vNVrxYMrpZMghkO6tq')
 
     let assetBuilder = beginCell()
 		assetBuilder.storeAddress(Address.parse(assets[assetIndex].master)); // мастер контракт жетона 
@@ -62,7 +62,7 @@ export async function run(provider: NetworkProvider) {
         .storeMaybeRef(assetBuilder)
         .endCell();
 
-    let keyPair = await mnemonicToPrivateKey("addict ozone kit involve tip person rocket wood curious attack celery question this gentle toast resource laundry brisk gaze brand caught half buzz bonus".split(" "));
+    let keyPair = await mnemonicToPrivateKey("they usual couple intact opinion uniform vessel lazy danger over table urge abuse behind drift garden dolphin city city exact swarm focus moral remove".split(" "));
 
     // Create wallet contract
     let workchain = 0; // Usually you need a workchain 0

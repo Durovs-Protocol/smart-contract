@@ -14,7 +14,7 @@ export async function run(provider: NetworkProvider) {
         {
             name: 'stakedTON',
             pool_wallet: Address.parse(assets[0].pool_wallet),
-            amount: 1n
+            amount: 49n
         },
         // {
         //     name: 'hipoStakedTON',
@@ -28,7 +28,7 @@ export async function run(provider: NetworkProvider) {
         // },
         {
             name: 'toncoin',
-            amount: 0n,
+            amount: 1n,
             pool_wallet: Address.parse(await loadAddress('reservePool'))
         },
     ]

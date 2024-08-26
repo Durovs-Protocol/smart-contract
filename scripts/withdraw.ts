@@ -12,11 +12,11 @@ export async function run(provider: NetworkProvider) {
     const userPositionAddress = await manager.getUserPositionAddress(user.address!!);
     const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
 
-    const withdrawAmount = 0.5;
+    const withdrawAmount = 1;
     log('03 | Пользователь возвращает залог ' + withdrawAmount);
 
     //3 ton 0 jetton
-    const assetIndex = 0
+    const assetIndex = 3
 
     let oldBalance = 0n
     try {

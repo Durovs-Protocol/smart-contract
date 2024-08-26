@@ -38,8 +38,8 @@ export async function run(provider: NetworkProvider) {
 
     await setDeps(manager, 'manager');
     await setDeps(reservePool, 'reservePool');
-    // await setDeps(profitPool, 'profitPool');
-    // await setDeps(usdTon, 'usdTon');
+    await setDeps(profitPool, 'profitPool');
+    await setDeps(usdTon, 'usdTon');
     
     // часть миграции
     await newManager.send(
