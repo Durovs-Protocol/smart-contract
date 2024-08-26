@@ -90,13 +90,11 @@ export async function run(provider: NetworkProvider) {
       })]
     });
 
-    if (positionId == 0n) {
-      await timer(`Supply ${supplyAmount} ${assets[assetIndex].name} `, 1n, manager.getLastPositionId);
-    } else {
-      
-      await timer(`Supply ${supplyAmount} ${assets[assetIndex].name} `, balanceAfterSupply, getBalanceValue(userPosition, assetIndex));
-    }
-
+if (positionId == 0n) {
+  await timer(`Supply ${supplyAmount} ${assets[assetIndex].name} `, 1n, manager.getLastPositionId);
+} else {
+  await timer(`Supply ${supplyAmount} ${assets[assetIndex].name} `, balanceAfterSupply, getBalanceValue(userPosition, assetIndex));
+}
 }
 
 

@@ -12,9 +12,9 @@ export async function run(provider: NetworkProvider) {
     const userPositionAddress = await manager.getUserPositionAddress(user.address!!);
     const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
 
-    const withdrawAmount = 2;
+    const withdrawAmount = 0.5;
     log('03 | Пользователь возвращает залог ' + withdrawAmount);
-    
+
     //3 ton 0 jetton
     const assetIndex = 0
 
@@ -40,7 +40,7 @@ export async function run(provider: NetworkProvider) {
             master: Address.parse(assets[assetIndex].master)
         },
     );
-    await timer(`'Погашение задолжности: баланс ${withdrawAmount} ${assets[assetIndex].name} `, balanceAfterWithdraw, getBalanceValue(userPosition, assetIndex));
+    await timer(`'Обработка запроса на вывод средств: баланс ${withdrawAmount} ${assets[assetIndex].name} `, balanceAfterWithdraw, getBalanceValue(userPosition, assetIndex));
 
 }
 

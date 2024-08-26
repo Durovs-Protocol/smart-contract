@@ -15,37 +15,23 @@ contract NewUp  {
     //state
     isActive: Bool = true;
     balances: map<Address, Int>;
-    withdrawState: WithdrawTransactionInfo;
+    withdrawState: map<Int as uint64, WithdrawTransactionInfo>;
 
-    init(user: Address, usdton: Address, manager: Address, reservePool: Address, profitPool: Address, balances: map<Address, Int>) {
+    init(user: Address, usdton: Address, manager: Address, reservePool: Address, profitPool: Address) {
         self.user = user; 
         self.manager = manager;
         self.reservePool = reservePool;
-        self.balances = balances;
+        self.balances = emptyMap();
 
-        self.withdrawState = WithdrawTransactionInfo{
-            queryId: 0,
-            amount: 0,
-            master: newAddress(0,0)
-        };
+        self.withdrawState = emptyMap();
 
-        send(SendParameters {
-            to: self.manager, 
-            mode: SendIgnoreErrors,
-            value: ton("0.5"), 
-            bounce: true,
-            body: AddPositionId{
-                user: user
-            }.toCell()
-        });
     }
 
     receive(msg: SetState) {
         require(sender() == self.manager, "Runa protocol: not from positions manager");
 
         self.balances = msg.balances;
-
-        let remainingValue: Int = myBalance() - (self.MinTonsForStorage + self.GasConsumption);
+        let remainingValue: Int = context().value - (self.MinTonsForStorage + self.GasConsumption);
         send(SendParameters{
                 to: self.manager,
                 value: remainingValue,
@@ -116,9 +102,12 @@ contract NewUp  {
             return;
         }
 
-        self.withdrawState.queryId = random(0, 18446);
-        self.withdrawState.amount = msg.amount;
-        self.withdrawState.master = msg.master;
+        let max: Int = 2^64 - 1;
+        let randomId: Int = random(0, max);
+         self.withdrawState.set(randomId, WithdrawTransactionInfo{
+            amount: msg.amount,
+            master: msg.master
+         });
 
         send(SendParameters{
             to: self.reservePool,
@@ -129,7 +118,7 @@ contract NewUp  {
                 amount: msg.amount,
                 user: msg.user,
                 master: msg.master,
-                queryId: self.withdrawState.queryId
+                queryId: randomId
             }.toCell()
         });
     }
@@ -142,10 +131,13 @@ contract NewUp  {
     receive(msg: TokenExcesses) {
         let ctx: Context = context();
         let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
-        if (self.withdrawState.queryId == msg.queryId) {
-            let newValue: Int = self.balances.get(self.withdrawState.master)!! -  self.withdrawState.amount;
-            self.balances.set(self.withdrawState.master, newValue);
-            self.clearTransactionState();
+        let transactionInfo: WithdrawTransactionInfo? = self.withdrawState.get(msg.queryId);
+
+        if (transactionInfo != null) {
+            let newValue: Int = self.balances.get(transactionInfo!!.master)!! -  transactionInfo!!.amount;
+            self.balances.set(transactionInfo!!.master, newValue);
+            self.clearTransactionState(msg.queryId);
+
             send(SendParameters{
                 to: self.user,
                 value: remainingValue,
@@ -166,16 +158,17 @@ contract NewUp  {
     receive(msg: TonTransfer) {
         let ctx: Context = context();
         let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
+        let transactionInfo: WithdrawTransactionInfo? = self.withdrawState.get(msg.queryId);
 
-        if (self.withdrawState.queryId == msg.queryId) {
-            let newValue: Int = self.balances.get(self.withdrawState.master)!! -  self.withdrawState.amount;
-            self.balances.set(self.withdrawState.master, newValue);
+        if (transactionInfo != null) {
+            let newValue: Int = self.balances.get(transactionInfo!!.master)!! -  transactionInfo!!.amount;
+            self.balances.set(transactionInfo!!.master, newValue);
 
             let comment: StringBuilder = beginString();
             comment.append("Runa protocol: withdraw of: ");
-            comment.append(self.withdrawState.amount.toString());
+            comment.append(transactionInfo!!.amount.toString());
             comment.append(" ");
-            comment.append(self.withdrawState.master.toString());
+            comment.append(transactionInfo!!.master.toString());
             comment.append("was successful");
 
             send(SendParameters{
@@ -186,7 +179,7 @@ contract NewUp  {
                 body: comment.toString().asComment()
             });
 
-            self.clearTransactionState();
+            self.clearTransactionState(msg.queryId);
         } else {
             send(SendParameters{
                 to: self.user,
@@ -210,10 +203,6 @@ contract NewUp  {
                 body: BuildPosition {
                     user: self.user,
                     balances: self.balances,
-                    manager: msg.manager, 
-                    reservePool: msg.reservePool, 
-                    usdton: msg.usdton,
-                    profitPool: msg.profitPool
                 }.toCell(),
             }
         );
@@ -233,12 +222,8 @@ contract NewUp  {
             }
         );
     }
-    fun clearTransactionState() {
-        self.withdrawState = WithdrawTransactionInfo{
-            queryId: 0,
-            amount: 0,
-            master: newAddress(0,0)
-        };
+    fun clearTransactionState(id: Int) {
+        self.withdrawState.del(id);
     }
 
     fun errorHandler(comment: String) {

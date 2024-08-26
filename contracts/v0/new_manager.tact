@@ -20,12 +20,9 @@ contract NewManager with Deployable, OwnableTransferable {
     init(owner: Address, oldManager: Address){
         self.owner = owner;
         self.settings = Settings{
-            reserveRatio: 0,
-            reserveMin: 0,
-            burnMin: 0,
-            serviceFeePercent: 0,
-            serviceFee: 0,
-            liquidationRatio: 0
+            minDelay: 0,
+            newManager: newAddress(0, 0),
+            maxAmount: 0
         };
         self.deps = Deps{
             manager: newAddress(0, 0),
@@ -63,12 +60,9 @@ contract NewManager with Deployable, OwnableTransferable {
     receive(msg: SetSettings) {
         self.requireOwner();
         self.settings = Settings{
-            reserveRatio: msg.reserveRatio,
-            reserveMin: msg.reserveMin,
-            burnMin: msg.burnMin,
-            serviceFeePercent: msg.serviceFeePercent,
-            serviceFee: msg.serviceFee,
-            liquidationRatio: msg.liquidationRatio
+            minDelay: msg.minDelay,
+            newManager: msg.newManager,
+            maxAmount: msg.maxAmount,
         };
         self.reply("Runa protocol: Settings have been updated".asComment());
     }
@@ -105,7 +99,6 @@ contract NewManager with Deployable, OwnableTransferable {
             self.deps.manager,
             self.deps.reservePool,
             self.deps.profitPool,
-            self.balances
         );
         let userPosition: Address = contractAddress(init);
 
@@ -117,11 +110,7 @@ contract NewManager with Deployable, OwnableTransferable {
                 body: Supply{
                     user: msg.user,
                     amount: msg.amount,
-                    settings: self.settings,
-                    tonPrice: self.tonPrice,
-                    wallet: msg.wallet,
                     payload: msg.payload,
-                    
                 }.toCell(),
                 code: init.code,
                 data: init.data
@@ -163,6 +152,7 @@ contract NewManager with Deployable, OwnableTransferable {
                     user: sender(),
                     amount: msg.amount,
                     master: msg.master,
+                    minDelay: self.settings.minDelay,
                 }.toCell()
             }
         );
@@ -175,7 +165,7 @@ contract NewManager with Deployable, OwnableTransferable {
     /* ==Migration== */
     receive(msg: BuildPosition) {
         require(sender() == self.oldManager, "Runa protocol: Unable to create a new position");
-        let init: StateInit = initOf NewUp(msg.user, msg.usdton, msg.manager, msg.reservePool, msg.profitPool, msg.balances);
+        let init: StateInit = initOf NewUp(msg.user, self.deps.usdton, self.deps.manager, self.deps.reservePool, self.deps.profitPool);
         let newUserPosition: Address = contractAddress(init);
 
         send(SendParameters{
@@ -203,10 +193,6 @@ contract NewManager with Deployable, OwnableTransferable {
                 mode: SendBounceIfActionFail,
                 bounce: true,
                 body: MigrationRequest{
-                    manager: self.deps.manager,
-                    reservePool: self.deps.reservePool,
-                    usdton: self.deps.usdton,
-                    profitPool: self.deps.profitPool
                 }.toCell()
             }
         );
@@ -237,7 +223,6 @@ contract NewManager with Deployable, OwnableTransferable {
             self.deps.manager,
             self.deps.reservePool,
             self.deps.profitPool,
-            self.balances
         );
         return contractAddress(init);
     }

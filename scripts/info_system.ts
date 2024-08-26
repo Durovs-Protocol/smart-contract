@@ -1,5 +1,5 @@
 import { NetworkProvider } from '@ton/blueprint';
-import { Address, Dictionary, fromNano } from '@ton/core';
+import { Address, Dictionary } from '@ton/core';
 import { loadAddress, log } from '../utils/helpers';
 import { Asset, Manager } from '../wrappers/V0.Manager';
 
@@ -25,21 +25,13 @@ export async function run(provider: NetworkProvider) {
 
     log(
         'System setting information'.toUpperCase() +
-        'Reserve pool           :' +
-            fromNano(settings.reserveRatio) +
-            ' %' +
-            '\nReserve min      :' +
-            fromNano(settings.reserveMin) +
+        'max Amount           : ' +
+            settings.maxAmount +
+            '\nmin Delay      : ' +
+            settings.minDelay +
             ' (ton)' +
-            '\nService fee      :' +
-            fromNano(settings.serviceFeePercent) +
-            ' %' +
-            '\nService fee min  :' +
-            fromNano(settings.serviceFee) +
-            ' $' +
-            '\nBurn min         :' +
-            fromNano(settings.burnMin) +
-            ' (ton)',
+            '\nnew Manager      : ' +
+            settings.newManager.toString()
     );
 
     // console.log(await reservePool.getOp())

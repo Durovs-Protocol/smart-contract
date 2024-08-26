@@ -4,6 +4,10 @@ import "../utils/messages.tact";
 import "../utils/math.tact";
 import "../utils/helpers.tact";
 
+struct SupplyTimestamp {
+    info: map<Int , Int >;
+}
+
 contract UserPosition  {
     const MinTonsForStorage: Int = ton("0.01");
     const GasConsumption: Int = ton("0.01");
@@ -15,7 +19,9 @@ contract UserPosition  {
     //state
     isActive: Bool = true;
     balances: map<Address, Int>;
-    withdrawState: WithdrawTransactionInfo;
+    withdrawState: map<Int , WithdrawTransactionInfo>;
+    supplyTimestamps: map<Address, SupplyTimestamp> = emptyMap();
+    updatedTimestamps: SupplyTimestamp? = null;
 
     init(user: Address, usdton: Address, manager: Address, reservePool: Address, profitPool: Address, balances: map<Address, Int>) {
         self.user = user; 
@@ -23,11 +29,9 @@ contract UserPosition  {
         self.reservePool = reservePool;
         self.balances = balances;
 
-        self.withdrawState = WithdrawTransactionInfo{
-            queryId: 0,
-            amount: 0,
-            master: newAddress(0,0)
-        };
+        
+
+        self.withdrawState = emptyMap();
 
         send(SendParameters {
             to: self.manager, 
@@ -43,9 +47,14 @@ contract UserPosition  {
 
     /* Supply */
     receive(msg: Supply) {
-        require(self.isActive, "position is not active");
-        require(sender() == self.manager, "Runa protocol: not from positions manager");
-
+        if (!self.isActive) {
+            self.errorHandler("Runa protocol: position is not active");
+            return;
+        }
+        if (sender() != self.manager) {
+            self.errorHandler("Runa protocol: not from positions manager");
+            return;
+        }
         let ctx: Context = context();
         let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
         let currency: String = "";
@@ -61,16 +70,33 @@ contract UserPosition  {
             comment.append("Runa protocol: you have supplied ");
             comment.append(msg.amount.toString());
 
-            send(SendParameters{
-                    to: self.user,
-                    bounce: false,
-                    value: remainingValue,
-                    mode:  SendIgnoreErrors,
-                    body: comment.toString().asComment()
-                }
-            );
+        let comment: StringBuilder = beginString();
+        comment.append("Runa protocol: you have supplied ");
+        comment.append(msg.amount.toString());
+        
+        let supplyTimestamp: SupplyTimestamp? = self.supplyTimestamps.get(msg.payload);
+
+        let info: map<Int , Int > = emptyMap();
+
+
+        if (supplyTimestamp == null) {
+             info.set(now(), msg.amount);
         } else {
-            send(SendParameters{
+             info = supplyTimestamp!!.info;
+             info.set(now(), msg.amount);
+        }
+        self.supplyTimestamps.set(msg.payload, SupplyTimestamp{info: info});
+
+        send(SendParameters{
+                to: self.user,
+                bounce: false,
+                value: remainingValue,
+                mode:  SendIgnoreErrors,
+                body: comment.toString().asComment()
+            }
+        );
+        } else {
+        send(SendParameters{
                 to: self.user,
                 bounce: false,
                 value: remainingValue,
@@ -83,9 +109,20 @@ contract UserPosition  {
 
     /* Withdraw */
     receive(msg: Withdraw) {
-        require(self.isActive, "Runa protocol: position is not active");
-        require(sender() == self.manager, "Runa protocol: not from positions manager");
+        
+        if (self.updatedTimestamps != null) {
+            self.errorHandler("Runa protocol: wait until the previous withdrawal completed");
+            return;
+        }
 
+        if (!self.isActive) {
+            self.errorHandler("Runa protocol: position is not active");
+            return;
+        }
+        if (sender() != self.manager) {
+            self.errorHandler("Runa protocol: not from positions manager");
+            return;
+        }
         let ctx: Context = context();
         let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
 
@@ -100,9 +137,35 @@ contract UserPosition  {
             return;
         }
 
-        self.withdrawState.queryId = random(0, 18446);
-        self.withdrawState.amount = msg.amount;
-        self.withdrawState.master = msg.master;
+        let availableAmount: Int = self.availableBalance(msg.minDelay, msg.master, msg.amount);
+
+
+        if (availableAmount < msg.amount) {
+            self.updatedTimestamps = null;
+            send(SendParameters{
+                to: self.user,
+                value: ctx.value,
+                mode: SendIgnoreErrors,
+                bounce: false,
+                body: "Runa protocol: withdrawal available after 24 hours".asComment()
+            });
+            return;
+        }
+
+        //     let comment: StringBuilder = beginString();
+        //         comment.append("Runa protocol: Withdrawal will be available in ");
+        //         comment.append(self.lastSupply.toString());
+        //         comment.append(" seconds");
+        
+
+        let max: Int = 2^64 - 1;
+        let randomId: Int = random(0, max);
+
+         self.withdrawState.set(randomId, WithdrawTransactionInfo{
+            amount: msg.amount,
+            master: msg.master
+         });
+
 
         send(SendParameters{
             to: self.reservePool,
@@ -113,12 +176,13 @@ contract UserPosition  {
                 amount: msg.amount,
                 user: msg.user,
                 master: msg.master,
-                queryId: self.withdrawState.queryId
+                queryId: randomId
             }.toCell()
         });
     }
 
     bounced(msg: bounced<WithdrawRequest>) {
+        self.updatedTimestamps = null;
         //TODO
         self.bouncedHandler();
     }
@@ -126,10 +190,15 @@ contract UserPosition  {
     receive(msg: TokenExcesses) {
         let ctx: Context = context();
         let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
-        if (self.withdrawState.queryId == msg.queryId) {
-            let newValue: Int = self.balances.get(self.withdrawState.master)!! -  self.withdrawState.amount;
-            self.balances.set(self.withdrawState.master, newValue);
-            self.clearTransactionState();
+        let transactionInfo: WithdrawTransactionInfo? = self.withdrawState.get(msg.queryId);
+
+        if (transactionInfo != null) {
+            let newValue: Int = self.balances.get(transactionInfo!!.master)!! - transactionInfo!!.amount;
+            self.balances.set(transactionInfo!!.master, newValue);
+            self.clearTransactionState(msg.queryId);
+            self.supplyTimestamps.set(transactionInfo!!.master, self.updatedTimestamps);
+            self.updatedTimestamps = null;
+
             send(SendParameters{
                 to: self.user,
                 value: remainingValue,
@@ -150,16 +219,21 @@ contract UserPosition  {
     receive(msg: TonTransfer) {
         let ctx: Context = context();
         let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
+        let transactionInfo: WithdrawTransactionInfo? = self.withdrawState.get(msg.queryId);
 
-        if (self.withdrawState.queryId == msg.queryId) {
-            let newValue: Int = self.balances.get(self.withdrawState.master)!! -  self.withdrawState.amount;
-            self.balances.set(self.withdrawState.master, newValue);
+        if (transactionInfo != null) {
+            let newValue: Int = self.balances.get(transactionInfo!!.master)!! -  transactionInfo!!.amount;
+            self.balances.set(transactionInfo!!.master, newValue);
+
+
+            self.supplyTimestamps.set(transactionInfo!!.master, self.updatedTimestamps);
+            self.updatedTimestamps = null;
 
             let comment: StringBuilder = beginString();
             comment.append("Runa protocol: withdraw of: ");
-            comment.append(self.withdrawState.amount.toString());
+            comment.append(transactionInfo!!.amount.toString());
             comment.append(" ");
-            comment.append(self.withdrawState.master.toString());
+            comment.append(transactionInfo!!.master.toString());
             comment.append("was successful");
 
             send(SendParameters{
@@ -170,7 +244,7 @@ contract UserPosition  {
                 body: comment.toString().asComment()
             });
 
-            self.clearTransactionState();
+            self.clearTransactionState(msg.queryId);
         } else {
             send(SendParameters{
                 to: self.user,
@@ -184,6 +258,11 @@ contract UserPosition  {
 
     /* Migration */
     receive(msg: MigrationRequest) {
+
+        if (sender() != self.manager) {
+            self.errorHandler("Runa protocol: not from positions manager");
+            return;
+        }
         let remainingValue: Int = myBalance() - (self.MinTonsForStorage + self.GasConsumption);
         self.isActive = false;
 
@@ -194,10 +273,6 @@ contract UserPosition  {
                 body: BuildPosition {
                     user: self.user,
                     balances: self.balances,
-                    manager: msg.manager, 
-                    reservePool: msg.reservePool, 
-                    usdton: msg.usdton,
-                    profitPool: msg.profitPool
                 }.toCell(),
             }
         );
@@ -217,12 +292,8 @@ contract UserPosition  {
             }
         );
     }
-    fun clearTransactionState() {
-        self.withdrawState = WithdrawTransactionInfo{
-            queryId: 0,
-            amount: 0,
-            master: newAddress(0,0)
-        };
+    fun clearTransactionState(id: Int) {
+        self.withdrawState.del(id);
     }
 
     fun errorHandler(comment: String) {
@@ -246,17 +317,60 @@ contract UserPosition  {
     }
 
 
+    fun availableBalance(minDelay: Int, master: Address, amount: Int): Int {
+            let currentBalance: SupplyTimestamp? = self.supplyTimestamps.get(master);
+            if (currentBalance == null) {
+                return 0;
+            }
+            let info: map<Int , Int > = currentBalance!!.info;
+            let updatedTimestamps: SupplyTimestamp = SupplyTimestamp{info: emptyMap()};
+
+            let availableAmount: Int = 0;
+            foreach(key, value in info) {
+                if ((now() - key) >= minDelay) {
+
+                    if (availableAmount == amount) {
+                        updatedTimestamps.info.set(key, value);
+                    } else if ((availableAmount + value) <= amount) {
+                        availableAmount += value;
+                    } else if ((availableAmount + value) > amount) {
+                        let remainderVal: Int = (availableAmount + value) - amount;
+                        availableAmount += (value - remainderVal);
+                        updatedTimestamps.info.set(key, remainderVal);
+                    }
+
+                    // supplyTimestamps.del(key);
+                } else {
+                    updatedTimestamps.info.set(key, value);
+
+                }
+            }
+            self.updatedTimestamps = updatedTimestamps;
+        return availableAmount;
+    }
+
+
+
     //=============================================================================
     // Offchain interface
     //=============================================================================
     get fun user(): Address {
         return self.user;
     }
+    get fun updatedTimestamps(): SupplyTimestamp? {
+        return self.updatedTimestamps;
+    }
     get fun balances(): map<Address, Int> {
         return self.balances;
     }
     get fun status(): Bool {
         return self.isActive;
+    }
+    get fun withdrawState(): map<Int , WithdrawTransactionInfo> {
+        return self.withdrawState;
+    }   
+    get fun supplyTimestamps(): map<Address, SupplyTimestamp> {
+        return self.supplyTimestamps;
     }
 }
 
@@ -329,7 +443,7 @@ contract ReservePool with Deployable, OwnableTransferable {
                 value: remainingValue,
                 mode: SendBounceIfActionFail,
                 bounce: true,
-                body: SupplyMessage{amount: msg.amount, user: msg.from, wallet: sender(), payload: master }.toCell()
+                body: SupplyMessage{amount: msg.amount, user: msg.from, payload: master }.toCell()
             });
         } else if (op == 2) { 
         // получение jetton
@@ -339,7 +453,7 @@ contract ReservePool with Deployable, OwnableTransferable {
                 value: remainingValue,
                 mode: SendBounceIfActionFail,
                 bounce: true,
-                body: SupplyMessage{amount: msg.amount, user: msg.from, wallet: sender(), payload: master }.toCell()
+                body: SupplyMessage{amount: msg.amount, user: msg.from, payload: master }.toCell()
             });
         } else {
             send(SendParameters{
@@ -355,13 +469,17 @@ contract ReservePool with Deployable, OwnableTransferable {
 
     receive(msg: WithdrawRequest) {
         let userPositionAddress: Address = self._userPositionAddress(msg.user);
-        require(sender() == userPositionAddress, "Runa protocol: no access to withdraw funds");
+
+        
+        if (sender() != userPositionAddress) {
+            self.errorHandler("Runa protocol: no access to withdraw funds", sender());
+            return;
+        }
 
         let ctx: Context = context();
         let asset: Asset? = self.assets.get(msg.master);
 
         if (asset != null) {
-            
             if (msg.master == newAddress(0, 0)) {
                 let remainingValue: Int = msg.amount + (ctx.value - (self.GasConsumption + self.MinTonForStorage));
 
@@ -394,8 +512,9 @@ contract ReservePool with Deployable, OwnableTransferable {
                     forwardTonAmount: 0,
                     customPayload: null,
                     responseDestination: sender(),
-                    forwardPayload: emptySlice(),
+                    forwardPayload: ("withdraw transfer").asSlice()
                 }.toCell()
+
             });
             }
         } else {
@@ -411,6 +530,7 @@ contract ReservePool with Deployable, OwnableTransferable {
     }
 
     bounced(msg: bounced<TokenTransfer>) {
+
         //TODO
     }
     //=============================================================================
@@ -425,6 +545,16 @@ contract ReservePool with Deployable, OwnableTransferable {
             self.balances
         );
         return contractAddress(init);
+    }
+    fun errorHandler(comment: String, user: Address) {
+        send(SendParameters{
+                to: user,
+                bounce: false,
+                value: 0,
+                mode:  SendRemainingValue + SendIgnoreErrors ,
+                body: comment.asComment()
+            }
+        );
     }
     //=============================================================================
     // Offchain interface
