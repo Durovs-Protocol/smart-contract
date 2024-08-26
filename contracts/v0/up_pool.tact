@@ -170,7 +170,7 @@ contract UserPosition  {
          self.withdrawState.set(randomId, WithdrawTransactionInfo{
             amount: msg.amount,
             master: msg.master
-         });
+        });
 
 
         send(SendParameters{
