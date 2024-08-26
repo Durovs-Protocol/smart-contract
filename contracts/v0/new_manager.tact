@@ -22,7 +22,8 @@ contract NewManager with Deployable, OwnableTransferable {
         self.settings = Settings{
             minDelay: 0,
             newManager: newAddress(0, 0),
-            maxAmount: 0
+            maxAmount: 0,
+            maxExecutionTime: 0,
         };
         self.deps = Deps{
             manager: newAddress(0, 0),
@@ -63,6 +64,8 @@ contract NewManager with Deployable, OwnableTransferable {
             minDelay: msg.minDelay,
             newManager: msg.newManager,
             maxAmount: msg.maxAmount,
+            maxExecutionTime: msg.maxExecutionTime,
+
         };
         self.reply("Runa protocol: Settings have been updated".asComment());
     }
@@ -153,6 +156,7 @@ contract NewManager with Deployable, OwnableTransferable {
                     amount: msg.amount,
                     master: msg.master,
                     minDelay: self.settings.minDelay,
+                    maxExecutionTime: self.settings.maxExecutionTime,
                 }.toCell()
             }
         );

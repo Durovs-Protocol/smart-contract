@@ -4,7 +4,6 @@ import { assets, setupGas } from '../utils/data';
 import { getBalanceValue, loadAddress, log, timer } from '../utils/helpers';
 import { Asset, Manager } from '../wrappers/V0.Manager';
 // import { UsdTonMaster } from '../wrappers/v1/UsdTon';
-//переделать инит каким-то образом
 import { ReservePool } from '../wrappers/V0.ReservePool';
 
 export async function run(provider: NetworkProvider) {

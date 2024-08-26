@@ -15,6 +15,8 @@ export async function run(provider: NetworkProvider) {
     };
 
     const unixDelay = 0n;
+    const unixMaxExecutionTime = 0n;
+
     // const unixDelay = 86400n;
     await manager.send(
         provider.sender(),
@@ -23,7 +25,9 @@ export async function run(provider: NetworkProvider) {
             $$type: 'SetSettings',
             minDelay: unixDelay,
             newManager: Address.parse(await loadAddress('new_manager')),
-            maxAmount: 0n
+            maxAmount: 0n,
+            maxExecutionTime: unixMaxExecutionTime,
+
         },
     );
     await timer('Настройка пула', unixDelay, getMinDelay);

@@ -19,7 +19,7 @@ export const assets = [
     {
         name: 'stakedTON', // Свой токен
         master: 'kQB6gF0_-_NAAeH_bBnmEQDUwpYfQbG9tOCnlTfKhFDZtkOd',
-        pool_wallet: '0QBP555wfxpkqdXrJoBdGlhHF3pb1Ba9wl9JlsM0xLMnloP4'
+        pool_wallet: '0QCm-Ap2IG5htt1sN2Dykau2IMplm-hFM8IBagciOD-A5fXF'
     },
     {
         name: 'hipoStakedTON',
@@ -37,6 +37,8 @@ export const assets = [
         pool_wallet: 'kQDZoH57-fWcxWHieZMMbAmS3DV1L6gnhSktYi4ZYnxRpnP3'
     },
 ]
+
+
 
 /**
  * Supply

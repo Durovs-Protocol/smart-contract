@@ -25,6 +25,7 @@ struct Settings {
     minDelay: Int;
     newManager: Address;
     maxAmount: Int;
+    maxExecutionTime: Int;
 }
 struct Deps {
     manager: Address;
@@ -37,6 +38,7 @@ message SetSettings {
     minDelay: Int;
     newManager: Address;
     maxAmount: Int;
+    maxExecutionTime: Int;
 }
 
 struct Asset {
@@ -132,6 +134,7 @@ message Withdraw {
     amount: Int as coins;
     master: Address;
     minDelay: Int;
+    maxExecutionTime: Int;
 }
 message WithdrawResponce {
     amount: Int as coins;
@@ -172,6 +175,12 @@ message Migration {
 message MigrationRequest {
 }
 message InformationRequest {
+}
+message PoolMigrationRequest {
+    amount: Int;
+    queryId: Int;
+    newPool: Address;
+    wallet:  Address;
 }
 message InformationResponce {
     user: Address;
