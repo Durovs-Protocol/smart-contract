@@ -24,15 +24,18 @@ export async function run(provider: NetworkProvider) {
         const newUserPositionAddress = await newManager.getUserPositionAddress(user);
         const newUserPosition = provider.open(await NewUp.fromAddress(newUserPositionAddress));
         console.log('new user Position address:  ', newUserPosition.address.toString() + '\n\n');
+        await showBalancves(newUserPosition)
+        // await withdrawState(newUserPosition)
+        // await supplyTimestamps(newUserPosition)
     } else {
         console.log('User Position address:  ', userPosition.address.toString() + '\n\n');
-        await showBalancves()
-        await withdrawState()
-        await supplyTimestamps()
+        await showBalancves(userPosition)
+        await withdrawState(userPosition)
+        await supplyTimestamps(userPosition)
     }
 
-    async function showBalancves() {
-        const balances: Dictionary<Address, bigint> = await userPosition.getBalances();
+    async function showBalancves(contract: any) {
+        const balances: Dictionary<Address, bigint> = await contract.getBalances();
         const stakedTON = balances.get(Address.parse(assets[0].master)) ?? 0
         const hipoStakedTON = balances.get(Address.parse(assets[1].master)) ?? 0
         const tonstakers = balances.get(Address.parse(assets[2].master)) ?? 0
@@ -48,15 +51,15 @@ export async function run(provider: NetworkProvider) {
                 fromNano(toncoin)
         );
     }
-    async function withdrawState() {
-        const withdrawStates = await userPosition.getWithdrawState();
+    async function withdrawState(contract: any) {
+        const withdrawStates = await contract.getWithdrawState();
         if ( withdrawStates) {
             console.log(withdrawStates)
             // нужно id
         }
     }
-    async function supplyTimestamps() {
-        const supplyTimestamps: Dictionary<Address, SupplyTimestamp> = await userPosition.getSupplyTimestamps();
+    async function supplyTimestamps(contract: any) {
+        const supplyTimestamps: Dictionary<Address, SupplyTimestamp> = await contract.getSupplyTimestamps();
         const stakedTON = supplyTimestamps.get(Address.parse(assets[0].master)) ?? 0
         const hipoStakedTON = supplyTimestamps.get(Address.parse(assets[1].master)) ?? 0
         const tonstakers = supplyTimestamps.get(Address.parse(assets[2].master)) ?? 0

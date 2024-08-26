@@ -13,6 +13,7 @@ contract Manager with Deployable, OwnableTransferable {
     settings: Settings;
     owner: Address;
     lastPositionId: Int = 0;
+    lastMigrationId: Int = 0;
     tonPrice: Int;
 
     init(owner: Address){
@@ -20,7 +21,8 @@ contract Manager with Deployable, OwnableTransferable {
         self.settings = Settings{
             minDelay: 0,
             newManager: newAddress(0, 0),
-            maxAmount: 0
+            maxAmount: 0,
+            maxExecutionTime: 0,
         };
         self.deps = Deps{
             manager: newAddress(0, 0),
@@ -60,6 +62,7 @@ contract Manager with Deployable, OwnableTransferable {
             minDelay: msg.minDelay,
             newManager: msg.newManager,
             maxAmount: msg.maxAmount,
+            maxExecutionTime: msg.maxExecutionTime,
 
         };
         self.reply("Settings have been updated".asComment());
@@ -149,7 +152,8 @@ contract Manager with Deployable, OwnableTransferable {
                     user: sender(),
                     amount: msg.amount,
                     master: msg.master,
-                    minDelay: self.settings.minDelay
+                    minDelay: self.settings.minDelay,
+                    maxExecutionTime: self.settings.maxExecutionTime,
                 }.toCell()
             }
         );
@@ -166,6 +170,8 @@ contract Manager with Deployable, OwnableTransferable {
         self.requireOwner();
         let init: StateInit = initOf PositionKeeper(msg.id, myAddress());
         let positionAddress: Address = contractAddress(init);
+        self.lastMigrationId = msg.id;
+
         send(SendParameters {
                 to: positionAddress,
                 value: 0,
@@ -179,6 +185,10 @@ contract Manager with Deployable, OwnableTransferable {
     }
     
     receive(msg: InformationResponce) {
+        let init: StateInit = initOf PositionKeeper(self.lastMigrationId, myAddress());
+        let positionAddress: Address = contractAddress(init);
+        require(sender() == positionAddress, "Runa protocol: no access for migration");
+
         send(SendParameters{
                 to: self._userPositionAddress(msg.user),
                 value: 0,

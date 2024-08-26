@@ -20,6 +20,7 @@ contract UserPosition  {
     isActive: Bool = true;
     balances: map<Address, Int>;
     withdrawState: map<Int , WithdrawTransactionInfo>;
+    lastWithdrawalRequest: Int = 0;
     supplyTimestamps: map<Address, SupplyTimestamp> = emptyMap();
     updatedTimestamps: SupplyTimestamp? = null;
 
@@ -107,8 +108,15 @@ contract UserPosition  {
     receive(msg: Withdraw) {
         
         if (self.updatedTimestamps != null) {
+
+            if ((now() - self.lastWithdrawalRequest) > msg.maxExecutionTime) {
+                self.withdrawState = emptyMap();
+                self.updatedTimestamps = null;
+            } else {
             self.errorHandler("Runa protocol: wait until the previous withdrawal completed");
             return;
+            }
+
         }
 
         if (!self.isActive) {
@@ -157,7 +165,9 @@ contract UserPosition  {
         let max: Int = 2^64 - 1;
         let randomId: Int = random(0, max);
 
-        self.withdrawState.set(randomId, WithdrawTransactionInfo{
+        self.lastWithdrawalRequest = now();
+
+         self.withdrawState.set(randomId, WithdrawTransactionInfo{
             amount: msg.amount,
             master: msg.master
         });
@@ -342,6 +352,7 @@ contract UserPosition  {
                 }
             }
             self.updatedTimestamps = updatedTimestamps;
+
         return availableAmount;
     }
 
@@ -380,6 +391,7 @@ contract ReservePool with Deployable, OwnableTransferable {
     balances:  map<Address, Int>;
     assets:  map<Address, Asset>;
 
+
     init(owner: Address){
         self.owner = owner;
         self.deps = Deps {
@@ -414,6 +426,47 @@ contract ReservePool with Deployable, OwnableTransferable {
         self.assets = msg.assets;
         self.reply("Runa protocol: Pool asset template set.".asComment());
     }
+
+    receive(msg: PoolMigrationRequest) {
+        self.requireOwner();
+        if (msg.wallet != myAddress()) {
+        send(SendParameters {
+                to: msg.wallet,
+                value: 0,
+                mode: SendRemainingValue,
+                bounce: true,
+                body: TokenTransfer {
+                    amount: msg.amount,
+                    queryId: msg.queryId,
+                    destination: msg.newPool,
+                    forwardTonAmount: 0,
+                    customPayload: null,
+                    responseDestination: sender(),
+                    forwardPayload: ("pool migration").asSlice()
+                }.toCell()
+        });
+        } else {
+        let remainingBalance: Int = myBalance() - (self.MinTonForStorage + self.GasConsumption);
+        send(SendParameters {
+                to: msg.newPool,
+                value: remainingBalance,
+                mode: SendIgnoreErrors,
+                bounce: false,
+                body: "Runa protocol: pool migration".asComment()
+        });
+        }
+    }
+
+    bounced(msg: bounced<TokenTransfer>) {
+        send(SendParameters {
+                to: self.owner,
+                value: 0,
+                mode: SendIgnoreErrors + SendRemainingValue,
+                bounce: false,
+                body: "Runa protocol: jetton migration error".asComment()
+        });
+    }
+
     receive(msg: TokenNotification) {
         let ctx: Context = context();
 
@@ -500,7 +553,7 @@ contract ReservePool with Deployable, OwnableTransferable {
                 send(SendParameters {
                 to: asset!!.poolWallet,
                 value: remainingValue,
-                bounce: true,
+                bounce: false,
                 body: TokenTransfer {
                     amount: msg.amount,
                     queryId: msg.queryId,
@@ -523,11 +576,6 @@ contract ReservePool with Deployable, OwnableTransferable {
             }
         );
         }
-    }
-
-    bounced(msg: bounced<TokenTransfer>) {
-
-        //TODO
     }
     //=============================================================================
     // Helpers

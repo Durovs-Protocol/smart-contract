@@ -34,12 +34,6 @@ export async function run(provider: NetworkProvider) {
             settings.newManager.toString()
     );
 
-    // console.log(await reservePool.getOp())
-    // console.log(await reservePool.getMaster())
-    // console.log(await reservePool.getPayload())
-
-
-
     async function showPoolWallets(contract: any, name: string) {
         const allAssets: Dictionary<Address, Asset> = await contract.getAssets();
         const stakedTON = allAssets.get(Address.parse(assets[0].master))?.poolWallet.toString()
