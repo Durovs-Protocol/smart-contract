@@ -28,7 +28,6 @@ export async function run(provider: NetworkProvider) {
                 { value: toNano(1) },
                 {
                     $$type: 'Migration',
-                    newManager: newManager.address,
                     id: BigInt(specialId)
                 },
             );

@@ -27,7 +27,7 @@ export async function run(provider: NetworkProvider) {
     })
 
     async function setAssets(contract: any, name: string) {
-        log('Set assets in ' + name.toUpperCase() +
+        log('\nSet assets in ' + name.toUpperCase() +
         `\n ${await contractVersion(contract, name)}`);
 
             await contract.send(
@@ -42,7 +42,7 @@ export async function run(provider: NetworkProvider) {
     } 
 
     async function setBalance(contract: any, name: string) {
-        log('Set balances template in ' + name.toUpperCase() +
+        log('\nSet balances template in ' + name.toUpperCase() +
         `\n ${await contractVersion(contract, name)}`);
 
             await contract.send(
@@ -56,10 +56,10 @@ export async function run(provider: NetworkProvider) {
             await balancesTimer(contract, name)
     }
 
-    await setAssets(manager, 'manager');
-    await setAssets(reservePool, 'reservePool');
+    // await setAssets(manager, 'manager');
+    // await setAssets(reservePool, 'reservePool');
     await setBalance(manager, 'manager');
-    await setBalance(reservePool, 'reservePool');
+    // await setBalance(reservePool, 'reservePool');
 }
 
 const getAssetName = function (contract: any, index: number) {

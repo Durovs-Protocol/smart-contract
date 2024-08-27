@@ -52,7 +52,7 @@ contract NewManager with Deployable, OwnableTransferable {
             usdton: msg.usdton,
             runaCoupon: msg.runaCoupon
         };
-        self.reply("Runa protocol: Manager's dependencies set".asComment());
+        self.reply("Runa protocol: new manager's dependencies set".asComment());
     }
 
 

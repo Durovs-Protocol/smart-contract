@@ -33,7 +33,7 @@ export async function run(provider: NetworkProvider) {
     }
 
     await setDeps(manager, 'manager');
-    await setDeps(reservePool, 'reservePool');
+    // await setDeps(reservePool, 'reservePool');
     // await setDeps(profitPoolContract, 'profitPool');
     // await setDeps(runaUsdContract, 'runaUsdContract');
     log('Deps installed successfully');

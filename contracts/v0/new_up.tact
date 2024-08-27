@@ -424,7 +424,7 @@ contract NewReservePool with Deployable, OwnableTransferable {
             usdton: msg.usdton,
             runaCoupon: msg.runaCoupon
         };
-        self.reply("Runa protocol: pool's dependencies set".asComment());
+        self.reply("Runa protocol: new pool's dependencies set".asComment());
     }
     receive(msg: SetBalances) {
         self.requireOwner();

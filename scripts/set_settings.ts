@@ -18,8 +18,8 @@ export async function run(provider: NetworkProvider) {
     const unixDelay = 0n;
     const unixMaxExecutionTime = 0n;
     // const unixDelay = 86400n;
-	log('Настройка контракта:'+
-        `\n ${await contractVersion(manager, 'manager')}`
+	log('`\nНастройка контракта:'+
+        `\n${await contractVersion(manager, 'manager')}`
     );
     
     await setSettings(manager)

@@ -13,7 +13,7 @@ export async function run(provider: NetworkProvider) {
     log('Миграция up');
 
     const currentPositionId = await manager.getLastPositionId();
-    
+
     for (let i = 1; i <= currentPositionId; i++) {
         const positionKeeperAddress = await manager.getPositionKeeper(BigInt(i))
         const positionKeeper = provider.open(await PositionKeeper.fromAddress(positionKeeperAddress));
@@ -26,11 +26,9 @@ export async function run(provider: NetworkProvider) {
                 { value: toNano(1) },
                 {
                     $$type: 'Migration',
-                    newManager: newManager.address,
                     id: BigInt(i),
                 },
             );
-            // удали newManager
 
             await timer(`Position${i} migration process`, i, newManager.getLastPositionId);
 
