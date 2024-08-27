@@ -1,19 +1,23 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
+import contracts from '../utils/contracts';
 import { assets } from '../utils/data';
-import { getBalanceValue, loadAddress, log, timer } from '../utils/helpers';
-import { Manager } from '../wrappers/V0.Manager';
-import { UserPosition } from '../wrappers/V0.UserPosition';
+import { contractVersion, getBalanceValue, log, timer } from '../utils/helpers';
 
 export async function run(provider: NetworkProvider) {
     const user = provider.sender();
 
-    const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
-    const userPositionAddress = await manager.getUserPositionAddress(user.address!!);
-    const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
+    const {
+        manager,
+        userPosition
+    } = await contracts(provider, user.address!!)
 
-    const withdrawAmount = 0.5;
-    log('03 | Пользователь возвращает залог ' + withdrawAmount);
+
+
+    const withdrawAmount = 1.5;
+    log('\nВозвращение залога:' + withdrawAmount +
+        `\n${await contractVersion(manager, 'manager')}`
+    );
 
     //3 ton 0 jetton
     const assetIndex = 0
@@ -31,16 +35,22 @@ export async function run(provider: NetworkProvider) {
      * D->C(user position): TonTransfer
      * C->A: возврат тона
 	 */
-    await manager.send(
-        user,
-        { value: toNano(1) },
-        {
-            $$type: 'WithdrawMessage',
-            amount: toNano(withdrawAmount),
-            master: Address.parse(assets[assetIndex].master)
-        },
-    );
-    await timer(`'Обработка запроса на вывод средств: баланс ${withdrawAmount} ${assets[assetIndex].name} `, balanceAfterWithdraw, getBalanceValue(userPosition, assetIndex));
+
+    await withdraw(manager)
+    async function withdraw(contract: any) {
+        await contract.send(
+            user,
+            { value: toNano(1) },
+            {
+                $$type: 'WithdrawMessage',
+                amount: toNano(withdrawAmount),
+                master: Address.parse(assets[assetIndex].master)
+            },
+        );
+
+        await timer(`'Обработка запроса на вывод средств: баланс ${withdrawAmount} ${assets[assetIndex].name} `, balanceAfterWithdraw, getBalanceValue(userPosition, assetIndex));
+    }
+   
 
 }
 

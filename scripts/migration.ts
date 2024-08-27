@@ -8,20 +8,17 @@ import { PositionKeeper } from '../wrappers/V0.PositionKeeper';
 
 export async function run(provider: NetworkProvider) {
     const user = provider.sender();
-    const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
-    const newManager = provider.open(await NewManager.fromAddress(Address.parse(await loadAddress('new_manager'))));
-
-
+    const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager', undefined, '0'))));
+    const newManager = provider.open(await NewManager.fromAddress(Address.parse(await loadAddress('manager', undefined, '1'))));
     log('Миграция up');
 
     const currentPositionId = await manager.getLastPositionId();
-
+    
     for (let i = 1; i <= currentPositionId; i++) {
         const positionKeeperAddress = await manager.getPositionKeeper(BigInt(i))
         const positionKeeper = provider.open(await PositionKeeper.fromAddress(positionKeeperAddress));
         const userAddress = await positionKeeper.getUser()
         const positionAddress = await positionKeeper.getPosition()
-
 
         try {
             await manager.send(
@@ -33,6 +30,7 @@ export async function run(provider: NetworkProvider) {
                     id: BigInt(i),
                 },
             );
+            // удали newManager
 
             await timer(`Position${i} migration process`, i, newManager.getLastPositionId);
 

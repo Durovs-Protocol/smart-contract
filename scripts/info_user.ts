@@ -1,38 +1,29 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, Dictionary, fromNano } from '@ton/core';
+import contracts from '../utils/contracts';
 import { assets } from '../utils/data';
-import { loadAddress, log } from '../utils/helpers';
-import { Manager, SupplyTimestamp } from '../wrappers/V0.Manager';
-import { NewManager } from '../wrappers/V0.NewManager';
-import { NewUp } from '../wrappers/V0.NewUp';
-import { UserPosition } from '../wrappers/V0.UserPosition';
+import { log } from '../utils/helpers';
+import { SupplyTimestamp } from '../wrappers/V0.Manager';
 export async function run(provider: NetworkProvider) {
+    const user = provider.sender().address as Address;
     log('User Position info');
 
-    const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
-    const newManager = provider.open(await NewManager.fromAddress(Address.parse(await loadAddress('new_manager'))));
-    const user = provider.sender().address as Address;
-    /**
+    const {
+        userPosition,
+      } = await contracts(provider, user)
+
+
+    /*
      * User position (определение up, проверка балансов)
      */
-    const userPositionAddress = await manager.getUserPositionAddress(user);
-    const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
-    const isActive = await userPosition.getStatus();
-    if (!isActive) {
-        // проверка миграции 
-        console.log('User position migrated', '\n\n');
-        const newUserPositionAddress = await newManager.getUserPositionAddress(user);
-        const newUserPosition = provider.open(await NewUp.fromAddress(newUserPositionAddress));
-        console.log('new user Position address:  ', newUserPosition.address.toString() + '\n\n');
-        await showBalancves(newUserPosition)
-        // await withdrawState(newUserPosition)
-        // await supplyTimestamps(newUserPosition)
-    } else {
-        console.log('User Position address:  ', userPosition.address.toString() + '\n\n');
-        await showBalancves(userPosition)
-        await withdrawState(userPosition)
-        await supplyTimestamps(userPosition)
-    }
+    log(
+        'User position version: '+
+        await  userPosition.getVersion()
+    );
+    await showBalancves(userPosition)
+    // await withdrawState(userPosition)
+    // await supplyTimestamps(userPosition)
+
 
     async function showBalancves(contract: any) {
         const balances: Dictionary<Address, bigint> = await contract.getBalances();
@@ -55,7 +46,6 @@ export async function run(provider: NetworkProvider) {
         const withdrawStates = await contract.getWithdrawState();
         if ( withdrawStates) {
             console.log(withdrawStates)
-            // нужно id
         }
     }
     async function supplyTimestamps(contract: any) {
@@ -73,5 +63,4 @@ export async function run(provider: NetworkProvider) {
         log('Supply timestamps toncoin: ');
         console.log(toncoin != 0 ? toncoin.info : '')
     }
-    log('Finished');
 }

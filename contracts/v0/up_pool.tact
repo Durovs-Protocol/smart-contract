@@ -4,9 +4,6 @@ import "../utils/messages.tact";
 import "../utils/math.tact";
 import "../utils/helpers.tact";
 
-struct SupplyTimestamp {
-    info: map<Int , Int >;
-}
 
 contract UserPosition  {
     const MinTonsForStorage: Int = ton("0.01");
@@ -23,7 +20,7 @@ contract UserPosition  {
     lastWithdrawalRequest: Int = 0;
     supplyTimestamps: map<Address, SupplyTimestamp> = emptyMap();
     updatedTimestamps: SupplyTimestamp? = null;
-
+    version: String = "0";
     init(user: Address, usdton: Address, manager: Address, reservePool: Address, profitPool: Address, balances: map<Address, Int>) {
         self.user = user; 
         self.manager = manager;
@@ -279,6 +276,10 @@ contract UserPosition  {
                 body: BuildPosition {
                     user: self.user,
                     balances: self.balances,
+                    supplyTimestamps: self.supplyTimestamps,
+                    updatedTimestamps: self.updatedTimestamps,
+                    withdrawState: self.withdrawState,
+                    lastWithdrawalRequest: self.lastWithdrawalRequest
                 }.toCell(),
             }
         );
@@ -379,6 +380,9 @@ contract UserPosition  {
     get fun supplyTimestamps(): map<Address, SupplyTimestamp> {
         return self.supplyTimestamps;
     }
+    get fun version(): String {
+        return self.version;
+    }
 }
 
 // ======POOL==================================================================
@@ -390,7 +394,7 @@ contract ReservePool with Deployable, OwnableTransferable {
     owner: Address;
     balances:  map<Address, Int>;
     assets:  map<Address, Asset>;
-
+    version: String = "0";
 
     init(owner: Address){
         self.owner = owner;
@@ -419,12 +423,12 @@ contract ReservePool with Deployable, OwnableTransferable {
     receive(msg: SetBalances) {
         self.requireOwner();
         self.balances = msg.balances;
-        self.reply("Runa protocol: pool Balances template is set".asComment());
+        self.reply("Runa protocol: pool balances template set".asComment());
     }
     receive(msg: SetAssets) {
         self.requireOwner();
         self.assets = msg.assets;
-        self.reply("Runa protocol: Pool asset template set.".asComment());
+        self.reply("Runa protocol: pool assets set".asComment());
     }
 
     receive(msg: PoolMigrationRequest) {
@@ -612,5 +616,8 @@ contract ReservePool with Deployable, OwnableTransferable {
     }
     get fun assets(): map<Address, Asset> {
         return self.assets;
+    }
+    get fun version(): String {
+        return self.version;
     }
 }

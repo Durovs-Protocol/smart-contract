@@ -6,6 +6,10 @@ struct JettonData {
     content: Cell?;
     walletCode: Cell;
 }
+
+struct SupplyTimestamp {
+    info: map<Int , Int >;
+}
 struct WithdrawTransactionInfo {
     amount: Int;
     master: Address;
@@ -168,7 +172,6 @@ message DoLiquidation {
 //-----MIGRATION
 //user interface
 message Migration {
-    newManager: Address;
     id: Int;
 }
 //up interface
@@ -188,10 +191,18 @@ message InformationResponce {
 }
 message SetState {
     balances: map<Address, Int>;
+    supplyTimestamps: map<Address, SupplyTimestamp>;
+    updatedTimestamps: SupplyTimestamp?;
+    withdrawState: map<Int , WithdrawTransactionInfo>;
+    lastWithdrawalRequest: Int;
 }
 message BuildPosition {
     user: Address;
     balances: map<Address, Int>;
+    supplyTimestamps: map<Address, SupplyTimestamp>;
+    updatedTimestamps: SupplyTimestamp?;
+    withdrawState: map<Int , WithdrawTransactionInfo>;
+    lastWithdrawalRequest: Int;
 }
 
 message OnMigrationComplete {

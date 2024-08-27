@@ -82,7 +82,6 @@ export async function timer(
     console.log(currentVal);
     console.log(newVal);
 
-
     console.log('=============================================================================');
 
     let attempt = 1;
@@ -116,24 +115,30 @@ export function delay(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function getFilename(name: string, nameSuffix?: string) {
-    return `${process.env.version?.includes('1') ? '../../deploy/' : 'deploy/v0/'}${name}${nameSuffix ? `_${nameSuffix}` : ''}.address`;
+function getFilename(name: string, nameSuffix?: string, v = process.env.v) {
+    var dir = `deploy/v${v}`;
+
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir);
+    }
+    return `deploy/v${v}/${name}${nameSuffix ? `_${nameSuffix}` : ''}.address`;
 }
 
-export async function saveAddress(name: string, address: Address, nameSuffix?: string) {
-    const filename = getFilename(name, nameSuffix);
+export async function saveAddress(name: string, address: Address, nameSuffix?: string, v?: string) {
+    const filename = getFilename(name, nameSuffix, v);
     await fs.promises.writeFile(filename, address.toString());
-
     console.log(`Address '${address.toString()}' saved to file ${filename}.`);
 }
 
-export async function loadAddress(name: string, nameSuffix?: string) {
-    return await fs.promises.readFile(getFilename(name, nameSuffix), 'utf8');
+export async function loadAddress(name: string, nameSuffix?: string, v?: string) {
+    return await fs.promises.readFile(getFilename(name, nameSuffix, v), 'utf8');
 }
 
-
-
 export async function saveLog(name: string, log: any) {
+    var dir = 'logs/migration';
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir);
+    }
     const filename = `logs/migration/${name}.txt`;
     await fs.promises.writeFile(filename, log);
 }
@@ -144,10 +149,14 @@ export function log(message: any) {
     console.log('==================================================================================');
 }
 
-
 export const getBalanceValue = function (contract: any, index: number) {
     return async function () {
         const allBalances = await contract.getBalances();
-         return (allBalances.get(Address.parse(assets[index].master))) 
+        return allBalances.get(Address.parse(assets[index].master));
     };
+};
+
+export const contractVersion = async function (contract: any, name: string) {
+    const version = await contract.getVersion()
+    return `version of ${name}: ${version}`
 };

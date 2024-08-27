@@ -8,17 +8,14 @@ import { PositionKeeper } from '../wrappers/V0.PositionKeeper';
 
 export async function run(provider: NetworkProvider) {
     const user = provider.sender();
-    const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
-    const newManager = provider.open(await NewManager.fromAddress(Address.parse(await loadAddress('new_manager'))));
-
+    const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager', undefined, '0'))));
+    const newManager = provider.open(await NewManager.fromAddress(Address.parse(await loadAddress('manager', undefined, '1'))));
 
     log('Миграция конркетной up');
 
     const specialId: number = 1;
 
     const logName: string = `migration_${specialId}_attempt_${2}`;
-
-
 
         const positionKeeperAddress = await manager.getPositionKeeper(BigInt(specialId))
         const positionKeeper = provider.open(await PositionKeeper.fromAddress(positionKeeperAddress));

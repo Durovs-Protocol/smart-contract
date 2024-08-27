@@ -1,17 +1,20 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, Dictionary, toNano } from '@ton/core';
+import contracts from '../utils/contracts';
 import { assets, setupGas } from '../utils/data';
-import { getBalanceValue, loadAddress, log, timer } from '../utils/helpers';
-import { Asset, Manager } from '../wrappers/V0.Manager';
-// import { UsdTonMaster } from '../wrappers/v1/UsdTon';
-import { ReservePool } from '../wrappers/V0.ReservePool';
+import { contractVersion, getBalanceValue, log, timer } from '../utils/helpers';
+import { Asset } from '../wrappers/V0.Manager';
 
 export async function run(provider: NetworkProvider) {
-    const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
-    const reservePool = provider.open(await ReservePool.fromAddress(Address.parse(await loadAddress('reservePool'))));
+    const user = provider.sender().address as Address;
+	const {
+		reservePool,
+		manager,
+	    } = await contracts(provider, user)
 
     const assetsData: Dictionary<Address, Asset> = Dictionary.empty();
     const balancesData: Dictionary<Address, bigint> = Dictionary.empty();
+    
     assets.forEach((asset) => {
         const assetTemplate: Asset = {
             $$type: 'Asset',
@@ -24,7 +27,8 @@ export async function run(provider: NetworkProvider) {
     })
 
     async function setAssets(contract: any, name: string) {
-        log('Set assets in ' + name.toUpperCase());
+        log('Set assets in ' + name.toUpperCase() +
+        `\n ${await contractVersion(contract, name)}`);
 
             await contract.send(
                 provider.sender(),
@@ -38,7 +42,9 @@ export async function run(provider: NetworkProvider) {
     } 
 
     async function setBalance(contract: any, name: string) {
-        log('Set balances template in ' + name.toUpperCase());
+        log('Set balances template in ' + name.toUpperCase() +
+        `\n ${await contractVersion(contract, name)}`);
+
             await contract.send(
                 provider.sender(),
                 { value: toNano(setupGas) },

@@ -1,14 +1,13 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import { assets } from '../utils/data';
-import { loadAddress, log } from '../utils/helpers';
-import { NewReservePool } from '../wrappers/V0.NewPool';
+import { loadAddress, log, saveLog } from '../utils/helpers';
 import { ReservePool } from '../wrappers/V0.ReservePool';
 
 export async function run(provider: NetworkProvider) {
     const user = provider.sender();
-    const reservePool = provider.open(await ReservePool.fromAddress(Address.parse(await loadAddress('reservePool'))));
-    const newReservePool = provider.open(await NewReservePool.fromAddress(Address.parse(await loadAddress('new_pool'))));
+    const reservePool = provider.open(await ReservePool.fromAddress(Address.parse(await loadAddress('reservePool', undefined, '0'))));
+    const newPool: Address = Address.parse(await loadAddress('reservePool', undefined, '1'))
 
      const migrationData = [
         {
@@ -29,12 +28,10 @@ export async function run(provider: NetworkProvider) {
         {
             name: 'toncoin',
             amount: 0n,
-            pool_wallet: Address.parse(await loadAddress('reservePool'))
+            pool_wallet: reservePool.address
         },
     ]
     const migrationIndex: number = 1;
-     
-
         try {
             log('Миграция pool');
             await reservePool.send(
@@ -44,12 +41,16 @@ export async function run(provider: NetworkProvider) {
                     $$type: 'PoolMigrationRequest',
                     amount: toNano(migrationData[migrationIndex].amount),
                     queryId: BigInt(migrationIndex),
-                    newPool: newReservePool.address,
+                    newPool: newPool,
                     wallet: migrationData[migrationIndex].pool_wallet,
                 },
             );
+            // тут нужно добавить какой-то таймер, без него логи бесполезны
+            await saveLog(`migration_pool`, `\nMigration complete: \n old pool: ${reservePool.address};
+                \nnew pool: ${newPool};`)
         } catch (error) {
-          
+            await saveLog(`migration_pool`, `\nMigration complete with errors:
+                \n Error: ${error};`)
         }
     
     

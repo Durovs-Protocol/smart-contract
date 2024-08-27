@@ -19,7 +19,7 @@ export async function run(provider: NetworkProvider) {
     );
 
     await provider.waitForDeploy(newPool.address, 30);
-    await saveAddress('new_pool', newPool.address);
+    await saveAddress('reservePool', newPool.address, undefined, '1');
     console.log('=============================================================================');
     console.log('New pool deployed successfully');
     console.log('=============================================================================');

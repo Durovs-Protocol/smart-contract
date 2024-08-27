@@ -15,6 +15,7 @@ contract Manager with Deployable, OwnableTransferable {
     lastPositionId: Int = 0;
     lastMigrationId: Int = 0;
     tonPrice: Int;
+    version: String = "0";
 
     init(owner: Address){
         self.owner = owner;
@@ -70,12 +71,12 @@ contract Manager with Deployable, OwnableTransferable {
     receive(msg: SetAssets) {
         self.requireOwner();
         self.assets = msg.assets;
-        self.reply("Runa protocol: Manager's assets set".asComment());
+        self.reply("Runa protocol: manager assets set".asComment());
     }
     receive(msg: SetBalances) {
         self.requireOwner();
         self.balances = msg.balances;
-        self.reply("Runa protocol: Balances template is set".asComment());
+        self.reply("Runa protocol: manager balances template set".asComment());
     }
     //=============================================================================
     // Oracle
@@ -280,6 +281,10 @@ contract Manager with Deployable, OwnableTransferable {
 
     get fun balances(): map<Address, Int> {
         return self.balances;
+    }
+
+    get fun version(): String {
+        return self.version;
     }
 }
 

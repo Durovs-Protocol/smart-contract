@@ -16,6 +16,7 @@ contract NewManager with Deployable, OwnableTransferable {
     lastPositionId: Int = 0;
     tonPrice: Int;
     oldManager: Address;
+    version: String = "1";
 
     init(owner: Address, oldManager: Address){
         self.owner = owner;
@@ -72,12 +73,12 @@ contract NewManager with Deployable, OwnableTransferable {
     receive(msg: SetAssets) {
         self.requireOwner();
         self.assets = msg.assets;
-        self.reply("Runa protocol: Manager's assets set".asComment());
+        self.reply("Runa protocol: new manager assets set".asComment());
     }
     receive(msg: SetBalances) {
         self.requireOwner();
         self.balances = msg.balances;
-        self.reply("Runa protocol: Balances template is set".asComment());
+        self.reply("Runa protocol: new manager balances template set".asComment());
     }
     //=============================================================================
     // Oracle
@@ -179,6 +180,10 @@ contract NewManager with Deployable, OwnableTransferable {
                 bounce: true,
                 body: SetState{
                     balances: msg.balances,
+                    supplyTimestamps: msg.supplyTimestamps,
+                    updatedTimestamps: msg.updatedTimestamps,
+                    withdrawState: msg.withdrawState,
+                    lastWithdrawalRequest: msg.lastWithdrawalRequest
                 }.toCell(),
                 code: init.code,
                 data: init.data
@@ -283,6 +288,9 @@ contract NewManager with Deployable, OwnableTransferable {
     get fun balances(): map<Address, Int> {
         return self.balances;
     }
+    get fun version(): String {
+        return self.version;
+    }
 }
 
 contract NewPositionKeeper  {
@@ -332,5 +340,4 @@ contract NewPositionKeeper  {
     get fun user(): Address {
         return self.user;
     }
-
 }

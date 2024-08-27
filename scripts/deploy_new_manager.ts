@@ -5,7 +5,7 @@ import { loadAddress, saveAddress } from '../utils/helpers';
 import { NewManager } from '../wrappers/V0.NewManager';
 
 export async function run(provider: NetworkProvider) {
-    const manager = provider.open(await NewManager.fromInit(provider.sender().address!, Address.parse(await loadAddress('manager'))));
+    const manager = provider.open(await NewManager.fromInit(provider.sender().address!, Address.parse(await loadAddress('manager', undefined, '0'))));
 
     await manager.send(
         provider.sender(),
@@ -19,7 +19,7 @@ export async function run(provider: NetworkProvider) {
     );
 
     await provider.waitForDeploy(manager.address, 30);
-    await saveAddress('new_manager', manager.address);
+    await saveAddress('manager', manager.address, undefined, '1');
     console.log('=============================================================================');
     console.log('New manager deployed successfully');
     console.log('=============================================================================');
