@@ -18,13 +18,13 @@ export async function run(provider: NetworkProvider) {
     // const userPositionAddress = await managerContract.getUserPositionAddress(user.address!!);
     // const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
 
-    const supplyAmount = 1
+    const supplyAmount = 10
     const assetIndex = 0
     log('\nВнесение залога jetton:' + supplyAmount +
       `\n${await contractVersion(manager, 'manager')}`
     );
 	// Адрес кошелька TON Assets
-    const jettonUserWallet = Address.parse('kQDrMl3jny6a7NkicAt-o868ZjHXKE4HoZl57op2zkx3XEh-')
+    const jettonUserWallet = Address.parse(process.env.ST_JETTON_WALLET!!)
 
     let assetBuilder = beginCell()
 		assetBuilder.storeAddress(Address.parse(assets[assetIndex].master)); // мастер контракт жетона 
