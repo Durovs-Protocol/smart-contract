@@ -18,7 +18,7 @@ contract UsdTonMaster with Jetton, Deployable {
 
     init(owner: Address, content: Cell?) {
         self.totalSupply = 0;
-        self.owner = owner;
+        self.owner = sender();
         self.mintable = true;
         self.content = content;
         self.deps = Deps{

@@ -8,10 +8,8 @@ import { PositionKeeper } from '../wrappers/V0.PositionKeeper';
 
 export async function run(provider: NetworkProvider) {
     const user = provider.sender();
-    const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
-    const newManager = provider.open(await NewManager.fromAddress(Address.parse(await loadAddress('new_manager'))));
-
-
+    const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager', undefined, '0'))));
+    const newManager = provider.open(await NewManager.fromAddress(Address.parse(await loadAddress('manager', undefined, '1'))));
     log('Миграция up');
 
     const currentPositionId = await manager.getLastPositionId();
@@ -22,14 +20,12 @@ export async function run(provider: NetworkProvider) {
         const userAddress = await positionKeeper.getUser()
         const positionAddress = await positionKeeper.getPosition()
 
-
         try {
             await manager.send(
                 user,
                 { value: toNano(1) },
                 {
                     $$type: 'Migration',
-                    newManager: newManager.address,
                     id: BigInt(i),
                 },
             );

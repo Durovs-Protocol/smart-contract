@@ -3,25 +3,28 @@ import { NetworkProvider } from '@ton/blueprint';
 import { Address, beginCell, internal, toNano } from '@ton/core';
 import { mnemonicToPrivateKey } from "@ton/crypto";
 import { WalletContractV4 } from '@ton/ton/dist/wallets/WalletContractV4';
+import contracts from '../utils/contracts';
 import { assets } from '../utils/data';
-import { loadAddress, timer } from '../utils/helpers';
-import { Manager } from '../wrappers/V0.Manager';
-import { UserPosition } from '../wrappers/V0.UserPosition';
+import { contractVersion, log, timer } from '../utils/helpers';
+
 
 export async function run(provider: NetworkProvider) {
-    const user = provider.sender();
+  const user = provider.sender();
+    const {
+      reservePool,
+      manager,
+    } = await contracts(provider, user.address!!)
 
-    const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
-    const userPositionAddress = await manager.getUserPositionAddress(user.address!!);
-    const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
-      
-    const reservePool = Address.parse(await loadAddress('reservePool'));
+    // const userPositionAddress = await managerContract.getUserPositionAddress(user.address!!);
+    // const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
 
     const supplyAmount = 10
     const assetIndex = 0
-
+    log('\nВнесение залога jetton:' + supplyAmount +
+      `\n${await contractVersion(manager, 'manager')}`
+    );
 	// Адрес кошелька TON Assets
-    const jettonUserWallet = Address.parse('kQAv8filQ-H4tAvcQ4Bpwzt8r14GU8vNVrxYMrpZMghkO6tq')
+    const jettonUserWallet = Address.parse(process.env.ST_JETTON_WALLET!!)
 
     let assetBuilder = beginCell()
 		assetBuilder.storeAddress(Address.parse(assets[assetIndex].master)); // мастер контракт жетона 
@@ -55,14 +58,14 @@ export async function run(provider: NetworkProvider) {
         .storeUint(0xf8a7ea5, 32)
         .storeUint(0, 64)
         .storeCoins(toNano(supplyAmount)) // Сумма
-        .storeAddress(reservePool) // Кто получит TON Assets
+        .storeAddress(reservePool.address) // Кто получит TON Assets
         .storeAddress(user.address) // Остаток газа
         .storeUint(0, 1)
         .storeCoins(700000000)
         .storeMaybeRef(assetBuilder)
         .endCell();
 
-    let keyPair = await mnemonicToPrivateKey("they usual couple intact opinion uniform vessel lazy danger over table urge abuse behind drift garden dolphin city city exact swarm focus moral remove".split(" "));
+    let keyPair = await mnemonicToPrivateKey(process.env.WALLET_MNEMONIC!!.split(" "));
 
     // Create wallet contract
     let workchain = 0; // Usually you need a workchain 0

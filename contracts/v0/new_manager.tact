@@ -14,11 +14,13 @@ contract NewManager with Deployable, OwnableTransferable {
     settings: Settings;
     owner: Address;
     lastPositionId: Int = 0;
-    tonPrice: Int;
     oldManager: Address;
+    version: String = "1";
+    rates: map<Address, Int>;
 
-    init(owner: Address, oldManager: Address){
-        self.owner = owner;
+    init(owner: Address, oldManager: Address) {
+        require(owner == sender(), "Runa protocol: no access to init manager");
+        self.owner = sender();
         self.settings = Settings{
             minDelay: 0,
             newManager: newAddress(0, 0),
@@ -35,8 +37,8 @@ contract NewManager with Deployable, OwnableTransferable {
 
         self.assets = emptyMap();
         self.balances = emptyMap();
-        self.tonPrice = 0;
         self.oldManager = oldManager;
+        self.rates = emptyMap();
     }
 
     //=============================================================================
@@ -51,7 +53,7 @@ contract NewManager with Deployable, OwnableTransferable {
             usdton: msg.usdton,
             runaCoupon: msg.runaCoupon
         };
-        self.reply("Runa protocol: Manager's dependencies set".asComment());
+        self.reply("Runa protocol: new manager's dependencies set".asComment());
     }
 
 
@@ -72,21 +74,12 @@ contract NewManager with Deployable, OwnableTransferable {
     receive(msg: SetAssets) {
         self.requireOwner();
         self.assets = msg.assets;
-        self.reply("Runa protocol: Manager's assets set".asComment());
+        self.reply("Runa protocol: new manager assets set".asComment());
     }
     receive(msg: SetBalances) {
         self.requireOwner();
         self.balances = msg.balances;
-        self.reply("Runa protocol: Balances template is set".asComment());
-    }
-    //=============================================================================
-    // Oracle
-    // TODO Заменить на оракул
-    //=============================================================================
-    receive(msg: UpdateTonPriceMsg){
-        self.requireOwner();
-        self.tonPrice = msg.price;
-        self.reply("Runa protocol: TON price updated".asComment());
+        self.reply("Runa protocol: new manager balances template set".asComment());
     }
 
     //=============================================================================
@@ -98,10 +91,7 @@ contract NewManager with Deployable, OwnableTransferable {
         require(sender() == self.deps.reservePool, "Runa protocol: Insufficient TONs sent");
         let valueToSendForward: Int = ctx.value - (self.MinTonForStorage + self.GasConsumption);
         let init: StateInit = initOf NewUp(msg.user,
-            self.deps.usdton,
             self.deps.manager,
-            self.deps.reservePool,
-            self.deps.profitPool,
         );
         let userPosition: Address = contractAddress(init);
 
@@ -122,8 +112,6 @@ contract NewManager with Deployable, OwnableTransferable {
     }
 
     bounced(msg: bounced<Supply>) {
-
-
         self.bouncedHandler("Runa protocol: Error in supply.");
     }
 
@@ -157,6 +145,7 @@ contract NewManager with Deployable, OwnableTransferable {
                     master: msg.master,
                     minDelay: self.settings.minDelay,
                     maxExecutionTime: self.settings.maxExecutionTime,
+                    pool: self.deps.reservePool
                 }.toCell()
             }
         );
@@ -169,7 +158,7 @@ contract NewManager with Deployable, OwnableTransferable {
     /* ==Migration== */
     receive(msg: BuildPosition) {
         require(sender() == self.oldManager, "Runa protocol: Unable to create a new position");
-        let init: StateInit = initOf NewUp(msg.user, self.deps.usdton, self.deps.manager, self.deps.reservePool, self.deps.profitPool);
+        let init: StateInit = initOf NewUp(msg.user, self.deps.manager);
         let newUserPosition: Address = contractAddress(init);
 
         send(SendParameters{
@@ -179,6 +168,10 @@ contract NewManager with Deployable, OwnableTransferable {
                 bounce: true,
                 body: SetState{
                     balances: msg.balances,
+                    supplyTimestamps: msg.supplyTimestamps,
+                    updatedTimestamps: msg.updatedTimestamps,
+                    withdrawState: msg.withdrawState,
+                    lastWithdrawalRequest: msg.lastWithdrawalRequest
                 }.toCell(),
                 code: init.code,
                 data: init.data
@@ -217,16 +210,63 @@ contract NewManager with Deployable, OwnableTransferable {
             }
         );
     }
+
+    //==================================NEW FEATURES===========================================
+    //=============================================================================
+    // Oracle
+    // TODO Заменить на оракул
+    //=============================================================================
+    receive(msg: SetRates) {
+        self.requireOwner();
+        self.rates = msg.rates;
+        self.reply("Runa protocol: rates updated".asComment());
+    }
+
+    /* Mint usdTON */
+    receive(msg: MintRunaUsdMessage){
+        send(SendParameters{
+                to: self._userPositionAddress(sender()),
+                value: 0,
+                mode: (SendRemainingValue + SendBounceIfActionFail),
+                bounce: true,
+                body: MintRunaUsd{
+                    user: sender(),
+                    amount: msg.amount,
+                    rates: self.rates,
+                    runausd: self.deps.usdton
+                }.toCell()
+            }
+        );
+    }
+
+    bounced(msg: bounced<MintRunaUsd>){
+        self.bouncedHandler("Runa protocol: mint error");
+    }
+
+    /*03 | Burn usdTON */
+    receive(msg: BurnRunaUsdMessage){
+        send(SendParameters{
+                to: self._userPositionAddress(sender()),
+                value: 0,
+                mode: (SendRemainingValue + SendBounceIfActionFail),
+                bounce: true,
+                body: BurnRunaUsd{
+                    user: sender(),
+                    amount: msg.amount,
+                    rates: self.rates,
+                    runausd: self.deps.usdton
+                }.toCell()
+            }
+        );
+    }
+
     //=============================================================================
     // Helpers
     //=============================================================================
 
     fun _userPositionAddress(user: Address): Address {
         let init: StateInit = initOf NewUp(user,
-            self.deps.usdton,
             self.deps.manager,
-            self.deps.reservePool,
-            self.deps.profitPool,
         );
         return contractAddress(init);
     }
@@ -283,6 +323,9 @@ contract NewManager with Deployable, OwnableTransferable {
     get fun balances(): map<Address, Int> {
         return self.balances;
     }
+    get fun version(): String {
+        return self.version;
+    }
 }
 
 contract NewPositionKeeper  {
@@ -305,7 +348,7 @@ contract NewPositionKeeper  {
         self.user = msg.user;
 
         send(SendParameters{
-            to: self.user,
+            to: self.manager,
             bounce: false,
             value: 0,
             mode: SendRemainingValue,
@@ -332,5 +375,4 @@ contract NewPositionKeeper  {
     get fun user(): Address {
         return self.user;
     }
-
 }

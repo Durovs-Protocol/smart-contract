@@ -10,7 +10,7 @@ contract ProfitPool with Deployable, OwnableTransferable {
     deps: Deps;
     owner: Address;
     init(owner: Address){
-        self.owner = owner;
+        self.owner = sender();
         self.deps = Deps{
             manager: newAddress(0, 0),
             profitPool: newAddress(0, 0),

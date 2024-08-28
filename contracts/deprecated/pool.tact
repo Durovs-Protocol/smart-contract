@@ -17,7 +17,7 @@ contract Pool with Deployable, OwnableTransferable {
     owner: Address;
     state: PoolState;
     init(owner: Address){
-        self.owner = owner;
+        self.owner = sender();
         self.deps = Deps{
             managerAddress: newAddress(0, 0),
             poolAddress: newAddress(0, 0),

@@ -1,25 +1,25 @@
 
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, beginCell, toNano } from '@ton/core';
+import contracts from '../utils/contracts';
 import { assets } from '../utils/data';
-import { getBalanceValue, loadAddress, timer } from '../utils/helpers';
-
-import { Manager } from '../wrappers/V0.Manager';
-import { ReservePool } from '../wrappers/V0.ReservePool';
-import { UserPosition } from '../wrappers/V0.UserPosition';
+import { contractVersion, getBalanceValue, log, timer } from '../utils/helpers';
 
 export async function run(provider: NetworkProvider) {
-
 	const user = provider.sender();
+	const {
+		reservePool,
+		manager,
+		userPosition
+        } = await contracts(provider, user.address!!)
+
 	const supplyAmount = 1;
 	const assetIndex = 3
-
+	log('\nВнесение залога ton:' + supplyAmount +
+	`\n${await contractVersion(manager, 'manager')}` +
+	`\n${await contractVersion(userPosition, 'userPosition')}`
+	);
 	let assetBuilder = beginCell().storeMaybeRef(beginCell().storeAddress(Address.parse(assets[assetIndex].master)).storeInt(1n, 64).endCell()).endCell().asSlice()
-
-	const reservePool = provider.open(await ReservePool.fromAddress(Address.parse(await loadAddress('reservePool'))));
-	const manager = provider.open(await Manager.fromAddress(Address.parse(await loadAddress('manager'))));
-	const userPositionAddress = await manager.getUserPositionAddress(user.address!!);
-	const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
 
 	let oldBalance = 0n
 	let positionId = await manager.getLastPositionId()
