@@ -58,8 +58,8 @@ export async function run(provider: NetworkProvider) {
 
     // await setAssets(manager, 'manager');
     // await setAssets(reservePool, 'reservePool');
-    // await setBalance(manager, 'manager');
-    await setBalance(reservePool, 'reservePool');
+    await setBalance(manager, 'manager');
+    // await setBalance(reservePool, 'reservePool');
 }
 
 const getAssetName = function (contract: any, index: number) {
@@ -68,8 +68,6 @@ const getAssetName = function (contract: any, index: number) {
          return (allAssets.get(Address.parse(assets[index].master)))?.name
     };
 };
-
-
 
 async function assetTimer(contract: any, name: string) {
     for (let i = 0; i < assets.length; i++) {
@@ -82,4 +80,3 @@ async function balancesTimer(contract: any, name: string) {
         await timer(`Set balance in ${name}`, 0n, getBalanceValue(contract, i));
     }
 }
-

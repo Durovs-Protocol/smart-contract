@@ -16,10 +16,15 @@ export const serviceFee: number = 1; // $
 //проверку в нотиф
 // это тестовые адреса
 export const assets = [
+    // {
+    //     name: 'stakedTON', // Свой токен
+    //     master: 'kQB6gF0_-_NAAeH_bBnmEQDUwpYfQbG9tOCnlTfKhFDZtkOd',
+    //     pool_wallet: '0QC5XNAbUuiPo-JeaP45Hf-lPUbSzQnQwVD_34XHG7Pb8gOY' // v0
+    // },
     {
         name: 'stakedTON', // Свой токен
         master: 'kQB6gF0_-_NAAeH_bBnmEQDUwpYfQbG9tOCnlTfKhFDZtkOd',
-        pool_wallet: '0QBBGmt1OeW5m2vkXU0O9rJYZUnrhxcWjQ6rp65DaFMhCZvB'
+        pool_wallet: '0QDV1soi5dInkh-ib64bzkY_fIDHLGfYlrZDLG9b4hsVlawc' // v1
     },
     //0QBBGmt1OeW5m2vkXU0O9rJYZUnrhxcWjQ6rp65DaFMhCZvB
     {
