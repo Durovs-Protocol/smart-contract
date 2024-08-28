@@ -57,6 +57,9 @@ message SetAssets {
 message SetBalances {
     balances:  map<Address, Int>;
 }
+message SetRates {
+     rates: map<Address, Int>;
+}
 
 //-----SUPPLY
 //user interface
@@ -84,15 +87,16 @@ struct ManagerState {
 
 //-----MINT
 //user interface
-message MintUsdTonMessage {
+message MintRunaUsdMessage {
     amount: Int as coins;
+
 }
 //up interface
-message MintUsdTon {
+message MintRunaUsd {
     user: Address;
     amount: Int as uint64;
-    settings: Settings;
-    tonPrice: Int as coins;
+    rates: map<Address, Int>;
+    runausd: Address;
 }
 
 message OnMintComplete {
@@ -100,18 +104,16 @@ message OnMintComplete {
 }
 //-----BURN
 //user interface
-message BurnUsdTonMessage {
+message BurnRunaUsdMessage {
     amount: Int as coins;
     fee: Int as uint64;
 }
 //up interface
-message BurnUsdTon {
+message BurnRunaUsd {
     user: Address;
     amount: Int as uint64;
-    settings: Settings;
-    tonPrice: Int as coins;
-    deps: Deps;
-    fee: Int as uint64;
+    rates: map<Address, Int>;
+    runausd: Address;
 }
 message BurnNotification {
     user: Address;
@@ -139,6 +141,8 @@ message Withdraw {
     master: Address;
     minDelay: Int;
     maxExecutionTime: Int;
+    pool: Address;
+
 }
 message WithdrawResponce {
     amount: Int as coins;

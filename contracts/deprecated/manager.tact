@@ -23,7 +23,7 @@ contract Manager with Deployable, OwnableTransferable {
 
 
     init(owner: Address){
-        self.owner = owner;
+        self.owner = sender();
         self.poolSettings = PoolSettings{liquidationRatio: 0, stabilityFeeRate: 0, liquidationFee: 0, minHealthRate: 0};
         self.deps = Deps{
             managerAddress: newAddress(0, 0),

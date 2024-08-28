@@ -23,7 +23,7 @@ contract Manager with Deployable, OwnableTransferable {
 
     
     init(owner: Address){
-        self.owner = owner;
+        self.owner = sender();
         self.settings = Settings{
             reserveRatio: 0,
             reserveMin: 0,

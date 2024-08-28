@@ -1,6 +1,6 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
-import { assets, setupGas } from '../utils/data';
+import { assets } from '../utils/data';
 import { loadAddress, log, saveLog } from '../utils/helpers';
 import { ReservePool } from '../wrappers/V0.ReservePool';
 
@@ -13,7 +13,7 @@ export async function run(provider: NetworkProvider) {
         {
             name: 'stakedTON',
             pool_wallet: Address.parse(assets[0].pool_wallet),
-            amount: 1n
+            amount: 1
         },
         // {
         //     name: 'hipoStakedTON',
@@ -27,19 +27,19 @@ export async function run(provider: NetworkProvider) {
         // },
         {
             name: 'toncoin',
-            amount: 0n,
+            amount: 0,
             pool_wallet: reservePool.address
         },
     ]
-    const migrationIndex: number = 1;
+    const migrationIndex: number = 0;
         try {
             log('Миграция pool');
             await reservePool.send(
                 user,
-                { value: toNano(setupGas) },
+                { value: toNano(0.5) },
                 {
                     $$type: 'PoolMigrationRequest',
-                    amount: toNano(migrationData[migrationIndex].amount),
+                    amount: BigInt(migrationData[migrationIndex].amount),
                     queryId: BigInt(migrationIndex),
                     newPool: newPool,
                     wallet: migrationData[migrationIndex].pool_wallet,

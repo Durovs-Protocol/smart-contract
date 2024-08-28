@@ -14,7 +14,7 @@ export async function run(provider: NetworkProvider) {
 
 
 
-    const withdrawAmount = 0.5;
+    const withdrawAmount = 1.5;
     log('\nВозвращение залога: ' + withdrawAmount +
         `\n${await contractVersion(manager, 'manager')}`
     );

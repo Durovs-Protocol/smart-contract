@@ -116,6 +116,8 @@ export function delay(ms: number) {
 }
 
 function getFilename(name: string, nameSuffix?: string, v = process.env.v) {
+
+
     var dir = `deploy/v${v}`;
 
     if (!fs.existsSync(dir)) {
@@ -125,7 +127,7 @@ function getFilename(name: string, nameSuffix?: string, v = process.env.v) {
 }
 
 export async function saveAddress(name: string, address: Address, nameSuffix?: string, v?: string) {
-    const filename = getFilename(name, nameSuffix, v);
+    const filename = getFilename(name, nameSuffix, v );
     await fs.promises.writeFile(filename, address.toString());
     console.log(`Address '${address.toString()}' saved to file ${filename}.`);
 }

@@ -12,7 +12,6 @@ contract UserPosition  {
     //settings
     user: Address;
     manager: Address;
-    reservePool: Address;
     //state
     isActive: Bool = true;
     balances: map<Address, Int>;
@@ -21,13 +20,11 @@ contract UserPosition  {
     supplyTimestamps: map<Address, SupplyTimestamp> = emptyMap();
     updatedTimestamps: SupplyTimestamp? = null;
     version: String = "0";
-    init(user: Address, usdton: Address, manager: Address, reservePool: Address, profitPool: Address, balances: map<Address, Int>) {
+    init(user: Address, manager: Address, balances: map<Address, Int>) {
+        require(manager == sender(), "Runa protocol: no access to init user position");
         self.user = user; 
         self.manager = manager;
-        self.reservePool = reservePool;
         self.balances = balances;
-
-        
 
         self.withdrawState = emptyMap();
 
@@ -171,7 +168,7 @@ contract UserPosition  {
 
 
         send(SendParameters{
-            to: self.reservePool,
+            to: msg.pool,
             value: remainingValue,
             bounce: true,
             mode: SendBounceIfActionFail,
@@ -397,7 +394,8 @@ contract ReservePool with Deployable, OwnableTransferable {
     version: String = "0";
 
     init(owner: Address){
-        self.owner = owner;
+        require(owner == sender(), "Runa protocol: no access to init pool");
+        self.owner = sender();
         self.deps = Deps {
             manager: newAddress(0, 0),
             profitPool: newAddress(0, 0),
@@ -586,10 +584,7 @@ contract ReservePool with Deployable, OwnableTransferable {
     //=============================================================================
     fun _userPositionAddress(user: Address): Address {
         let init: StateInit = initOf UserPosition(user,
-            self.deps.usdton,
             self.deps.manager,
-            self.deps.reservePool,
-            self.deps.profitPool,
             self.balances
         );
         return contractAddress(init);

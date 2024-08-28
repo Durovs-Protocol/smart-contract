@@ -11,7 +11,6 @@ contract NewUp  {
     //settings
     user: Address;
     manager: Address;
-    reservePool: Address;
     //state
     isActive: Bool = true;
     balances: map<Address, Int>;
@@ -20,18 +19,17 @@ contract NewUp  {
     supplyTimestamps: map<Address, SupplyTimestamp> = emptyMap();
     updatedTimestamps: SupplyTimestamp? = null;
     version: String = "1";
-    init(user: Address, usdton: Address, manager: Address, reservePool: Address, profitPool: Address) {
+    init(user: Address, manager: Address) {
+        require(manager == sender(), "Runa protocol: no access to init user position");
         self.user = user; 
         self.manager = manager;
-        self.reservePool = reservePool;
         self.balances = emptyMap();
-
         self.withdrawState = emptyMap();
-
     }
 
     receive(msg: SetState) {
         require(sender() == self.manager, "Runa protocol: not from positions manager");
+        require(self.balances.isEmpty(), "Runa protocol: already set");
 
         self.balances = msg.balances;
         self.supplyTimestamps = msg.supplyTimestamps;
@@ -179,7 +177,7 @@ contract NewUp  {
 
 
         send(SendParameters{
-            to: self.reservePool,
+            to: msg.pool,
             value: remainingValue,
             bounce: true,
             mode: SendBounceIfActionFail,
@@ -236,7 +234,6 @@ contract NewUp  {
             let newValue: Int = self.balances.get(transactionInfo!!.master)!! -  transactionInfo!!.amount;
             self.balances.set(transactionInfo!!.master, newValue);
 
-
             self.supplyTimestamps.set(transactionInfo!!.master, self.updatedTimestamps);
             self.updatedTimestamps = null;
 
@@ -292,6 +289,110 @@ contract NewUp  {
             }
         );
     }
+
+    //==================================NEW FEATURES===========================================
+    //=============================================================================
+    receive(msg: MintRunaUsd) {
+        require(sender() == self.manager, "not from position Manager");
+
+        // if (!self.isHealthyForMint(self.balances, msg.rates)) {
+        // TODO
+        //     self.unhealthyPositionHandler(msg.user);
+        //     return;
+        // } 
+
+        send(SendParameters{
+            to: msg.runausd, 
+            value: 0,
+            mode: (SendRemainingValue + SendBounceIfActionFail), 
+            bounce: true,
+            body: MintRequest{
+                user: msg.user,
+                amount: msg.amount,
+                notificationAddress: myAddress(),
+            }.toCell()
+        });
+    }
+
+    receive(msg: OnMintComplete) {
+        let comment: StringBuilder = beginString();
+        // self.debt += msg.amount; TODO
+        comment.append("Runa Protocol: You have minted");
+        comment.append(msg.amount.toString());
+        comment.append("runas");
+     
+        send(SendParameters {
+            to: self.user, 
+            value: 0,
+            mode: SendRemainingValue + SendIgnoreErrors,
+            bounce: false,
+            body: comment.toString().asComment()
+        });
+    }
+
+    bounced(msg: bounced<MintRequest>) {
+        self.bouncedHandler();
+    }
+
+    /*03 | Burn usdTON */
+    receive(msg: BurnRunaUsd) {
+        require(sender() == self.manager, "not from position manager");
+
+        let amountToBurn: Int = msg.amount;
+        // todo add bounced handler in sender to pay ctx.value back to sender
+        // if (self.debt < msg.amount) {
+        //  TODO self.setMessage("Your debt is less than you want to repay, charge sent back");
+        //     amountToBurn = self.debt;
+        // }
+        // if (amountToBurn < ((msg.settings.burnMin * 1000000000) / msg.tonPrice)) {
+            // send(SendParameters {
+            //     to: self.user, 
+            //     value: 0,
+            //     mode: SendRemainingValue + SendIgnoreErrors,
+            //     bounce: false,
+            //     body: "Your debt is less than minimum possible".asComment()
+            // });
+            // return;
+        // }
+        
+
+        // let withdrawalAmount: Int = (msg.amount * msg.settings.reserveRatio) /  msg.tonPrice;
+
+        // осталвяем средства для оплаты комиссии на балансе, также оставляем средства для оплаты газа 
+        let remainingValue: Int = myBalance() - self.MinTonsForStorage + self.GasConsumption; 
+
+        send(SendParameters{
+            to: msg.runausd, 
+            value: remainingValue,
+            bounce: true,
+            mode: SendBounceIfActionFail,
+            body: BurnRequest {
+                user: msg.user,
+                amount: amountToBurn,
+                withdrawalAmount: 0,
+                fee: 0,
+                notificationAddress: myAddress()
+            }.toCell()
+        });
+    }
+    bounced(msg: bounced<BurnRequest>) {
+        self.bouncedHandler();
+    }
+    receive(msg: OnBurnComplete) {
+        let comment: StringBuilder = beginString();
+        comment.append("Runa Protocol: You have burned");
+        comment.append(msg.usdton.toString());
+        comment.append("runas");
+     
+        send(SendParameters {
+            to: self.user, 
+            value: 0,
+            mode: SendRemainingValue + SendIgnoreErrors,
+            bounce: false,
+            body: comment.toString().asComment()
+        });
+    }
+    
     //=============================================================================
     // Helpers
     //=============================================================================
@@ -403,7 +504,8 @@ contract NewReservePool with Deployable, OwnableTransferable {
     version: String = "1";
 
     init(owner: Address){
-        self.owner = owner;
+        require(owner == sender(), "Runa protocol: no access to init pool");
+        self.owner = sender();
         self.deps = Deps {
             manager: newAddress(0, 0),
             profitPool: newAddress(0, 0),
@@ -575,10 +677,7 @@ contract NewReservePool with Deployable, OwnableTransferable {
     //=============================================================================
     fun _userPositionAddress(user: Address): Address {
         let init: StateInit = initOf NewUp(user,
-            self.deps.usdton,
             self.deps.manager,
-            self.deps.reservePool,
-            self.deps.profitPool,
         );
         return contractAddress(init);
     }

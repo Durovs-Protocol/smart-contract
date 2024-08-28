@@ -11,7 +11,7 @@ contract RunecoinWallet
     master: Address;
     init(master: Address, owner: Address){
         self.balance = 0;
-        self.owner = owner;
+        self.owner = sender();
         self.master = master;
     }
 

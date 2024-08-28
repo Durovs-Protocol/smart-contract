@@ -14,11 +14,11 @@ contract Manager with Deployable, OwnableTransferable {
     owner: Address;
     lastPositionId: Int = 0;
     lastMigrationId: Int = 0;
-    tonPrice: Int;
     version: String = "0";
 
     init(owner: Address){
-        self.owner = owner;
+        require(owner == sender(), "Runa protocol: no access to init manager");
+        self.owner = sender();
         self.settings = Settings{
             minDelay: 0,
             newManager: newAddress(0, 0),
@@ -35,7 +35,6 @@ contract Manager with Deployable, OwnableTransferable {
 
         self.assets = emptyMap();
         self.balances = emptyMap();
-        self.tonPrice = 0;
     }
 
     //=============================================================================
@@ -66,7 +65,7 @@ contract Manager with Deployable, OwnableTransferable {
             maxExecutionTime: msg.maxExecutionTime,
 
         };
-        self.reply("Settings have been updated".asComment());
+        self.reply("Runa protocol: Settings have been updated".asComment());
     }
     receive(msg: SetAssets) {
         self.requireOwner();
@@ -78,15 +77,6 @@ contract Manager with Deployable, OwnableTransferable {
         self.balances = msg.balances;
         self.reply("Runa protocol: manager balances template set".asComment());
     }
-    //=============================================================================
-    // Oracle
-    // TODO Заменить на оракул
-    //=============================================================================
-    receive(msg: UpdateTonPriceMsg){
-        self.requireOwner();
-        self.tonPrice = msg.price;
-        self.reply("Runa protocol: TON price updated".asComment());
-    }
 
     //=============================================================================
     // User actions
@@ -97,10 +87,7 @@ contract Manager with Deployable, OwnableTransferable {
         require(sender() == self.deps.reservePool, "Runa protocol: no access for supply");
         let valueToSendForward: Int = ctx.value - (self.MinTonForStorage + self.GasConsumption);
         let init: StateInit = initOf UserPosition(msg.user,
-            self.deps.usdton,
             self.deps.manager,
-            self.deps.reservePool,
-            self.deps.profitPool,
             self.balances
         );
         let userPosition: Address = contractAddress(init);
@@ -155,6 +142,7 @@ contract Manager with Deployable, OwnableTransferable {
                     master: msg.master,
                     minDelay: self.settings.minDelay,
                     maxExecutionTime: self.settings.maxExecutionTime,
+                    pool: self.deps.reservePool
                 }.toCell()
             }
         );
@@ -230,10 +218,7 @@ contract Manager with Deployable, OwnableTransferable {
 
     fun _userPositionAddress(user: Address): Address {
         let init: StateInit = initOf UserPosition(user,
-            self.deps.usdton,
             self.deps.manager,
-            self.deps.reservePool,
-            self.deps.profitPool,
             self.balances
         );
         return contractAddress(init);
