@@ -27,11 +27,11 @@ export async function run(provider: NetworkProvider) {
         // },
         {
             name: 'toncoin',
-            amount: 0,
+            amount: 0,// Не надо указывать
             pool_wallet: reservePool.address
         },
     ]
-    const migrationIndex: number = 0;
+    const migrationIndex: number = 1;
         try {
             log('Миграция pool');
             await reservePool.send(

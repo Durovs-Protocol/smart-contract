@@ -71,8 +71,6 @@ const getAssetName = function (contract: any, index: number) {
     };
 };
 
-
-
 async function assetTimer(contract: any, name: string) {
     for (let i = 0; i < assets.length; i++) {
         const currentName = assets[i].name
@@ -84,4 +82,3 @@ async function balancesTimer(contract: any, name: string) {
         await timer(`Set balance in ${name}`, 0n, getBalanceValue(contract, i));
     }
 }
-

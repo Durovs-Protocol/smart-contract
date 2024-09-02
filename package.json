@@ -24,10 +24,13 @@
         "v0-deploy": "yarn v0-deploy-manager && yarn v0-deploy-reserve",
         "v0-deploy-reserve": "yarn  v0-run-script deploy_reserve",
         "v0-deploy-manager": "yarn v0-run-script deploy_manager",
-        "deploy-upgraded-contracts": "yarn deploy-new-pool && yarn deploy-new-manager && yarn deploy-runausd",
+
+        "v1-deploy": "yarn deploy-new-pool && yarn deploy-new-manager && yarn deploy-runausd",
+        
         "deploy-new-manager": "yarn v0-run-script deploy_new_manager",
         "deploy-new-pool": "yarn v0-run-script deploy_new_pool",
         "deploy-runausd": "yarn v0-run-script deploy_usd_ton",
+        
         "v0-set-deps": "yarn v0-run-script set_deps",
         "v0-set-settings": "yarn v0-run-script set_settings",
         "v0-set-assets": "yarn v0-run-script set_assets",
