@@ -14,18 +14,20 @@ export async function run(provider: NetworkProvider) {
 
     const assetsData: Dictionary<Address, Asset> = Dictionary.empty();
     const balancesData: Dictionary<Address, bigint> = Dictionary.empty();
-    
-    assets.forEach((asset) => {
+
+    assets.forEach((asset: { name: any; pool_wallet: string; master: string; }) => {
         const assetTemplate: Asset = {
             $$type: 'Asset',
             name: asset.name,
-            poolWallet: Address.parse(asset.pool_wallet),
+            poolWallet: Address.parse(asset.pool_wallet!!),
             op_code: 0n
           }
         assetsData.set(Address.parse(asset.master), assetTemplate);
         balancesData.set(Address.parse(asset.master), 0n)
     })
 
+
+    
     async function setAssets(contract: any, name: string) {
         log('\nSet assets in ' + name.toUpperCase() +
         `\n ${await contractVersion(contract, name)}`);
@@ -56,9 +58,9 @@ export async function run(provider: NetworkProvider) {
             await balancesTimer(contract, name)
     }
 
-    // await setAssets(manager, 'manager');
-    // await setAssets(reservePool, 'reservePool');
-    // await setBalance(manager, 'manager');
+    await setAssets(manager, 'manager');
+    await setAssets(reservePool, 'reservePool');
+    await setBalance(manager, 'manager');
     await setBalance(reservePool, 'reservePool');
 }
 

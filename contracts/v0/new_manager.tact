@@ -19,7 +19,7 @@ contract NewManager with Deployable, OwnableTransferable {
     rates: map<Address, Int>;
 
     init(owner: Address, oldManager: Address) {
-        require(owner == sender(), "Runa protocol: no access to init manager");
+        require(owner == sender(), "Durov Protocol: no access to init manager");
         self.owner = sender();
         self.settings = Settings{
             minDelay: 0,
@@ -53,7 +53,7 @@ contract NewManager with Deployable, OwnableTransferable {
             usdton: msg.usdton,
             runaCoupon: msg.runaCoupon
         };
-        self.reply("Runa protocol: new manager's dependencies set".asComment());
+        self.reply("Durov Protocol: new manager's dependencies set".asComment());
     }
 
 
@@ -69,17 +69,17 @@ contract NewManager with Deployable, OwnableTransferable {
             maxExecutionTime: msg.maxExecutionTime,
 
         };
-        self.reply("Runa protocol: Settings have been updated".asComment());
+        self.reply("Durov Protocol: Settings have been updated".asComment());
     }
     receive(msg: SetAssets) {
         self.requireOwner();
         self.assets = msg.assets;
-        self.reply("Runa protocol: new manager assets set".asComment());
+        self.reply("Durov Protocol: new manager assets set".asComment());
     }
     receive(msg: SetBalances) {
         self.requireOwner();
         self.balances = msg.balances;
-        self.reply("Runa protocol: new manager balances template set".asComment());
+        self.reply("Durov Protocol: new manager balances template set".asComment());
     }
 
     //=============================================================================
@@ -88,7 +88,7 @@ contract NewManager with Deployable, OwnableTransferable {
 
     receive(msg: SupplyMessage) {
         let ctx: Context = context();
-        require(sender() == self.deps.reservePool, "Runa protocol: Insufficient TONs sent");
+        require(sender() == self.deps.reservePool, "Durov Protocol: Insufficient TONs sent");
         let valueToSendForward: Int = ctx.value - (self.MinTonForStorage + self.GasConsumption);
         let init: StateInit = initOf NewUp(msg.user,
             self.deps.manager,
@@ -112,7 +112,7 @@ contract NewManager with Deployable, OwnableTransferable {
     }
 
     bounced(msg: bounced<Supply>) {
-        self.bouncedHandler("Runa protocol: Error in supply.");
+        self.bouncedHandler("Durov Protocol: Error in supply.");
     }
 
     receive(msg: AddPositionId) {
@@ -152,12 +152,12 @@ contract NewManager with Deployable, OwnableTransferable {
     }
 
     bounced(msg: bounced<Withdraw>){
-        self.bouncedHandler("Runa protocol: Error in withdrawal");
+        self.bouncedHandler("Durov Protocol: Error in withdrawal");
     }
 
     /* ==Migration== */
     receive(msg: BuildPosition) {
-        require(sender() == self.oldManager, "Runa protocol: Unable to create a new position");
+        require(sender() == self.oldManager, "Durov Protocol: Unable to create a new position");
         let init: StateInit = initOf NewUp(msg.user, self.deps.manager);
         let newUserPosition: Address = contractAddress(init);
 
@@ -219,17 +219,17 @@ contract NewManager with Deployable, OwnableTransferable {
     receive(msg: SetRates) {
         self.requireOwner();
         self.rates = msg.rates;
-        self.reply("Runa protocol: rates updated".asComment());
+        self.reply("Durov Protocol: rates updated".asComment());
     }
 
     /* Mint usdTON */
-    receive(msg: MintRunaUsdMessage){
+    receive(msg: MintDurovUSDMessage){
         send(SendParameters{
                 to: self._userPositionAddress(sender()),
                 value: 0,
                 mode: (SendRemainingValue + SendBounceIfActionFail),
                 bounce: true,
-                body: MintRunaUsd{
+                body: MintDurovUSD{
                     user: sender(),
                     amount: msg.amount,
                     rates: self.rates,
@@ -239,18 +239,18 @@ contract NewManager with Deployable, OwnableTransferable {
         );
     }
 
-    bounced(msg: bounced<MintRunaUsd>){
-        self.bouncedHandler("Runa protocol: mint error");
+    bounced(msg: bounced<MintDurovUSD>){
+        self.bouncedHandler("Durov Protocol: mint error");
     }
 
     /*03 | Burn usdTON */
-    receive(msg: BurnRunaUsdMessage){
+    receive(msg: BurnDurovUSDMessage){
         send(SendParameters{
                 to: self._userPositionAddress(sender()),
                 value: 0,
                 mode: (SendRemainingValue + SendBounceIfActionFail),
                 bounce: true,
-                body: BurnRunaUsd{
+                body: BurnDurovUSD{
                     user: sender(),
                     amount: msg.amount,
                     rates: self.rates,
@@ -352,7 +352,7 @@ contract NewPositionKeeper  {
             bounce: false,
             value: 0,
             mode: SendRemainingValue,
-            body: "Runa protocol: User position has been created".asComment()
+            body: "Durov Protocol: User position has been created".asComment()
         }
         );
     }

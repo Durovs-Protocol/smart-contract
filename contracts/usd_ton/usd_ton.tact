@@ -54,7 +54,7 @@ contract UsdTonMaster with Jetton, Deployable {
     receive(msg: MintRequest) {
         //let userPositionAddress: Address = self._userPositionAddress(msg.user);
         //TODO проверка отправителя
-        //require(sender() == userPositionAddress, "Runa protocol: invalid sender");
+        //require(sender() == userPositionAddress, "Durov Protocol: invalid sender");
         self.mint(msg.user, msg.amount, msg.user, msg.notificationAddress);
     }
 
@@ -63,7 +63,7 @@ contract UsdTonMaster with Jetton, Deployable {
     */
     receive(msg: BurnRequest) {
         //TODO проверка отправителя
-        //    require(sender() == userPositionAddress, "Runa protocol: invalid sender");
+        //    require(sender() == userPositionAddress, "Durov Protocol: invalid sender");
         let winit: StateInit = self.getJettonWalletInit(msg.user);
         let walletAddress: Address = contractAddress(winit);
 

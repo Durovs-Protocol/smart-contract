@@ -87,12 +87,12 @@ struct ManagerState {
 
 //-----MINT
 //user interface
-message MintRunaUsdMessage {
+message MintDurovUSDMessage {
     amount: Int as coins;
 
 }
 //up interface
-message MintRunaUsd {
+message MintDurovUSD {
     user: Address;
     amount: Int as uint64;
     rates: map<Address, Int>;
@@ -104,12 +104,12 @@ message OnMintComplete {
 }
 //-----BURN
 //user interface
-message BurnRunaUsdMessage {
+message BurnDurovUSDMessage {
     amount: Int as coins;
     fee: Int as uint64;
 }
 //up interface
-message BurnRunaUsd {
+message BurnDurovUSD {
     user: Address;
     amount: Int as uint64;
     rates: map<Address, Int>;

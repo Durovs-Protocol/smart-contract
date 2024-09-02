@@ -12,7 +12,7 @@ export async function run(provider: NetworkProvider) {
      const migrationData = [
         {
             name: 'stakedTON',
-            pool_wallet: Address.parse(assets[0].pool_wallet),
+            pool_wallet: Address.parse(assets[0].pool_wallet!!),
             amount: 1
         },
         // {

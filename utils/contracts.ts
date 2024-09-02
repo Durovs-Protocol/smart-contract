@@ -10,7 +10,6 @@ import { ReservePool } from '../wrappers/V0.ReservePool';
 import { UserPosition } from '../wrappers/V0.UserPosition';
 import { loadAddress } from './helpers';
 
-
 async function contracts(provider: NetworkProvider, user: Address) {
 
         const reservePool = provider.open(process.env.v == '0' ?  ReservePool.fromAddress(Address.parse(await loadAddress('reservePool'))) :  NewReservePool.fromAddress(Address.parse(await loadAddress('reservePool'))))
