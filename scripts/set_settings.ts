@@ -16,7 +16,7 @@ export async function run(provider: NetworkProvider) {
     };
 
     const unixDelay = 300n;
-    const unixMaxExecutionTime = 300n;
+    const unixMaxExecutionTime = 600n;
     // const unixDelay = 86400n;
 	log('`\nНастройка контракта:'+
         `\n${await contractVersion(manager, 'manager')}`

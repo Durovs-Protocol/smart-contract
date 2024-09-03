@@ -22,7 +22,7 @@ export async function run(provider: NetworkProvider) {
         user,
         { value: toNano(1) },
         {
-            $$type: 'BurnRunaUsdMessage',
+            $$type: 'BurnDurovUSDMessage',
             amount: toNano(mintAmount),
             fee: toNano(0),
         },

@@ -6,9 +6,9 @@ import "../utils/helpers.tact";
 
 
 contract UserPosition  {
-    const MinTonsForStorage: Int = ton("0.01");
+    const MinTonForStorage: Int = ton("0.01");
     const GasConsumption: Int = ton("0.01");
-    
+
     //settings
     user: Address;
     manager: Address;
@@ -21,7 +21,7 @@ contract UserPosition  {
     updatedTimestamps: SupplyTimestamp? = null;
     version: String = "0";
     init(user: Address, manager: Address, balances: map<Address, Int>) {
-        require(manager == sender(), "Runa protocol: no access to init user position");
+        require(manager == sender(), "Durov Protocol: no access to init user position");
         self.user = user; 
         self.manager = manager;
         self.balances = balances;
@@ -43,15 +43,15 @@ contract UserPosition  {
     /* Supply */
     receive(msg: Supply) {
         if (!self.isActive) {
-            self.errorHandler("Runa protocol: position is not active");
+            self.errorHandler("Durov Protocol: position is not active");
             return;
         }
         if (sender() != self.manager) {
-            self.errorHandler("Runa protocol: not from positions manager");
+            self.errorHandler("Durov Protocol: not from positions manager");
             return;
         }
         let ctx: Context = context();
-        let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
+        let remainingValue: Int = ctx.value - (self.MinTonForStorage + self.GasConsumption);
         let currency: String = "";
 
         let oldBalance: Int? = self.balances.get(msg.payload);
@@ -62,7 +62,7 @@ contract UserPosition  {
             self.balances.set(msg.payload, newValue);
 
             let comment: StringBuilder = beginString();
-            comment.append("Runa protocol: you have supplied ");
+            comment.append("Durov Protocol: you have supplied ");
             comment.append(msg.amount.toString());
         
         let supplyTimestamp: SupplyTimestamp? = self.supplyTimestamps.get(msg.payload);
@@ -92,7 +92,7 @@ contract UserPosition  {
                 bounce: false,
                 value: remainingValue,
                 mode:  SendIgnoreErrors,
-                body: "Runa protocol: asset not found".asComment()
+                body: "Durov Protocol: asset not found".asComment()
             }
         );
         }
@@ -107,22 +107,22 @@ contract UserPosition  {
                 self.withdrawState = emptyMap();
                 self.updatedTimestamps = null;
             } else {
-            self.errorHandler("Runa protocol: wait until the previous withdrawal completed");
+            self.errorHandler("Durov Protocol: wait until the previous withdrawal completed");
             return;
             }
 
         }
 
         if (!self.isActive) {
-            self.errorHandler("Runa protocol: position is not active");
+            self.errorHandler("Durov Protocol: position is not active");
             return;
         }
         if (sender() != self.manager) {
-            self.errorHandler("Runa protocol: not from positions manager");
+            self.errorHandler("Durov Protocol: not from positions manager");
             return;
         }
         let ctx: Context = context();
-        let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
+        let remainingValue: Int = ctx.value - (self.MinTonForStorage + self.GasConsumption);
 
         if (!self.enoughFunds(msg.master, msg.amount)) {
             send(SendParameters{
@@ -130,7 +130,7 @@ contract UserPosition  {
                 value: ctx.value,
                 mode: SendIgnoreErrors,
                 bounce: false,
-                body: "Runa protocol:Not enough funds to withdraw".asComment()
+                body: "Durov Protocol:Not enough funds to withdraw".asComment()
             });
             return;
         }
@@ -145,13 +145,13 @@ contract UserPosition  {
                 value: ctx.value,
                 mode: SendIgnoreErrors,
                 bounce: false,
-                body: "Runa protocol: withdrawal available after 24 hours".asComment()
+                body: "Durov Protocol: withdrawal available after 24 hours".asComment()
             });
             return;
         }
 
         //     let comment: StringBuilder = beginString();
-        //         comment.append("Runa protocol: Withdrawal will be available in ");
+        //         comment.append("Durov Protocol: Withdrawal will be available in ");
         //         comment.append(self.lastSupply.toString());
         //         comment.append(" seconds");
         
@@ -189,7 +189,7 @@ contract UserPosition  {
 
     receive(msg: TokenExcesses) {
         let ctx: Context = context();
-        let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
+        let remainingValue: Int = ctx.value - (self.MinTonForStorage + self.GasConsumption);
         let transactionInfo: WithdrawTransactionInfo? = self.withdrawState.get(msg.queryId);
 
         if (transactionInfo != null) {
@@ -204,7 +204,7 @@ contract UserPosition  {
                 value: remainingValue,
                 mode: SendIgnoreErrors,
                 bounce: false,
-                body: "Runa protocol: withdraw was successful".asComment()
+                body: "Durov Protocol: withdraw was successful".asComment()
             });
         } else {
             send(SendParameters{
@@ -212,13 +212,13 @@ contract UserPosition  {
                 value: remainingValue,
                 mode: SendIgnoreErrors,
                 bounce: false,
-                body: "Runa protocol: unidentified withdraw transaction id".asComment()
+                body: "Durov Protocol: unidentified withdraw transaction id".asComment()
             });
         }
     }
     receive(msg: TonTransfer) {
         let ctx: Context = context();
-        let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
+        let remainingValue: Int = ctx.value - (self.MinTonForStorage + self.GasConsumption);
         let transactionInfo: WithdrawTransactionInfo? = self.withdrawState.get(msg.queryId);
 
         if (transactionInfo != null) {
@@ -230,7 +230,7 @@ contract UserPosition  {
             self.updatedTimestamps = null;
 
             let comment: StringBuilder = beginString();
-            comment.append("Runa protocol: withdraw of: ");
+            comment.append("Durov Protocol: withdraw of: ");
             comment.append(transactionInfo!!.amount.toString());
             comment.append(" ");
             comment.append(transactionInfo!!.master.toString());
@@ -251,7 +251,7 @@ contract UserPosition  {
                 value: remainingValue,
                 mode: SendIgnoreErrors,
                 bounce: false,
-                body: "Runa protocol: unidentified withdraw transaction id".asComment()
+                body: "Durov Protocol: unidentified withdraw transaction id".asComment()
             });
         }
     }
@@ -260,10 +260,10 @@ contract UserPosition  {
     receive(msg: MigrationRequest) {
 
         if (sender() != self.manager) {
-            self.errorHandler("Runa protocol: not from positions manager");
+            self.errorHandler("Durov Protocol: not from positions manager");
             return;
         }
-        let remainingValue: Int = myBalance() - (self.MinTonsForStorage + self.GasConsumption);
+        let remainingValue: Int = myBalance() - (self.MinTonForStorage + self.GasConsumption);
         self.isActive = false;
 
         send(SendParameters {
@@ -292,7 +292,7 @@ contract UserPosition  {
                 bounce: false,
                 value: 0,
                 mode:  SendRemainingValue + SendIgnoreErrors ,
-                body: "Runa protocol: error".asComment()
+                body: "Durov Protocol: error".asComment()
             }
         );
     }
@@ -385,7 +385,7 @@ contract UserPosition  {
 // ======POOL==================================================================
 
 contract ReservePool with Deployable, OwnableTransferable {
-    const MinTonForStorage: Int = ton("0.01");
+    const MinTonForStorage: Int = ton("0.011");
     const GasConsumption: Int = ton("0.01");
     deps: Deps;
     owner: Address;
@@ -394,7 +394,7 @@ contract ReservePool with Deployable, OwnableTransferable {
     version: String = "0";
 
     init(owner: Address){
-        require(owner == sender(), "Runa protocol: no access to init pool");
+        require(owner == sender(), "Durov Protocol: no access to init pool");
         self.owner = sender();
         self.deps = Deps {
             manager: newAddress(0, 0),
@@ -416,17 +416,17 @@ contract ReservePool with Deployable, OwnableTransferable {
             usdton: msg.usdton,
             runaCoupon: msg.runaCoupon
         };
-        self.reply("Runa protocol: pool's dependencies set".asComment());
+        self.reply("Durov Protocol: pool dependencies set".asComment());
     }
     receive(msg: SetBalances) {
         self.requireOwner();
         self.balances = msg.balances;
-        self.reply("Runa protocol: pool balances template set".asComment());
+        self.reply("Durov Protocol: pool balances template set".asComment());
     }
     receive(msg: SetAssets) {
         self.requireOwner();
         self.assets = msg.assets;
-        self.reply("Runa protocol: pool assets set".asComment());
+        self.reply("Durov Protocol: pool assets set".asComment());
     }
 
     receive(msg: PoolMigrationRequest) {
@@ -454,7 +454,7 @@ contract ReservePool with Deployable, OwnableTransferable {
                 value: remainingBalance,
                 mode: SendIgnoreErrors,
                 bounce: false,
-                body: "Runa protocol: pool migration".asComment()
+                body: "Durov Protocol: pool migration".asComment()
         });
         }
     }
@@ -465,7 +465,7 @@ contract ReservePool with Deployable, OwnableTransferable {
                 value: 0,
                 mode: SendIgnoreErrors + SendRemainingValue,
                 bounce: false,
-                body: "Runa protocol: jetton migration error".asComment()
+                body: "Durov Protocol: jetton migration error".asComment()
         });
     }
 
@@ -474,6 +474,8 @@ contract ReservePool with Deployable, OwnableTransferable {
 
         let payload: Slice = msg.forwardPayload.preloadRef().beginParse();
         let master: Address = payload.loadAddress();
+        let asset: Asset? = self.assets.get(master);
+
         let op: Int = payload.loadInt(64);
 
         if (op == 1) {
@@ -484,7 +486,7 @@ contract ReservePool with Deployable, OwnableTransferable {
                         value: ctx.value,
                         mode: SendIgnoreErrors,
                         bounce: false,
-                        body: "Runa protocol: error while recieving ton: not enought tons sended".asComment()
+                        body: "Durov Protocol: error while recieving ton: not enought tons sended".asComment()
                     });
                     return;
             }
@@ -498,6 +500,22 @@ contract ReservePool with Deployable, OwnableTransferable {
             });
         } else if (op == 2) { 
         // получение jetton
+            require(asset != null, "Durov Protocol: unknown asset");
+
+            if (sender() != asset!!.poolWallet) {
+                let comment: StringBuilder = beginString();
+                comment.append("Durov Protocol: sender does not match with pool wallet: ");
+                comment.append(sender().toString());
+                    send(SendParameters{
+                        to: msg.from,
+                        value: ctx.value,
+                        mode: SendIgnoreErrors,
+                        bounce: false,
+                        body: comment.toString().asComment()
+                    });
+                    return;
+            }
+            
             let remainingValue: Int = ctx.value - (self.GasConsumption + self.MinTonForStorage);
             send(SendParameters{
                 to: self.deps.manager,
@@ -512,7 +530,7 @@ contract ReservePool with Deployable, OwnableTransferable {
                     value: ctx.value,
                     mode: SendIgnoreErrors,
                     bounce: false,
-                    body: "Runa protocol: error while processing payment: unknown op code".asComment()
+                    body: "Durov Protocol: error while processing payment: unknown op code".asComment()
                 }
             );
         }
@@ -523,7 +541,7 @@ contract ReservePool with Deployable, OwnableTransferable {
 
         
         if (sender() != userPositionAddress) {
-            self.errorHandler("Runa protocol: no access to withdraw funds", sender());
+            self.errorHandler("Durov Protocol: no access to withdraw funds", sender());
             return;
         }
 
@@ -547,7 +565,7 @@ contract ReservePool with Deployable, OwnableTransferable {
                         value: remainingValue,
                         mode: SendIgnoreErrors,
                         bounce: false,
-                        body: "Runa protocol: Error while attempting to withdraw (pull is empty).".asComment()
+                        body: "Durov Protocol: Error while attempting to withdraw (pull is empty).".asComment()
                     });
                 }
             } else {
@@ -574,7 +592,7 @@ contract ReservePool with Deployable, OwnableTransferable {
                 value: ctx.value,
                 mode: SendIgnoreErrors,
                 bounce: false,
-                body: "Runa protocol: error while withdraw (requested asset not found)".asComment()
+                body: "Durov Protocol: error while withdraw (requested asset not found)".asComment()
             }
         );
         }
@@ -605,7 +623,6 @@ contract ReservePool with Deployable, OwnableTransferable {
     get fun balances(): map<Address, Int> {
         return self.balances;
     }
-
     get fun deps(): Deps {
         return self.deps;
     }
@@ -615,4 +632,5 @@ contract ReservePool with Deployable, OwnableTransferable {
     get fun version(): String {
         return self.version;
     }
+
 }

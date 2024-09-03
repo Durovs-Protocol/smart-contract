@@ -47,7 +47,6 @@ export async function run(provider: NetworkProvider) {
                 master: Address.parse(assets[assetIndex].master)
             },
         );
-
         await timer(`'Обработка запроса на вывод средств: баланс ${withdrawAmount} ${assets[assetIndex].name} `, balanceAfterWithdraw, getBalanceValue(userPosition, assetIndex));
     }
    

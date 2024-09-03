@@ -1,5 +1,7 @@
 import { Sha256 } from '@aws-crypto/sha256-js';
+import { NetworkProvider } from '@ton/blueprint';
 import { Address, Cell, Dictionary, beginCell, toNano } from '@ton/core';
+import { JettonMaster } from '@ton/ton';
 import fs from 'fs';
 import { assets } from './data';
 
@@ -116,10 +118,7 @@ export function delay(ms: number) {
 }
 
 function getFilename(name: string, nameSuffix?: string, v = process.env.v) {
-
-
     var dir = `deploy/v${v}`;
-
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir);
     }
@@ -127,6 +126,7 @@ function getFilename(name: string, nameSuffix?: string, v = process.env.v) {
 }
 
 export async function saveAddress(name: string, address: Address, nameSuffix?: string, v?: string) {
+    
     const filename = getFilename(name, nameSuffix, v );
     await fs.promises.writeFile(filename, address.toString());
     console.log(`Address '${address.toString()}' saved to file ${filename}.`);
@@ -154,7 +154,7 @@ export function log(message: any) {
 export const getBalanceValue = function (contract: any, index: number) {
     return async function () {
         const allBalances = await contract.getBalances();
-        return allBalances.get(Address.parse(assets[index].master));
+        return allBalances.get(Address.parse(assets[index].master!!));
     };
 };
 
@@ -162,3 +162,57 @@ export const contractVersion = async function (contract: any, name: string) {
     const version = await contract.getVersion()
     return `version of ${name}: ${version}`
 };
+
+export async function createAssetsList(owner: string, provider: NetworkProvider) {
+    let assets = [
+        {
+            name: 'stTON', // Свой токен
+            master: process.env.ST_JETTON_MINTER,
+            pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
+        },
+        {
+            name: 'hTON',
+            master: process.env.HT_JETTON_MINTER,
+            pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
+        },
+        {
+            name: 'tsTON',
+            master: process.env.TS_JETTON_MINTER,
+            pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
+        },
+        {
+            name: 'NOT',
+            master: process.env.NOT_JETTON_MINTER,
+            pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
+        },
+        {
+            name: 'Dogs',
+            master: process.env.DOGS_JETTON_MINTER,
+            pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
+        },
+        {
+            name: 'TON',
+            master: process.env.TON_MINTER,
+            pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ', // адрес пула!!
+        },
+    ];
+
+    for (const asset of assets) {
+        if (asset.master == 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ') {
+            asset.pool_wallet = owner;
+        } else {
+            const masterInterface = JettonMaster.create(Address.parse(asset.master!!));
+            const master = await provider.open(masterInterface);
+            const jettonWalletAddress = await master.getWalletAddress(Address.parse(owner));
+            asset.pool_wallet = jettonWalletAddress.toString();
+            console.log(asset.pool_wallet)
+        }
+    }
+
+    var dir = `utils`;
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir);
+    }
+
+    await fs.promises.writeFile(`${dir}/assets.json`, JSON.stringify({ assets: assets }));
+}

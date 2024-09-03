@@ -21,7 +21,7 @@ export async function run(provider: NetworkProvider) {
     await provider.waitForDeploy(manager.address, 30);
     await saveAddress('manager', manager.address);
     console.log('=============================================================================');
-    console.log('Manager deployedd successfully');
+    console.log('Manager deployed successfully');
     console.log('=============================================================================');
 
     // run methods on `manager`

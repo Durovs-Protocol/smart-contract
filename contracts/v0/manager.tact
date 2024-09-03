@@ -17,7 +17,7 @@ contract Manager with Deployable, OwnableTransferable {
     version: String = "0";
 
     init(owner: Address){
-        require(owner == sender(), "Runa protocol: no access to init manager");
+        require(owner == sender(), "Durov Protocol: no access to init manager");
         self.owner = sender();
         self.settings = Settings{
             minDelay: 0,
@@ -49,7 +49,7 @@ contract Manager with Deployable, OwnableTransferable {
             usdton: msg.usdton,
             runaCoupon: msg.runaCoupon
         };
-        self.reply("Runa protocol: Manager's dependencies set".asComment());
+        self.reply("Durov Protocol: Manager's dependencies set".asComment());
     }
 
 
@@ -65,17 +65,17 @@ contract Manager with Deployable, OwnableTransferable {
             maxExecutionTime: msg.maxExecutionTime,
 
         };
-        self.reply("Runa protocol: Settings have been updated".asComment());
+        self.reply("Durov Protocol: Settings have been updated".asComment());
     }
     receive(msg: SetAssets) {
         self.requireOwner();
         self.assets = msg.assets;
-        self.reply("Runa protocol: manager assets set".asComment());
+        self.reply("Durov Protocol: manager assets set".asComment());
     }
     receive(msg: SetBalances) {
         self.requireOwner();
         self.balances = msg.balances;
-        self.reply("Runa protocol: manager balances template set".asComment());
+        self.reply("Durov Protocol: manager balances template set".asComment());
     }
 
     //=============================================================================
@@ -84,7 +84,7 @@ contract Manager with Deployable, OwnableTransferable {
 
     receive(msg: SupplyMessage) {
         let ctx: Context = context();
-        require(sender() == self.deps.reservePool, "Runa protocol: no access for supply");
+        require(sender() == self.deps.reservePool, "Durov Protocol: no access for supply");
         let valueToSendForward: Int = ctx.value - (self.MinTonForStorage + self.GasConsumption);
         let init: StateInit = initOf UserPosition(msg.user,
             self.deps.manager,
@@ -109,7 +109,7 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     bounced(msg: bounced<Supply>) {
-        self.bouncedHandler("Runa protocol: Error in supply.");
+        self.bouncedHandler("Durov Protocol: Error in supply.");
     }
 
     receive(msg: AddPositionId) {
@@ -149,7 +149,7 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     bounced(msg: bounced<Withdraw>){
-        self.bouncedHandler("Runa protocol: Error in withdrawal");
+        self.bouncedHandler("Durov Protocol: Error in withdrawal");
     }
 
 
@@ -176,7 +176,7 @@ contract Manager with Deployable, OwnableTransferable {
     receive(msg: InformationResponce) {
         let init: StateInit = initOf PositionKeeper(self.lastMigrationId, myAddress());
         let positionAddress: Address = contractAddress(init);
-        require(sender() == positionAddress, "Runa protocol: no access for migration");
+        require(sender() == positionAddress, "Durov Protocol: no access for migration");
 
         send(SendParameters{
                 to: self._userPositionAddress(msg.user),
@@ -190,7 +190,7 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     receive(msg: BuildPosition) {
-        require(sender() == self._userPositionAddress(msg.user), "Runa protocol: no access for migration");
+        require(sender() == self._userPositionAddress(msg.user), "Durov Protocol: no access for migration");
         send(SendParameters{
                 to: self.settings.newManager,
                 value: 0,
@@ -271,6 +271,10 @@ contract Manager with Deployable, OwnableTransferable {
     get fun version(): String {
         return self.version;
     }
+
+    get fun lastMigrationId(): Int {
+        return self.lastMigrationId;
+    }
 }
 
 contract PositionKeeper {
@@ -297,13 +301,13 @@ contract PositionKeeper {
             bounce: false,
             value: 0,
             mode: SendRemainingValue,
-            body: "Runa protocol: User position has been created".asComment()
+            body: "Durov Protocol: User position has been created".asComment()
         }
         );
     }
 
     receive(msg: InformationRequest) {
-        require(self.manager == sender(), "Runa protocol: no access for information request");
+        require(self.manager == sender(), "Durov Protocol: no access for information request");
         send(SendParameters{
                 to: self.manager,
                 value: 0,

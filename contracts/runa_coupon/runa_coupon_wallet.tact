@@ -17,7 +17,7 @@ contract RunaCouponWallet
     receive(msg: TokenTransfer){
         // Check sender
         let ctx: Context = context();
-        require(ctx.sender == self.owner, "Runa protocol: invalid sender");
+        require(ctx.sender == self.owner, "Durov Protocol: invalid sender");
         // Update balance
         self.balance = self.balance - msg.amount;
         require(self.balance >= 0, "Invalid balance");
@@ -57,7 +57,7 @@ contract RunaCouponWallet
         let ctx: Context = context();
         if (ctx.sender != self.master) {
             let sinit: StateInit = initOf RunaCouponWallet(self.master, msg.from);
-            require(contractAddress(sinit) == ctx.sender, "Runa protocol: invalid sender");
+            require(contractAddress(sinit) == ctx.sender, "Durov Protocol: invalid sender");
         }
         // Update balance
         self.balance = self.balance + msg.amount;
@@ -126,7 +126,7 @@ contract RunaCouponWallet
         if balance < amount - error, userStatus.message(error)
         */
 
-        require(sender() == self.master, "Runa protocol: invalid sender");
+        require(sender() == self.master, "Durov Protocol: invalid sender");
         // todo add bounced handler in master
         require((self.balance - msg.amount) >= 0, "Invalid balance");
         self.balance = self.balance - msg.amount;

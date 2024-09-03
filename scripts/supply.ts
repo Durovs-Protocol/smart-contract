@@ -17,7 +17,6 @@ export async function run(provider: NetworkProvider) {
 
     // const userPositionAddress = await managerContract.getUserPositionAddress(user.address!!);
     // const userPosition = provider.open(await UserPosition.fromAddress(userPositionAddress));
-
     const supplyAmount = 10
     const assetIndex = 0
     log('\nВнесение залога jetton:' + supplyAmount +
@@ -53,6 +52,7 @@ export async function run(provider: NetworkProvider) {
 		 * E->F(user position): Supply
 		 * F->A: Возврат газа
 		 */
+
 	const client = provider.api()
 	const body = beginCell()
         .storeUint(0xf8a7ea5, 32)
@@ -81,8 +81,6 @@ export async function run(provider: NetworkProvider) {
     // }
 
     let balanceAfterSupply = oldBalance + toNano(supplyAmount)
-
-
     await contract.sendTransfer({
       seqno,
       secretKey: keyPair.secretKey,
@@ -92,7 +90,6 @@ export async function run(provider: NetworkProvider) {
         body: body,
       })]
     });
-
 // if (positionId == 0n) {
   await timer(`Supply ${supplyAmount} ${assets[assetIndex].name} `, positionId + 1n, manager.getLastPositionId);
 // } else {

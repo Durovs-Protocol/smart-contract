@@ -1,5 +1,4 @@
-
-
+import fs from 'fs';
 
 /**
  * Общие настройки
@@ -13,39 +12,11 @@ export const reserveMin: number = 1; // TON
 export const burnMin: number = 1; // $
 export const serviceFeePercent: number = 0.1;
 export const serviceFee: number = 1; // $
-//проверку в нотиф
-// это тестовые адреса
-export const assets = [
-    // {
-    //     name: 'stakedTON', // Свой токен
-    //     master: 'kQB6gF0_-_NAAeH_bBnmEQDUwpYfQbG9tOCnlTfKhFDZtkOd',
-    //     pool_wallet: '0QC5XNAbUuiPo-JeaP45Hf-lPUbSzQnQwVD_34XHG7Pb8gOY' // v0
-    // },
-    {
-        name: 'stakedTON', // Свой токен
-        master: 'kQB6gF0_-_NAAeH_bBnmEQDUwpYfQbG9tOCnlTfKhFDZtkOd',
-        pool_wallet: '0QDV1soi5dInkh-ib64bzkY_fIDHLGfYlrZDLG9b4hsVlawc' // v1
-    },
-    //0QBBGmt1OeW5m2vkXU0O9rJYZUnrhxcWjQ6rp65DaFMhCZvB
-    {
-        name: 'hipoStakedTON',
-        master: 'kQB1BFKmd4h7XzxpkrFZ-JieDRKSFo0JqIn0dy7yj_zGEZ28',
-        pool_wallet: 'kQDZoH57-fWcxWHieZMMbAmS3DV1L6gnhSktYi4ZYnxRpnP3'
-    },
-    {
-        name: 'tonstakers',
-        master: 'kQCTmPSSaqftyLnWCKFF-fXb0sNKXGH0GcKMviMyBG9DIMav',
-        pool_wallet: 'kQDZoH57-fWcxWHieZMMbAmS3DV1L6gnhSktYi4ZYnxRpnP3'
-    },
-    {
-        name: 'toncoin',
-        master: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
-        pool_wallet: 'kQDZoH57-fWcxWHieZMMbAmS3DV1L6gnhSktYi4ZYnxRpnP3'
-    },
-]
+
+const assetsJson = JSON.parse(fs.readFileSync('utils/assets.json', 'utf-8'))
 
 
-
+export const  assets = assetsJson?.assets
 /**
  * Supply
  */

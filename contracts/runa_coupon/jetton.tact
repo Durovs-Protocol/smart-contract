@@ -50,7 +50,7 @@ trait Jetton with OwnableTransferable {
     fun requireWallet(owner: Address) {
         let ctx: Context = context();
         let winit: StateInit = self.getJettonWalletInit(owner);
-        require(contractAddress(winit) == ctx.sender, "Runa protocol: invalid sender");
+        require(contractAddress(winit) == ctx.sender, "Durov Protocol: invalid sender");
     }
 
     virtual fun getJettonWalletInit(address: Address): StateInit {

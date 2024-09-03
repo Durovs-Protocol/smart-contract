@@ -243,7 +243,7 @@ contract UserPosition  {
         let comment: StringBuilder = beginString();
 
         self.accrualedJettons = 0;
-        comment.append("Runa Protocol: You have recieved incentive payment:");
+        comment.append("Durov Protocol: You have recieved incentive payment:");
         comment.append(msg.amount.toString());
         
         send(SendParameters {
