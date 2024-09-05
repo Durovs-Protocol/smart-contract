@@ -3,13 +3,14 @@ import { Address, Dictionary, fromNano } from '@ton/core';
 import contracts from '../utils/contracts';
 import { assets } from '../utils/data';
 import { log } from '../utils/helpers';
-import { SupplyTimestamp } from '../wrappers/V0.Manager';
+import { SupplyTimestamp } from '../wrappers/Manager';
 export async function run(provider: NetworkProvider) {
     const user = provider.sender().address as Address;
     log('User Position info');
 
     const {
-        userPosition,
+        userPosition, // зависит от env
+        v1userPosition,
       } = await contracts(provider, user)
 
 
@@ -20,10 +21,20 @@ export async function run(provider: NetworkProvider) {
         'User position version: '+
         await  userPosition.getVersion()
     );
+    
     await showBalancves(userPosition)
     // await withdrawState(userPosition)
     // await supplyTimestamps(userPosition)
 
+    try {
+      
+        log(
+            'Total collateral in USD: '+
+            await v1userPosition.getTotalCollateral()
+        );
+    } catch(e) {
+        //TODO написать разветвление по версиям позиций и убрать этот блок 
+    }
 
     async function showBalancves(contract: any) {
         const balances: Dictionary<Address, bigint> = await contract.getBalances();

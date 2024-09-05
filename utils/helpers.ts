@@ -205,7 +205,6 @@ export async function createAssetsList(owner: string, provider: NetworkProvider)
             const master = await provider.open(masterInterface);
             const jettonWalletAddress = await master.getWalletAddress(Address.parse(owner));
             asset.pool_wallet = jettonWalletAddress.toString();
-            console.log(asset.pool_wallet)
         }
     }
 

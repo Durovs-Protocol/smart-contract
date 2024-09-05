@@ -6,14 +6,14 @@ import { buildOnchainMetadata } from '../../utils/helpers';
 import { Manager } from '../../wrappers/Manager';
 import { Pool } from '../../wrappers/ReservePool';
 import { Runecoin } from '../../wrappers/Runecoin';
-import { UsdTonMaster } from '../../wrappers/UsdTon';
+import { Stable } from '../../wrappers/V1Stable';
 
 describe('Supply', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
 
     let pool: SandboxContract<Pool>;
-    let usdTon: SandboxContract<UsdTonMaster>;
+    let stable: SandboxContract<Stable>;
     let manager: SandboxContract<Manager>;
     let runecoin: SandboxContract<Runecoin>;
 
@@ -23,8 +23,8 @@ describe('Supply', () => {
 
         manager = blockchain.openContract(await Manager.fromInit(deployer.getSender().address));
         pool = blockchain.openContract(await Pool.fromInit(deployer.getSender().address));
-        usdTon = blockchain.openContract(
-            await UsdTonMaster.fromInit(deployer.getSender().address, buildOnchainMetadata(testJettonParams)),
+        stable = blockchain.openContract(
+            await Stable.fromInit(deployer.getSender().address, buildOnchainMetadata(testJettonParams)),
         );
         runecoin = blockchain.openContract(
             await Runecoin.fromInit(deployer.getSender().address, buildOnchainMetadata(testRunecoinParams)),
@@ -56,7 +56,7 @@ describe('Supply', () => {
             success: true,
         });
 
-        deployResult = await usdTon.send(
+        deployResult = await stable.send(
             deployer.getSender(),
             { value: toNano(gasFee) },
             { $$type: 'Deploy', queryId: 0n },
@@ -64,7 +64,7 @@ describe('Supply', () => {
 
         expect(deployResult.transactions).toHaveTransaction({
             from: deployer.address,
-            to: usdTon.address,
+            to: stable.address,
             deploy: true,
             success: true,
         });
@@ -102,7 +102,7 @@ describe('Supply', () => {
         // const userPosition = blockchain.openContract(
         //     await UserPosition.fromInit(
         //         deployer.address,
-        //         usdTon.address,
+        //         stable.address,
         //         manager.address,
         //         pool.address,
         //     ),

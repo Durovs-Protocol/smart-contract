@@ -1,73 +1,39 @@
-> TODO обновить документацию, текущий статус не отражает функционал, смотреть miro для более подробной информации
-> скрипты V1 перенесены в папку v1, чтобы продолжить работу над ними нужно вынести их в корень папки scripts
 
-# Сборка и деплой
-
-> Создать папку `deploy` если ее нет
+# Сборка и деплой (env: v=0)
+> Создать папку `deploy/v0` если ее нет
+> Создать папку `logs/migration` если ее нет
 
 > Далее работа с core смарт-контрактами
 
-1. `yarn build` (Запустит build всех контрактов: usdTon, manager, pool, deps, runes, runes-owner)
+1. `yarn v0-build` (Запустит build обеих версий:  manager/reserve)
+2. `yarn v0-deploy` (Деплой контрактов версии 0)
+    - `yarn v0-deploy-reserve`
+    - `yarn v0-deploy-manager`
+    - `yarn v0-deploy-durov_usd`
+3. `yarn deploy-upgraded-contracts` (Деплой версии 1)
 
-2. `yarn deploy` (Деплой контрактов + установка зависимостей между контрактами)
-3. `yarn deploy-runes` (Деплой контрактов связанных с runes)
+    - Проверить выполнение: в папке вида `deploy/v/{contract_name}.address` должны лежать все адреса контрактов
+# Настройка(env: v=0/v=1)
+4. 
+    - `yarn v0-set-deps`: имея адреса контрактов: stable, manager, poolContract
+    - `yarn v0-set-settings` передача настроек пула в менеджер
+    - пополнение пула для активации jetton wallet каждой из монет
+      тк монеты у нас тестовые и у них одинаковый интерфейс достаточно сделать это с одной монетой, это монета под индексом 0 из массива assets. Со своего адреса нужно через тонкипер перевести на адрес пула 1 монету st, скопировать кошелек-получатель из ветки транзакции и вставить в объект assets[0] в поле poolWallet, затем адрес кошелька отправителя вставить в переменную jettonUserWallet, после этих настроек можно запускать следующий скрипт:
+    - `yarn v0-set-assets` (Установка кошельков пула и шаблона балансов)
 
-    - `yarn deploy-pool`
-    - `yarn deploy-manager`
-    - `yarn deploy-usdton`
 
-    - `deploy-runes`
-    - Проверить выполнение: в папке вида `deploy/{contract_name}.address` должны лежать все адреса контрактов
 
-4. `yarn setup`
-    - `yarn set-deps`: имея адреса контрактов: usdTon, manager, poolContract, runeCoin
-    - `yarn set-settings` (Настройка параметров пула)
-    - `yarn set-price` (Установка цены тона)
+# Получение информации (env: v=0/v=1)
+> `yarn v0-info-system` (Получение информации о системе) -
+> `yarn v0-info-user` (Получение информации о позиции пользователя) - если миграции не было - о старой, если была - о новой. 
 
-# Получение информации
+# User flow (env: v=0/v=1)
+  - для проверки jetton используем assets[0], для проверки ton - assets[3], индекс хранится в переменных assetIndex 
+1. `yarn v0-supply` Внесение обеспечения
+2. `yarn v0-withdraw` Возврат обеспечения пользователю
 
-> `yarn rune-info` - получить кошелек rune
-> `yarn get-info` (Получение информации о позиции пользователя) - использовать после сброки, деплоя и запуска yarn add-supply
-
-# User flow
-
-1. `yarn get-runes` (Получение runecoins пользователем, через info скрипт берем новый адрес кошелька (убедиться что он новый!!))
-2. `yarn add-supply` (Внесение обеспечения (Для проверки баланса использовать скрипт `yarn get-info`(в случае ошибки Exit code: -256 )))
-    - collateral: 2, debt:0
-3. `yarn mint` (Перечесление usdTon пользователю)
-4. `yarn burn` (Возврат стейблкоина пользователем)
-5. `yarn withdrawal-supply` (Возврат обеспечения пользователю)
-
-### Путь обращения пользователя: **user => pool => manager => user_position(вычисления) => jetton master/pool(исполнение)**
-
-# Runecoin
-
-1. `yarn deploy-runes-owner` (Деплой контракта-владельца runecoins)
-2. `yarn send-runes-to-owner` (Деплой runecoin и минт 1000000 токенов на баланс владельца)
-3. `yarn get-runes` (Получение runecoins пользователем)
-
-# Ликвидация
-
-> Мы заложили 1 TON, если lr 1.15, а TON стоит 7.5, то позиция будет считаться здоровой до ~6 USDTON, чтобы провалить проверку обновляем цену TON до 5 (utils/test_data/tonPrice) и запускаем yarn update-price
-
-1. `yarn add-supply` Внесение обеспечения
-    - collateral: 1, debt:0
-2. `yarn mint` Перечесление usdTon пользователю
-    - debt:5
-3. `yarn update-price` Обновить цену
-4. `yarn liquidation` Запуск ликвидации
-
-# Runecoin
-
-1. `generate-fake-wallets` (Запустит деплой кошельков для распредлеения runacoin)
-2. `set-holders` (Назначить аккаунты для распределения общего выпуска)
-3. `mint-to-holders` Mint
-
-### RPC
-
-https://testnet.toncenter.com/api/v2/jsonRPC
-https://ton.access.orbs.network/4410c0ff5Bd3F8B62C092Ab4D238bEE463E64410/1/testnet/toncenter-api-v2/jsonRPC
-
-### Тестирование
-
-1. `yarn run-script withdraw_pool` Вывод средств с пула после прохождения цикла на кошелек тестировщика
+# Миграция (env: v=0)
+> в env меняем версию на 1, запускаем команды из пункта 4(Сборка и деплой), для запуска миграции меняем версию на 0
+ - `yarn v0-migration` Запуск миграции менеджера
+ - `yarn v0-migration-pool` Запуск миграции пула (для каждой валюты нужно отдельно запустить скрипты с соответствующим      migrationIndex)
+ - `v0-delete-manager` (опционально) После успешной миграции удаляем старый контракт менеджера

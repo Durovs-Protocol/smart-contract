@@ -3,7 +3,7 @@ import { Address, Dictionary } from '@ton/core';
 import contracts from '../utils/contracts';
 import { assets } from '../utils/data';
 import { log } from '../utils/helpers';
-import { Asset } from '../wrappers/V0.Manager';
+import { Asset } from '../wrappers/Manager';
 
 export async function run(provider: NetworkProvider) {
 
@@ -58,7 +58,7 @@ export async function run(provider: NetworkProvider) {
                 deps.reservePool.toString() +
                 '\nprofitPool:       ' +
                 deps.profitPool.toString() +
-                '\nusdton:   ' +
+                '\nstable   ' +
                 deps.usdton.toString(),
         );
     }

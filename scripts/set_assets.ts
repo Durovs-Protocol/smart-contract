@@ -3,7 +3,7 @@ import { Address, Dictionary, toNano } from '@ton/core';
 import contracts from '../utils/contracts';
 import { assets, setupGas } from '../utils/data';
 import { contractVersion, getBalanceValue, log, timer } from '../utils/helpers';
-import { Asset } from '../wrappers/V0.Manager';
+import { Asset } from '../wrappers/Manager';
 
 export async function run(provider: NetworkProvider) {
     const user = provider.sender().address as Address;
@@ -58,8 +58,8 @@ export async function run(provider: NetworkProvider) {
             await balancesTimer(contract, name)
     }
 
-    await setAssets(manager, 'manager');
-    await setAssets(reservePool, 'reservePool');
+    // await setAssets(manager, 'manager');
+    // await setAssets(reservePool, 'reservePool');
     await setBalance(manager, 'manager');
     await setBalance(reservePool, 'reservePool');
 }

@@ -15,7 +15,7 @@ contract ProfitPool with Deployable, OwnableTransferable {
             manager: newAddress(0, 0),
             profitPool: newAddress(0, 0),
             reservePool: newAddress(0, 0),
-            usdton: newAddress(0, 0),
+            stable: newAddress(0, 0),
             runaCoupon: newAddress(0, 0)
         };
     }
@@ -29,7 +29,7 @@ contract ProfitPool with Deployable, OwnableTransferable {
             manager: msg.manager,
             profitPool: msg.profitPool,
             reservePool: msg.reservePool,
-            usdton: msg.usdton,
+            stable: msg.stable,
             runaCoupon: msg.runaCoupon
         };
         self.reply("pool's dependencies set".asComment());

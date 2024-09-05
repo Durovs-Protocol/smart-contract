@@ -4,7 +4,7 @@
 
 > Далее работа с core смарт-контрактами
 
-1. `yarn build` (Запустит build всех контрактов: usdTon, manager, pool, deps, runes, runes-owner)
+1. `yarn build` (Запустит build всех контрактов: stable, manager, pool, deps, runes, runes-owner)
 
 2. `yarn deploy` (Деплой контрактов + установка зависимостей между контрактами)
 3. `yarn deploy-runes` (Деплой контрактов связанных с runes)
@@ -17,7 +17,7 @@
     - Проверить выполнение: в папке вида `deploy/{contract_name}.address` должны лежать все адреса контрактов
 
 4. `yarn setup`
-    - `yarn set-deps`: имея адреса контрактов: usdTon, manager, poolContract, runeCoin
+    - `yarn set-deps`: имея адреса контрактов: stable, manager, poolContract, runeCoin
     - `yarn set-settings` (Настройка параметров пула)
     - `yarn set-price` (Установка цены тона)
 
@@ -31,7 +31,7 @@
 1. `yarn get-runes` (Получение runecoins пользователем, через info скрипт берем новый адрес кошелька (убедиться что он новый!!))
 2. `yarn add-supply` (Внесение обеспечения (Для проверки баланса использовать скрипт `yarn get-info`(в случае ошибки Exit code: -256 )))
     - collateral: 2, debt:0
-3. `yarn mint` (Перечесление usdTon пользователю)
+3. `yarn mint` (Перечесление stable пользователю)
 4. `yarn burn` (Возврат стейблкоина пользователем)
 5. `yarn withdrawal-supply` (Возврат обеспечения пользователю)
 
@@ -49,7 +49,7 @@
 
 1. `yarn add-supply` Внесение обеспечения
     - collateral: 1, debt:0
-2. `yarn mint` Перечесление usdTon пользователю
+2. `yarn mint` Перечесление stable пользователю
     - debt:5
 3. `yarn update-price` Обновить цену
 4. `yarn liquidation` Запуск ликвидации

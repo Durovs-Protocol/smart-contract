@@ -2,12 +2,12 @@ import { toNano } from '@ton/core';
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import '@ton/test-utils';
 import { buildOnchainMetadata } from '../../utils/helpers';
-import { UsdTonMaster } from '../../wrappers/UsdTon';
+import { Stable } from '../../wrappers/V1Stable';
 
-describe('UsdToncoin', () => {
+describe('DurovUsdcoin', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
-    let usdTon: SandboxContract<UsdTonMaster>;
+    let stable: SandboxContract<Stable>;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
@@ -19,11 +19,11 @@ describe('UsdToncoin', () => {
         };
         deployer = await blockchain.treasury('deployer');
 
-        usdTon = blockchain.openContract(
-            await UsdTonMaster.fromInit(deployer.getSender().address, buildOnchainMetadata(jettonParams)),
+        stable = blockchain.openContract(
+            await Stable.fromInit(deployer.getSender().address, buildOnchainMetadata(jettonParams)),
         );
 
-        const deployResult = await usdTon.send(
+        const deployResult = await stable.send(
             deployer.getSender(),
             {
                 value: toNano('0.05'),
@@ -36,7 +36,7 @@ describe('UsdToncoin', () => {
 
         expect(deployResult.transactions).toHaveTransaction({
             from: deployer.address,
-            to: usdTon.address,
+            to: stable.address,
             deploy: true,
             success: true,
         });
@@ -44,6 +44,6 @@ describe('UsdToncoin', () => {
 
     it('should deploy', async () => {
         // the check is done inside beforeEach
-        // blockchain and usdTon are ready to use
+        // blockchain and stable are ready to use
     });
 });

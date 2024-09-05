@@ -26,7 +26,7 @@ export const addSupplyAmount: number = 1;
  * Mint
  */
 
-export const mintAmount: number = Number((tonPrice / reserveRatio).toFixed(2)); // Минт, отправка на кошелек, обновление UserPosition
+export const mintAmount: number = Number(123); // Минт, отправка на кошелек, обновление UserPosition
 
 /**
  * Burnx
@@ -57,16 +57,16 @@ export const runecoinParams = {
     image: '',
 };
 
-export const usdTONJettonParams = {
+export const stableJettonParams = {
     name: `ton-usd-${Date.now()}`,
-    symbol: 'RunaUSD',
+    symbol: 'Stable',
     description: 'Algorithmic Stable coin (USD) on TON',
     image: 'https://ipfs.io/ipfs/QmPSGcz4TyDo3qShEymZRQRavKKRRbiLPHYs9GUgbtwEwx',
 };
 
-export const runaUSDCouponParams = {
+export const couponParams = {
     name: `runa-usd-coupon-${Date.now()}`,
-    symbol: 'RunaUSDCoupon',
+    symbol: 'DurovCoupon',
     description: 'Coupon for rate stabilization',
     image: 'https://ipfs.io/ipfs/QmPSGcz4TyDo3qShEymZRQRavKKRRbiLPHYs9GUgbtwEwx',
 };
@@ -76,7 +76,7 @@ export const runaUSDCouponParams = {
  */
 export const testJettonParams = {
     name: `ton-usd-${Date.now()}`,
-    symbol: 'RunaUSD',
+    symbol: 'Durov',
     description: 'Algorithmic Stable coin (USD) on TON',
     image: '',
 };

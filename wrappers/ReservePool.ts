@@ -1,1 +1,1 @@
-export * from '../build/ReservePool/tact_ReservePool';
+export * from '../build/Manager/tact_ReservePool';
