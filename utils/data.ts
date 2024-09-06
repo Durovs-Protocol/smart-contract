@@ -13,10 +13,12 @@ export const burnMin: number = 1; // $
 export const serviceFeePercent: number = 0.1;
 export const serviceFee: number = 1; // $
 
-const assetsJson = JSON.parse(fs.readFileSync('utils/assets.json', 'utf-8'))
+const assetsJson = JSON.parse(fs.readFileSync('utils/assets_v0.json', 'utf-8'))
+const assetsJsonV1 = JSON.parse(fs.readFileSync('utils/assets_v1.json', 'utf-8'))
 
 
 export const  assets = assetsJson?.assets
+export const  assetsv1 = assetsJsonV1?.assets
 /**
  * Supply
  */
@@ -26,7 +28,7 @@ export const addSupplyAmount: number = 1;
  * Mint
  */
 
-export const mintAmount: number = Number((tonPrice / reserveRatio).toFixed(2)); // Минт, отправка на кошелек, обновление UserPosition
+export const mintAmount: number = Number(1235); // Минт, отправка на кошелек, обновление UserPosition
 
 /**
  * Burnx
@@ -57,16 +59,16 @@ export const runecoinParams = {
     image: '',
 };
 
-export const usdTONJettonParams = {
+export const stableJettonParams = {
     name: `ton-usd-${Date.now()}`,
-    symbol: 'RunaUSD',
+    symbol: 'Stable',
     description: 'Algorithmic Stable coin (USD) on TON',
     image: 'https://ipfs.io/ipfs/QmPSGcz4TyDo3qShEymZRQRavKKRRbiLPHYs9GUgbtwEwx',
 };
 
-export const runaUSDCouponParams = {
+export const couponParams = {
     name: `runa-usd-coupon-${Date.now()}`,
-    symbol: 'RunaUSDCoupon',
+    symbol: 'DurovCoupon',
     description: 'Coupon for rate stabilization',
     image: 'https://ipfs.io/ipfs/QmPSGcz4TyDo3qShEymZRQRavKKRRbiLPHYs9GUgbtwEwx',
 };
@@ -76,7 +78,7 @@ export const runaUSDCouponParams = {
  */
 export const testJettonParams = {
     name: `ton-usd-${Date.now()}`,
-    symbol: 'RunaUSD',
+    symbol: 'Durov',
     description: 'Algorithmic Stable coin (USD) on TON',
     image: '',
 };

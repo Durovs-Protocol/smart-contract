@@ -1,20 +1,20 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import '@ton/test-utils';
-import { UsdTonWallet } from '../../wrappers/UsdTonWallet';
+import { DurovUsdWallet } from '../../wrappers/V1StableWallet';
 
-describe('UsdToncoinWallet', () => {
+describe('DurovUsdcoinWallet', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
-    let usdTonWallet: SandboxContract<UsdTonWallet>;
+    let stableWallet: SandboxContract<DurovUsdWallet>;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
 
-        // usdTonWallet = blockchain.openContract(await UsdTonWallet.fromInit());
+        // stableWallet = blockchain.openContract(await DurovUsdWallet.fromInit());
 
         deployer = await blockchain.treasury('deployer');
 
-        // const deployResult = await usdTonWallet.send(
+        // const deployResult = await stableWallet.send(
         //     deployer.getSender(),
         //     {
         //         value: toNano('0.05'),
@@ -27,7 +27,7 @@ describe('UsdToncoinWallet', () => {
 
         // expect(deployResult.transactions).toHaveTransaction({
         //     from: deployer.address,
-        //     to: usdTonWallet.address,
+        //     to: stableWallet.address,
         //     deploy: true,
         //     success: true,
         // });
@@ -35,6 +35,6 @@ describe('UsdToncoinWallet', () => {
 
     it('should deploy', async () => {
         // the check is done inside beforeEach
-        // blockchain and usdTonWallet are ready to use
+        // blockchain and stableWallet are ready to use
     });
 });

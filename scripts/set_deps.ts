@@ -6,7 +6,7 @@ import { contractVersion, log, timer } from '../utils/helpers';
 
 export async function run(provider: NetworkProvider) {
     const user = provider.sender().address as Address;
-    const { reservePool, manager, runaUsd, profitPool } = await contracts(provider, user);
+    const { reservePool, manager, stable } = await contracts(provider, user);
 	log('Установка зависимостей:'+
         `\n ${await contractVersion(manager, 'manager')}` +
         `\n ${await contractVersion(reservePool, 'reserve pool')}` 
@@ -19,23 +19,21 @@ export async function run(provider: NetworkProvider) {
             {
                 $$type: 'SetDeps',
                 manager: manager.address,
-                profitPool: profitPool.address,
+                profitPool: Address.parse('UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ'),
                 reservePool: reservePool.address,
-                usdton: runaUsd.address,
-                runaCoupon: runaUsd.address,
+                stable: stable.address,
+                runaCoupon: stable.address,
             },
         );
 
-        await timer(`Set deps in ${name}`, runaUsd.address, runaUsdAddress(contract));
+        await timer(`Set deps in ${name}`, stable.address, stableAddress(contract));
         await timer(`Set deps in ${name}`, manager.address, managerAddress(contract));
-        await timer(`Set deps in ${name}`, profitPool.address, profitPoolAddress(contract));
         await timer(`Set deps in ${name}`, reservePool.address, reservePoolAddress(contract));
     }
 
     await setDeps(manager, 'manager');
     await setDeps(reservePool, 'reservePool');
-    // await setDeps(profitPoolContract, 'profitPool');
-    // await setDeps(runaUsdContract, 'runaUsdContract');
+    await setDeps(stable, 'stableContract');
     log('Deps installed successfully');
 }
 
@@ -58,9 +56,10 @@ const profitPoolAddress = function (contract: any) {
         return deps.profitPool.toString();
     };
 };
-const runaUsdAddress = function (contract: any) {
+const stableAddress = function (contract: any) {
     return async function () {
         const deps = await contract.getDeps();
-        return deps.usdton.toString();
+        console.log(deps)
+        return deps.stable.toString();
     };
 };

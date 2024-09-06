@@ -6,6 +6,14 @@ struct JettonData {
     content: Cell?;
     walletCode: Cell;
 }
+
+struct SupplyTimestamp {
+    info: map<Int , Int >;
+}
+struct WithdrawTransactionInfo {
+    amount: Int;
+    master: Address;
+}
 struct JettonWalletData {
     balance: Int;
     owner: Address;
@@ -16,61 +24,78 @@ struct PositionState {
     collateral: Int as coins;
     debt: Int as uint64;
 }
-struct Message {
-    timestamp: Int as uint64;
-    message: String;
-}
+
 struct Settings {
-    reserveRatio: Int;
-    reserveMin: Int;
-    burnMin: Int;
-    serviceFeePercent: Int;
-    serviceFee: Int;
-    liquidationRatio: Int;
+    minDelay: Int;
+    newManager: Address;
+    maxAmount: Int;
+    maxExecutionTime: Int;
 }
 struct Deps {
     manager: Address;
     profitPool: Address;
     reservePool: Address;
-    usdton: Address;
+    stable: Address;
     runaCoupon: Address;
 }
 message SetSettings {
-    reserveRatio: Int;
-    reserveMin: Int;
-    burnMin: Int;
-    serviceFeePercent: Int;
-    serviceFee: Int;
-    liquidationRatio: Int;
+    minDelay: Int;
+    newManager: Address;
+    maxAmount: Int;
+    maxExecutionTime: Int;
+}
+
+struct Asset {
+    name: String;
+    poolWallet: Address;
+    op_code: Int;
+}
+
+message SetAssets {
+    assets:  map<Address, Asset>;
+}
+message SetBalances {
+    balances:  map<Address, Int>;
+}
+message SetRates {
+     rates: map<Address, Int>;
 }
 
 //-----SUPPLY
 //user interface
 message SupplyMessage {
-    amount: Int as coins;
+    amount: Int;
+    user: Address;
+    payload: Address;
 }
 //up interface
 message Supply {
     user: Address;
     amount: Int as coins;
-    settings: Settings;
-    tonPrice: Int as coins;
+    payload: Address;
 }
+
 message SupplyNotification {
     user: Address;
     amount: Int as coins;
 }
+
+struct ManagerState {
+    totalSupplyed: Int;
+    totalMinted: Int;
+}
+
 //-----MINT
 //user interface
-message MintUsdTonMessage {
+message MintStableMessage {
     amount: Int as coins;
+
 }
 //up interface
-message MintUsdTon {
+message MintStable {
     user: Address;
     amount: Int as uint64;
-    settings: Settings;
-    tonPrice: Int as coins;
+    rates: map<Address, Int>;
 }
 
 message OnMintComplete {
@@ -78,44 +103,54 @@ message OnMintComplete {
 }
 //-----BURN
 //user interface
-message BurnUsdTonMessage {
+message BurnStableMessage {
     amount: Int as coins;
     fee: Int as uint64;
 }
 //up interface
-message BurnUsdTon {
+message BurnStable {
     user: Address;
     amount: Int as uint64;
-    settings: Settings;
-    tonPrice: Int as coins;
-    deps: Deps;
-    fee: Int as uint64;
+    rates: map<Address, Int>;
 }
 message BurnNotification {
     user: Address;
     amount: Int as coins;
-    withdrawalAmount: Int;
-    fee: Int;
     notificationAddress: Address?;
 }
 //-----WITHDRAW
 //user interface
 message WithdrawMessage {
     amount: Int as coins;
+    master: Address;
 }
+// message WithdrawNotification  {
+//     amount: Int as coins;
+//     payload: Address;
+//     name: String;
+
+// }
 //up interface
 message Withdraw {
     user: Address;
     amount: Int as coins;
-    settings: Settings;
-    tonPrice: Int;
+    master: Address;
+    minDelay: Int;
+    maxExecutionTime: Int;
+    pool: Address;
+    rates: map<Address, Int>;
+
 }
 message WithdrawResponce {
     amount: Int as coins;
+    master: Address;
 }
 message WithdrawRequest {
     amount: Int as coins;
     user: Address;
+    master: Address;
+    queryId: Int;
+
 }
 //-----LIQUIDATION
 //user interface
@@ -138,33 +173,39 @@ message DoLiquidation {
 //-----MIGRATION
 //user interface
 message Migration {
-    newManager: Address;
     id: Int;
 }
 //up interface
 message MigrationRequest {
-    owner: Address;
-    manager: Address;
-    reservePool: Address;
-    profitPool: Address;
-    usdton: Address;
+}
+message InformationRequest {
+}
+message PoolMigrationRequest {
+    amount: Int;
+    queryId: Int;
+    newPool: Address;
+    wallet:  Address;
+}
+message InformationResponce {
+    user: Address;
+    position: Address;
+}
+message SetState {
+    balances: map<Address, Int>;
+    supplyTimestamps: map<Address, SupplyTimestamp>;
+    updatedTimestamps: SupplyTimestamp?;
+    withdrawState: map<Int , WithdrawTransactionInfo>;
+    lastWithdrawalRequest: Int;
+
 }
 
-message SetState {
-    collateral: Int;
-    debt: Int;
-    positionAddress: Address;
-}
 message BuildPosition {
     user: Address;
-    owner: Address;
-    positionAddress: Address;
-    collateral: Int;
-    debt: Int;
-    manager: Address;
-    reservePool: Address;
-    profitPool: Address;
-    usdton: Address;
+    balances: map<Address, Int>;
+    supplyTimestamps: map<Address, SupplyTimestamp>;
+    updatedTimestamps: SupplyTimestamp?;
+    withdrawState: map<Int , WithdrawTransactionInfo>;
+    lastWithdrawalRequest: Int;
 }
 
 message OnMigrationComplete {
@@ -181,10 +222,11 @@ message SetAddress {
     user: Address;
     position: Address;
 }
-//for safety check in up
-message SetPositionAddress {
-    address: Address;
+message SetId {
+    id: Int;
 }
+
+
 
 //-----feedBack handlers
 message FeePayment {
@@ -200,12 +242,21 @@ message SetDeps {
     manager: Address;
     profitPool: Address;
     reservePool: Address;
-    usdton: Address;
+    stable: Address;
     runaCoupon: Address;
 }
 
 
-
+message SetTransactionInfo {
+    amount: Int;
+    user:  Address;
+    master:  Address;
+    queryId:  Int as uint64;
+    position: Address;
+}
+message TonTransfer {
+    queryId: Int as uint64;
+}
 //-----JETTON interface
 message(0xf8a7ea5) TokenTransfer {
     queryId: Int as uint64;
@@ -234,8 +285,20 @@ message(0x7362d09c) TokenNotification {
 message(0xd53276db) TokenExcesses {
     queryId: Int as uint64;
 }
+message(0x595f07bc) TokenBurn {
+    queryId: Int as uint64;
+    amount: Int as coins;
+    owner: Address;
+    responseAddress: Address?;
+}
+message(0x7bdd97de) TokenBurnNotification {
+    queryId: Int as uint64;
+    amount: Int as coins;
+    owner: Address;
+    responseAddress: Address?;
+}
 message TokenUpdateContent {
-    content: Cell?;
+    content: Cell;
 }
 //-----RUNA USDTON interface
 message MintRequest {
@@ -247,14 +310,11 @@ message MintRequest {
 message BurnRequest {
     user: Address;
     amount: Int as coins;
-    withdrawalAmount: Int;
     fee: Int;
     notificationAddress: Address?;
 }
 message OnBurnComplete {
-    ton: Int as coins;
-    usdton: Int as coins;
-    fee: Int;
+    amount: Int as coins;
 }
 //-----DEX IMITATION
 message DexMessage {

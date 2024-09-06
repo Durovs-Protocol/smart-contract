@@ -9,22 +9,22 @@ import { Runecoin } from '../../wrappers/Runecoin';
 import { RunecoinWallet } from '../../wrappers/RunecoinWallet';
 
 import {
-        gasFee,
-        liquidationFee,
-        liquidationRatio,
-        stabilityFeeRate,
-        testJettonParams,
-        testRunecoinParams,
-        tonPrice,
+    gasFee,
+    liquidationFee,
+    liquidationRatio,
+    stabilityFeeRate,
+    testJettonParams,
+    testRunecoinParams,
+    tonPrice,
 } from '../../utils/data';
-import { UsdTonMaster } from '../../wrappers/UsdTon';
+import { Stable } from '../../wrappers/V1Stable';
 
 describe('Setup', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
 
     let pool: SandboxContract<Pool>;
-    let usdTon: SandboxContract<UsdTonMaster>;
+    let stable: SandboxContract<Stable>;
     let manager: SandboxContract<Manager>;
     let runecoin: SandboxContract<Runecoin>;
 
@@ -34,8 +34,8 @@ describe('Setup', () => {
         blockchain = await Blockchain.create();
         deployer = await blockchain.treasury('deployer');
 
-        usdTon = blockchain.openContract(
-            await UsdTonMaster.fromInit(deployer.getSender().address, buildOnchainMetadata(testJettonParams)),
+        stable = blockchain.openContract(
+            await Stable.fromInit(deployer.getSender().address, buildOnchainMetadata(testJettonParams)),
         );
 
         runecoin = blockchain.openContract(
@@ -85,7 +85,7 @@ describe('Setup', () => {
             success: true,
         });
 
-        const deployUsdToncoin = await usdTon.send(
+        const deployDurovUsdcoin = await stable.send(
             deployer.getSender(),
             {
                 value: toNano(gasFee),
@@ -96,9 +96,9 @@ describe('Setup', () => {
             },
         );
 
-        expect(deployUsdToncoin.transactions).toHaveTransaction({
+        expect(deployDurovUsdcoin.transactions).toHaveTransaction({
             from: deployer.address,
-            to: usdTon.address,
+            to: stable.address,
             deploy: true,
             success: true,
         });
@@ -110,7 +110,7 @@ describe('Setup', () => {
                 $$type: 'SetDeps',
                 managerAddress: manager.address,
                 poolAddress: pool.address,
-                usdTonAddress: usdTon.address,
+                stableAddress: stable.address,
                 runecoinAddress: runecoin.address,
             },
         );
@@ -121,18 +121,18 @@ describe('Setup', () => {
                 $$type: 'SetDeps',
                 managerAddress: manager.address,
                 poolAddress: pool.address,
-                usdTonAddress: usdTon.address,
+                stableAddress: stable.address,
                 runecoinAddress: runecoin.address,
             },
         );
-        await usdTon.send(
+        await stable.send(
             deployer.getSender(),
             { value: toNano(gasFee) },
             {
                 $$type: 'SetDeps',
                 managerAddress: manager.address,
                 poolAddress: pool.address,
-                usdTonAddress: usdTon.address,
+                stableAddress: stable.address,
                 runecoinAddress: runecoin.address,
             },
         );
@@ -158,16 +158,16 @@ describe('Setup', () => {
         );
     });
     it('Dependencies set successfully', async () => {
-        const usdTonDeps = await usdTon.getDeps();
-        expect(usdTondeps.resrvePool.toString()).toEqual(pool.address.toString());
-        expect(usdTondeps.manager.toString()).toEqual(manager.address.toString());
+        const stableDeps = await stable.getDeps();
+        expect(stabledeps.resrvePool.toString()).toEqual(pool.address.toString());
+        expect(stabledeps.manager.toString()).toEqual(manager.address.toString());
 
         const positionsManagerDeps = await manager.getDeps();
         expect(positionsManagerdeps.resrvePool.toString()).toEqual(pool.address.toString());
-        expect(positionsManagerdeps.usdton.toString()).toEqual(usdTon.address.toString());
+        expect(positionsManagerdeps.usdton.toString()).toEqual(stable.address.toString());
 
         const poolDeps = await pool.getDeps();
-        expect(pooldeps.usdton.toString()).toEqual(usdTon.address.toString());
+        expect(pooldeps.usdton.toString()).toEqual(stable.address.toString());
         expect(pooldeps.manager.toString()).toEqual(manager.address.toString());
     });
 

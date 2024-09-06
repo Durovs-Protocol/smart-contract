@@ -1,7 +1,7 @@
 import "@stdlib/deploy";
 import "@stdlib/ownable";
 import "./up_pool.tact";
-import "../utils/messages.tact";
+import "./utils/messages.tact";
 
 contract Manager with Deployable, OwnableTransferable {
     const MinTonForStorage: Int = ton("0.01");
@@ -17,7 +17,7 @@ contract Manager with Deployable, OwnableTransferable {
     version: String = "0";
 
     init(owner: Address){
-        require(owner == sender(), "Durov Protocol: no access to init manager");
+        require(owner == sender(), "Durovs Protocol: no access to init manager");
         self.owner = sender();
         self.settings = Settings{
             minDelay: 0,
@@ -29,7 +29,7 @@ contract Manager with Deployable, OwnableTransferable {
             manager: newAddress(0, 0),
             profitPool: newAddress(0, 0),
             reservePool: newAddress(0, 0),
-            usdton: newAddress(0, 0),
+            stable: newAddress(0, 0),
             runaCoupon: newAddress(0, 0)
         };
 
@@ -46,10 +46,10 @@ contract Manager with Deployable, OwnableTransferable {
             manager: msg.manager,
             profitPool: msg.profitPool,
             reservePool: msg.reservePool,
-            usdton: msg.usdton,
+            stable: msg.stable,
             runaCoupon: msg.runaCoupon
         };
-        self.reply("Durov Protocol: Manager's dependencies set".asComment());
+        self.reply("Durovs Protocol: Manager's dependencies set".asComment());
     }
 
 
@@ -65,26 +65,35 @@ contract Manager with Deployable, OwnableTransferable {
             maxExecutionTime: msg.maxExecutionTime,
 
         };
-        self.reply("Durov Protocol: Settings have been updated".asComment());
+        self.reply("Durovs Protocol: Settings have been updated".asComment());
     }
     receive(msg: SetAssets) {
         self.requireOwner();
         self.assets = msg.assets;
-        self.reply("Durov Protocol: manager assets set".asComment());
+        self.reply("Durovs Protocol: manager assets set".asComment());
     }
     receive(msg: SetBalances) {
         self.requireOwner();
         self.balances = msg.balances;
-        self.reply("Durov Protocol: manager balances template set".asComment());
+        self.reply("Durovs Protocol: manager balances template set".asComment());
     }
-
+    receive(str: String){
+        // приимаем текстовые сообщения
+        send(SendParameters {
+                to: self.owner,
+                value: 0,
+                mode: SendRemainingValue,
+                bounce: false,
+                body: str.asComment()
+            }
+        );
+    }
     //=============================================================================
     // User actions
     //=============================================================================
-
     receive(msg: SupplyMessage) {
         let ctx: Context = context();
-        require(sender() == self.deps.reservePool, "Durov Protocol: no access for supply");
+        require(sender() == self.deps.reservePool, "Durovs Protocol: no access for supply");
         let valueToSendForward: Int = ctx.value - (self.MinTonForStorage + self.GasConsumption);
         let init: StateInit = initOf UserPosition(msg.user,
             self.deps.manager,
@@ -109,7 +118,7 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     bounced(msg: bounced<Supply>) {
-        self.bouncedHandler("Durov Protocol: Error in supply.");
+        self.bouncedHandler("Durovs Protocol: Error in supply.");
     }
 
     receive(msg: AddPositionId) {
@@ -149,7 +158,7 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     bounced(msg: bounced<Withdraw>){
-        self.bouncedHandler("Durov Protocol: Error in withdrawal");
+        self.bouncedHandler("Durovs Protocol: Error in withdrawal");
     }
 
 
@@ -176,7 +185,7 @@ contract Manager with Deployable, OwnableTransferable {
     receive(msg: InformationResponce) {
         let init: StateInit = initOf PositionKeeper(self.lastMigrationId, myAddress());
         let positionAddress: Address = contractAddress(init);
-        require(sender() == positionAddress, "Durov Protocol: no access for migration");
+        require(sender() == positionAddress, "Durovs Protocol: no access for migration");
 
         send(SendParameters{
                 to: self._userPositionAddress(msg.user),
@@ -190,7 +199,7 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     receive(msg: BuildPosition) {
-        require(sender() == self._userPositionAddress(msg.user), "Durov Protocol: no access for migration");
+        require(sender() == self._userPositionAddress(msg.user), "Durovs Protocol: no access for migration");
         send(SendParameters{
                 to: self.settings.newManager,
                 value: 0,
@@ -301,13 +310,13 @@ contract PositionKeeper {
             bounce: false,
             value: 0,
             mode: SendRemainingValue,
-            body: "Durov Protocol: User position has been created".asComment()
+            body: "Durovs Protocol: user position has been created".asComment()
         }
         );
     }
 
     receive(msg: InformationRequest) {
-        require(self.manager == sender(), "Durov Protocol: no access for information request");
+        require(self.manager == sender(), "Durovs Protocol: no access for information request");
         send(SendParameters{
                 to: self.manager,
                 value: 0,

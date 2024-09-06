@@ -1,30 +1,34 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address } from '@ton/core';
-import { ProfitPool } from '../wrappers/ProfitPool';
-import { UsdTonMaster } from '../wrappers/UsdTon';
-import { Manager } from '../wrappers/V0.Manager';
-import { NewManager } from '../wrappers/V0.NewManager';
-import { NewReservePool } from '../wrappers/V0.NewPool';
-import { NewUp } from '../wrappers/V0.NewUp';
-import { ReservePool } from '../wrappers/V0.ReservePool';
-import { UserPosition } from '../wrappers/V0.UserPosition';
+
+import { Manager } from '../wrappers/Manager';
+import { ReservePool } from '../wrappers/ReservePool';
+import { UserPosition } from '../wrappers/UP';
+import { V1Manager } from '../wrappers/V1Manager';
+import { V1ReservePool } from '../wrappers/V1Pool';
+
+import { Stable } from '../wrappers/V1Stable';
+import { V1UserPosition } from '../wrappers/V1UP';
 import { loadAddress } from './helpers';
 
 async function contracts(provider: NetworkProvider, user: Address) {
 
-        const reservePool = provider.open(process.env.v == '0' ?  ReservePool.fromAddress(Address.parse(await loadAddress('reservePool'))) :  NewReservePool.fromAddress(Address.parse(await loadAddress('reservePool'))))
-        const manager = provider.open(process.env.v == '0' ?  Manager.fromAddress(Address.parse(await loadAddress('manager'))) : NewManager.fromAddress(Address.parse(await loadAddress('manager'))))
-        const runaUsd =  provider.open(UsdTonMaster.fromAddress(Address.parse(await loadAddress('usdTon'))))
-        const profitPool =  provider.open(ProfitPool.fromAddress(Address.parse(await loadAddress('profitPool'))))
+        const reservePool = provider.open(process.env.v == '0' ?  ReservePool.fromAddress(Address.parse(await loadAddress('reservePool'))) :  V1ReservePool.fromAddress(Address.parse(await loadAddress('reservePool'))))
+        const manager = provider.open(process.env.v == '0' ?  Manager.fromAddress(Address.parse(await loadAddress('manager'))) : V1Manager.fromAddress(Address.parse(await loadAddress('manager'))))
+        const v1manager = provider.open(V1Manager.fromAddress(Address.parse(await loadAddress('manager', undefined, '1'))))
+        const stable =  provider.open(Stable.fromAddress(Address.parse(await loadAddress('stable', undefined, '1'))))
         const userPositionAddress = await manager.getUserPositionAddress(user)
-        const userPosition = provider.open(process.env.v == '0' ?  UserPosition.fromAddress(userPositionAddress) : NewUp.fromAddress(userPositionAddress))
+        const v1userPositionAddress = await v1manager.getUserPositionAddress(user)
+        const userPosition = provider.open(process.env.v == '0' ?  UserPosition.fromAddress(userPositionAddress) : V1UserPosition.fromAddress(userPositionAddress))
+        const v1userPosition = provider.open(V1UserPosition.fromAddress(v1userPositionAddress))
 
         return {
                 reservePool,
                 manager,
-                runaUsd,
-                profitPool,
-                userPosition
+                stable,
+                userPosition,
+                v1manager,
+                v1userPosition
         }
 }
 
