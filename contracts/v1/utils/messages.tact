@@ -36,7 +36,7 @@ struct Deps {
     profitPool: Address;
     reservePool: Address;
     stable: Address;
-    runaCoupon: Address;
+    coupon: Address;
 }
 message SetSettings {
     minDelay: Int;
@@ -243,7 +243,7 @@ message SetDeps {
     profitPool: Address;
     reservePool: Address;
     stable: Address;
-    runaCoupon: Address;
+    coupon: Address;
 }
 
 

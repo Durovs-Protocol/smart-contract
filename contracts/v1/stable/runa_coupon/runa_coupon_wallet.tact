@@ -1,7 +1,7 @@
 import "../utils/messages.tact";
 
 @interface("org.ton.jetton.wallet")
-contract RunaCouponWallet
+contract couponWallet
 {
     const minTonsForStorage: Int = ton("0.01");
     const gasConsumption: Int = ton("0.01");
@@ -31,7 +31,7 @@ contract RunaCouponWallet
             "Invalid value"
         );
         // Send tokens
-        let init: StateInit = initOf RunaCouponWallet(self.master, msg.destination);
+        let init: StateInit = initOf couponWallet(self.master, msg.destination);
         let walletAddress: Address = contractAddress(init);
         send(SendParameters{
                 to: walletAddress,
@@ -56,7 +56,7 @@ contract RunaCouponWallet
         // Check sender
         let ctx: Context = context();
         if (ctx.sender != self.master) {
-            let sinit: StateInit = initOf RunaCouponWallet(self.master, msg.from);
+            let sinit: StateInit = initOf couponWallet(self.master, msg.from);
             require(contractAddress(sinit) == ctx.sender, "Durov Protocol: invalid sender");
         }
         // Update balance
@@ -115,7 +115,7 @@ contract RunaCouponWallet
         self.balance = self.balance + jettonAmount;
     }
 
-    // RunaCoupon related method
+    // coupon related method
 
     receive(msg: BurnRequest){
         /* check if called by master
@@ -153,7 +153,7 @@ contract RunaCouponWallet
                 balance: self.balance,
                 owner: self.owner,
                 master: self.master,
-                walletCode: initOf RunaCouponWallet(self.master, self.owner).code
+                walletCode: initOf couponWallet(self.master, self.owner).code
             };
     }
 

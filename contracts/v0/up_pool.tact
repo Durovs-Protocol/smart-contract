@@ -145,7 +145,7 @@ contract UserPosition  {
                 value: ctx.value,
                 mode: SendIgnoreErrors,
                 bounce: false,
-                body: "Durovs Protocol: withdrawal available after 24 hours".asComment()
+                body: "Durovs Protocol: withdrawal available after 6 hours".asComment()
             });
             return;
         }
@@ -267,7 +267,7 @@ contract UserPosition  {
         self.isActive = false;
 
         send(SendParameters {
-                to: self.manager,
+                to: msg.newManager,
                 value: remainingValue,
                 bounce: false,
                 body: BuildPosition {
@@ -401,8 +401,8 @@ contract ReservePool with Deployable, OwnableTransferable {
             profitPool: newAddress(0, 0),
             reservePool: newAddress(0, 0),
             stable: newAddress(0, 0),
-            runaCoupon: newAddress(0, 0)
-        };
+            coupon: newAddress(0, 0)
+            };
         self.balances = emptyMap();
         self.assets = emptyMap();
     }
@@ -414,7 +414,7 @@ contract ReservePool with Deployable, OwnableTransferable {
             profitPool: msg.profitPool,
             reservePool: msg.reservePool,
             stable: msg.stable,
-            runaCoupon: msg.runaCoupon
+            coupon: msg.coupon
         };
         self.reply("Durovs Protocol: pool dependencies set".asComment());
     }

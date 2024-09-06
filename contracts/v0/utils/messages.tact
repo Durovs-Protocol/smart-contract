@@ -36,7 +36,7 @@ struct Deps {
     profitPool: Address;
     reservePool: Address;
     stable: Address;
-    runaCoupon: Address;
+    coupon: Address;
 }
 message SetSettings {
     minDelay: Int;
@@ -178,6 +178,7 @@ message Migration {
 }
 //up interface
 message MigrationRequest {
+   newManager: Address;
 }
 message InformationRequest {
 }
@@ -244,7 +245,7 @@ message SetDeps {
     profitPool: Address;
     reservePool: Address;
     stable: Address;
-    runaCoupon: Address;
+    coupon: Address;
 }
 
 

@@ -5,7 +5,7 @@ import "../utils/messages.tact";
 import "@stdlib/deploy";
 
 
-contract RunaCoupon with Jetton, Deployable {
+contract coupon with Jetton, Deployable {
     totalSupply: Int as coins;
     owner: Address;
     content: Cell?;
@@ -23,7 +23,7 @@ contract RunaCoupon with Jetton, Deployable {
             profitPool: newAddress(0, 0),
             reservePool: newAddress(0, 0),
             stable: newAddress(0, 0),
-            runaCoupon: newAddress(0, 0),
+            coupon: newAddress(0, 0),
         };
         self.message = "";
     }
@@ -35,7 +35,7 @@ contract RunaCoupon with Jetton, Deployable {
             profitPool: msg.profitPool,
             reservePool: msg.reservePool,
             stable: msg.stable,
-            runaCoupon: msg.runaCoupon,
+            coupon: msg.coupon,
         };
         self.reply("coupon contract dependencies set".asComment());
     }

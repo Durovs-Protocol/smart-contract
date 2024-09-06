@@ -32,7 +32,7 @@ contract V1Manager with Deployable, OwnableTransferable {
             profitPool: newAddress(0, 0),
             reservePool: newAddress(0, 0),
             stable: newAddress(0, 0),
-            runaCoupon: newAddress(0, 0)
+            coupon: newAddress(0, 0),
         };
 
         self.assets = emptyMap();
@@ -51,7 +51,7 @@ contract V1Manager with Deployable, OwnableTransferable {
             profitPool: msg.profitPool,
             reservePool: msg.reservePool,
             stable: msg.stable,
-            runaCoupon: msg.runaCoupon
+            coupon: msg.coupon
         };
         self.reply("Durovs Protocol: new manager's dependencies set".asComment());
     }

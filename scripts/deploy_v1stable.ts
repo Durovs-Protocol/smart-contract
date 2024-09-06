@@ -19,7 +19,7 @@ export async function run(provider: NetworkProvider) {
     );
 
     await provider.waitForDeploy(stable.address, 30);
-    await saveAddress('stable', stable.address);
+    await saveAddress('stable', stable.address, undefined, '1');
     console.log('=============================================================================');
     console.log('Usd on TON deployed successfully');
     console.log('=============================================================================');
