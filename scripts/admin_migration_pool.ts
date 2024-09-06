@@ -18,7 +18,7 @@ export async function run(provider: NetworkProvider) {
 
         {
             name: 'toncoin',
-            amount: 0,
+            amount: 0,// Не надо указывать
             pool_wallet: reservePool.address
         },
     ]
