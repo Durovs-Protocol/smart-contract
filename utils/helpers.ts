@@ -163,7 +163,7 @@ export const contractVersion = async function (contract: any, name: string) {
     return `version of ${name}: ${version}`
 };
 
-export async function createAssetsList(owner: string, provider: NetworkProvider) {
+export async function createAssetsList(owner: string, provider: NetworkProvider, version: string) {
     let assets = [
         {
             name: 'stTON', // Свой токен
@@ -212,6 +212,14 @@ export async function createAssetsList(owner: string, provider: NetworkProvider)
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir);
     }
+    
+    switch(version) {
+        case 'v0':
+            await fs.promises.writeFile(`${dir}/assets_v0.json`, JSON.stringify({ assets: assets }));
+            break
+        case 'v1':
+            await fs.promises.writeFile(`${dir}/assets_v1.json`, JSON.stringify({ assets: assets }));
+            break
 
-    await fs.promises.writeFile(`${dir}/assets.json`, JSON.stringify({ assets: assets }));
+    }
 }

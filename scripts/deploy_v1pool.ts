@@ -20,7 +20,7 @@ export async function run(provider: NetworkProvider) {
 
     await provider.waitForDeploy(v1pool.address, 30);
     await saveAddress('reservePool', v1pool.address, undefined, '1');
-    await createAssetsList(v1pool.address.toString(), provider)
+    await createAssetsList(v1pool.address.toString(), provider, 'v1')
     console.log('=============================================================================');
     console.log('New pool deployed successfully');
     console.log('=============================================================================');

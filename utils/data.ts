@@ -13,10 +13,12 @@ export const burnMin: number = 1; // $
 export const serviceFeePercent: number = 0.1;
 export const serviceFee: number = 1; // $
 
-const assetsJson = JSON.parse(fs.readFileSync('utils/assets.json', 'utf-8'))
+const assetsJson = JSON.parse(fs.readFileSync('utils/assets_v0.json', 'utf-8'))
+const assetsJsonV1 = JSON.parse(fs.readFileSync('utils/assets_v1.json', 'utf-8'))
 
 
 export const  assets = assetsJson?.assets
+export const  assetsv1 = assetsJsonV1?.assets
 /**
  * Supply
  */

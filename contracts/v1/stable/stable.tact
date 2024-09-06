@@ -47,7 +47,7 @@ contract Stable with Deployable, OwnableTransferable {
             stable: msg.stable,
             runaCoupon: msg.runaCoupon,
         };
-        self.reply("usdton's dependencies set".asComment());
+        self.reply("Stable's dependencies set".asComment());
     }
 
     receive(msg: Mint) {

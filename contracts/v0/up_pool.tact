@@ -130,7 +130,7 @@ contract UserPosition  {
                 value: ctx.value,
                 mode: SendIgnoreErrors,
                 bounce: false,
-                body: "Durovs Protocol:Not enough funds to withdraw".asComment()
+                body: "Durovs Protocol: not enough funds to withdraw".asComment()
             });
             return;
         }

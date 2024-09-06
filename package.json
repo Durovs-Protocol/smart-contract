@@ -12,7 +12,7 @@
         "V0": "------------------------------------------------------------------------",
         "build": "rm -rf build/Manager && rm -rf build/Manager.compiled.jspn && blueprint build manager",
         "deploy": "yarn deploy-manager && yarn deploy-reserve",
-        "deploy-reserve": "yarn run-script deploy_reserve",
+        "deploy-reserve": "yarn run-script deploy_pool",
         "deploy-manager": "yarn run-script deploy_manager",
         "setup": "yarn set-deps && yarn set-settings && yarn set-assets",
         "set-deps": "yarn run-script set_deps",

@@ -1,6 +1,6 @@
 Migration complete: 
  user from old position: EQBNAja8fRL6yYP32ZuCYGolmlgsIWbbu0GtJRsvxfRo8zVy;
-oldPosition: EQB7Vu805K2cb4JAQ1gHVgmT99noUNPWsNzROghsKvaSuz1S;
+oldPosition: EQAuK5RT2DOAIt1GYcdaWxOzumfsQgxnAXLsPkt2WUH3XyW7;
                 
 user from new position: EQBNAja8fRL6yYP32ZuCYGolmlgsIWbbu0GtJRsvxfRo8zVy; 
-newPosition: EQCWHH-qnnGmOjIisq3lSo61qiovCEFzs-qGznfjty1MQFlF
+newPosition: EQDemDt5RLCYF_asNDHg8JgSZIVAqoRX9GrWj64tFtmb8INY

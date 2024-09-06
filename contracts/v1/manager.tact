@@ -363,7 +363,7 @@ contract V1PositionKeeper  {
             bounce: false,
             value: 0,
             mode: SendRemainingValue,
-            body: "Durovs Protocol: User position has been created".asComment()
+            body: "Durovs Protocol: user position has been created".asComment()
         }
         );
     }

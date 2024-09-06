@@ -11,26 +11,19 @@ export async function run(provider: NetworkProvider) {
 
      const migrationData = [
         {
-            name: 'stakedTON',
+            name: 'stTON',
             pool_wallet: Address.parse(assets[0].pool_wallet!!),
             amount: 1
         },
-        // {
-        //     name: 'hipoStakedTON',
-        //     pool_wallet: Address.parse('0QDfVL4vaXwyZBPU1m731WMVN2QD0R2P02rSg6-jA4nvUd6s'),
-        //     amount: 1n
-        // },
-        // {
-        //     name: 'tonstakers',
-        //     pool_wallet: Address.parse('0QDocfDqfObKtOMc08eY-rxz7-TL7I4oSAUxciuN82HfUXNE'),
-        //     amount: 1n
-        // },
+
         {
             name: 'toncoin',
             amount: 0,
             pool_wallet: reservePool.address
         },
     ]
+    //TODO нужно сделать автоматическую проверку баланса и формирование этой структуры
+
     const migrationIndex: number = 0;
         try {
             log('Миграция pool');

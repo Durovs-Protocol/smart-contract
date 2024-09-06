@@ -19,8 +19,8 @@ export async function run(provider: NetworkProvider) {
         `\n${await contractVersion(manager, 'manager')}`
     );
 
-    //3 ton 0 jetton
-    const assetIndex = 0
+
+    const assetIndex = 1
 
     let oldBalance = 0n
     try {

@@ -125,7 +125,7 @@ contract V1UserPosition  {
                 value: ctx.value,
                 mode: SendIgnoreErrors,
                 bounce: false,
-                body: "Durovs Protocol: Not enough funds to withdraw".asComment()
+                body: "Durovs Protocol: not enough funds to withdraw".asComment()
             });
             return;
         }
@@ -258,8 +258,8 @@ contract V1UserPosition  {
             let comment: StringBuilder = beginString();
             comment.append("Durovs Protocol: withdraw of: ");
             comment.append(transactionInfo!!.amount.toString());
-            comment.append(" ");
-            comment.append(transactionInfo!!.master.toString());
+            // comment.append(" ");
+            // comment.append(transactionInfo!!.master.toString());
             comment.append("was successful");
 
             send(SendParameters{
