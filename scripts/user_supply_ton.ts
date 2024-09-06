@@ -13,8 +13,11 @@ export async function run(provider: NetworkProvider) {
 		userPosition
         } = await contracts(provider, user.address!!)
 
-	const supplyAmount = 1;
-	const assetIndex = 3
+	const supplyAmount = 0.5;
+	const assetIndex = 5
+	/**
+	 * TON - 5
+	 */
 	log('\nВнесение залога ton:' + supplyAmount +
 	`\n${await contractVersion(manager, 'manager')}` +
 	`\n${await contractVersion(userPosition, 'userPosition')}`

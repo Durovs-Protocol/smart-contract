@@ -1,1 +1,33 @@
-{"assets":[{"name":"stTON","master":"kQB6gF0_-_NAAeH_bBnmEQDUwpYfQbG9tOCnlTfKhFDZtkOd","pool_wallet":"EQBXi222lU9V1ufUho48LPO7gQzKS47KxmrBtlmINkpMRMnN"},{"name":"hTON","master":"kQB1BFKmd4h7XzxpkrFZ-JieDRKSFo0JqIn0dy7yj_zGEZ28","pool_wallet":"EQB4biPrG85_E19RUav3AcR04OcsrM2C14_AKXz_VYPyuDYH"},{"name":"tsTON","master":"kQBwNStnliuHZPMCY2D2GCOfVq8fETO0gV58ybOPtDAoh_ha","pool_wallet":"EQBim-4Wz1J1t0D9qQWyXtnhtSzsWqgbQJmizvqH1qogcXvz"},{"name":"NOT","master":"EQD8J0GOlGqXHjoCqCmmA_-pbsuWNn0c2uOgBYRqemocX-yk","pool_wallet":"EQBgC5tIEGwepjdYY6OwCBzYIMyjiUELSGZDHyS3q1JHo9Zy"},{"name":"Dogs","master":"EQAuxfS2tIGYYGgY88AfrsVl_hKk0g93hWm9b_3wxovr5o6P","pool_wallet":"EQCZULm4pLBH1zLIrG6yb3WEs0olVu1-hjwDLtGzdPMOH2Zc"},{"name":"TON","master":"UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ","pool_wallet":"EQD1_eTn85LKZNly7JHRF7UFT0r-4ONjuYEfXdE71yVvcVzc"}]}
+{
+    "assets": [
+        {
+            "name":"stTON",
+            "master":"kQB6gF0_-_NAAeH_bBnmEQDUwpYfQbG9tOCnlTfKhFDZtkOd",
+            "pool_wallet":"EQB95OtRdrlmCDNJgmKhYxDsAoces_deOwtEf_KPpSD4T2Pm"
+        },
+        {
+            "name":"hTON",
+            "master":"kQB1BFKmd4h7XzxpkrFZ-JieDRKSFo0JqIn0dy7yj_zGEZ28",
+            "pool_wallet":"EQCPvfNS75Rvj8mWiDo2EYj5ogZkFZP0sMYqPE78QprVWgEZ"
+        },
+        {
+            "name":"tsTON",
+            "master":"kQBwNStnliuHZPMCY2D2GCOfVq8fETO0gV58ybOPtDAoh_ha",
+            "pool_wallet":"EQBvox4_0SG5kTlwqU-kPKvZvLLCQIiFGdME3HMzjH_PTTKF"
+        },
+        {
+            "name":"NOT",
+            "master":"EQD8J0GOlGqXHjoCqCmmA_-pbsuWNn0c2uOgBYRqemocX-yk",
+            "pool_wallet":"EQCEcEZLVlfsSUINHAtg134_mrjBZLiH7B77IT4cfY1FBYkb"
+        },
+        {
+            "name":"Dogs",
+            "master":"EQAuxfS2tIGYYGgY88AfrsVl_hKk0g93hWm9b_3wxovr5o6P",
+            "pool_wallet":"EQA1u-ByfWKUiR-CUUHkJCIOpG2GoJDdiTJ3heNgiUdplvYZ"
+        },
+        {   "name":"TON",
+            "master":"UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ",
+            "pool_wallet":"EQBs4wHJLJ187GPy1XGINW7fzulx0GbYhcANxXFyLjYV-4Ao"
+        }
+    ]
+}
