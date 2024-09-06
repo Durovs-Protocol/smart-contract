@@ -9,11 +9,13 @@
         "install": "yarn build && yarn deploy && yarn setup",
 
         "run-script": "npx blueprint run --testnet --mnemonic --tonviewer",
+        
         "V0": "------------------------------------------------------------------------",
         "build": "rm -rf build/Manager && rm -rf build/Manager.compiled.jspn && blueprint build manager",
-        "deploy": "yarn deploy-manager && yarn deploy-reserve",
+        "deploy": "yarn deploy-manager && yarn deploy-reserve && yarn deploy-stable",
         "deploy-reserve": "yarn run-script deploy_pool",
         "deploy-manager": "yarn run-script deploy_manager",
+
         "setup": "yarn set-deps && yarn set-settings && yarn set-assets",
         "set-deps": "yarn run-script set_deps",
         "set-settings": "yarn run-script set_settings",
@@ -25,18 +27,24 @@
         "migration-special": "yarn run-script admin_migration_special",
         "migration-pool": "yarn run-script admin_migration_pool",
         "delete-manager": "yarn run-script admin_delete_old_manager",
-        "info-system": "yarn run-script info_system",
-        "info-user": "yarn run-script info_user",
+
         "V1": "------------------------------------------------------------------------",
+
         "v1-build": "rm -rf build/V1Manager && rm -rf build/V1Manager.compiled.jspn && rm -rf build/V1Stable && rm -rf build/V1Stable.compiled.json && rm -rf build/V1StableWallet.compiled.jspn && rm -rf build/V1StableWallet && blueprint build V1Stable &&  blueprint build V1StableWallet &&  blueprint build V1Manager",
-        "v1-deploy": "yarn deploy-v1pool && yarn deploy-v1manager && yarn deploy-stable && yarn deploy-v1up",
-        "deploy-v1manager": "yarn run-script deploy_v1manager",
-        "deploy-v1pool": "yarn run-script deploy_v1pool",
-        "deploy-stable": "yarn run-script deploy_v1stable",
-        "deploy-v1up": "yarn run-script deploy_v1user_position",
-        "set-rates": "yarn run-script set_rates",
+        "v1-deploy": "yarn deploy-v1pool && yarn deploy-v1manager && yarn deploy-stable",
+        "v1-deploy-manager": "yarn run-script deploy_v1manager",
+        "v1-deploy-pool": "yarn run-script deploy_v1pool",
+        "v1-deploy-stable": "yarn run-script deploy_v1stable",
+        "v1-deploy-up": "yarn run-script deploy_v1user_position",
         "v1-mint": "yarn run-script user_mint",
         "v1-burn": "yarn run-script user_burn",
+
+        "control": "------------------------------------------------------------------------",
+
+        "info-system": "yarn run-script info_system",
+        "info-user": "yarn run-script info_user",
+        "set-rates": "yarn run-script set_rates",
+
         "DEPRECATED": "------------------------------------------------------------------------",
         "stabilization": "yarn run-script stabilization"
     },

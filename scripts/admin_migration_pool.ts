@@ -10,16 +10,21 @@ export async function run(provider: NetworkProvider) {
     const newPool: Address = Address.parse(await loadAddress('reservePool', undefined, '1'))
 
      const migrationData = [
-        {
-            name: 'stTON',
-            pool_wallet: Address.parse(assets[0].pool_wallet!!),
-            amount: 1
-        },
+        // {
+        //     name: 'stTON',
+        //     pool_wallet: Address.parse(assets[0].pool_wallet!!),
+        //     amount: 499999999
+        // },
+        // {
+        //     name: 'NOT',
+        //     pool_wallet: Address.parse(assets[3].pool_wallet!!),
+        //     amount: 450000000
+        // },
 
         {
-            name: 'toncoin',
-            amount: 0,// Не надо указывать
-            pool_wallet: reservePool.address
+            name: 'TON',
+            pool_wallet: Address.parse(assets[5].pool_wallet!!),
+            amount: 139473896,// Не надо указывать
         },
     ]
     //TODO нужно сделать автоматическую проверку баланса и формирование этой структуры

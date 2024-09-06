@@ -1,20 +1,20 @@
 
 # Сборка и деплой (env: v=0)
-1. `yarn build` Запустит build
-2. `yarn deploy` Деплой деплой
+1. `yarn build` Билд версии 0
+2. `yarn v1-build` Билд версии 1
+3. `yarn deploy` Деплой деплой
     - `yarn deploy-reserve`
     - `yarn deploy-manager`
     - `yarn deploy-stable`
-    > `yarn v1-build` Билд версии 1
-    > `yarn v1-deploy` Деплой версии 1
+4. `yarn v1-deploy` Опционально !!!
 
     * Проверить выполнение: в папке вида `deploy/v/{contract_name}.address` должны лежать все адреса контрактов
 
 # Настройка(env: v=0/v=1)
-4. 
-    - `yarn set-deps`: имея адреса контрактов: stable, manager, poolContract
-    - `yarn set-settings` передача настроек пула в менеджер
-    - `yarn set-assets` Установка кошельков пула и шаблона балансов
+
+- `yarn set-deps`: имея адреса контрактов: stable, manager, poolContract
+- `yarn set-settings` передача настроек пула в менеджер
+- `yarn set-assets` Установка кошельков пула и шаблона балансов
 
 # Получение информации (env: v=0/v=1)
 > `yarn info-system` (Получение информации о системе) -
@@ -26,6 +26,13 @@
 2. `yarn withdraw` Возврат обеспечения пользователю
 
 # Миграция (env: v=0)
+
+
+- `yarn set-deps`: имея адреса контрактов: stable, manager, poolContract
+- `yarn set-settings` передача настроек пула в менеджер
+- `yarn set-assets` Установка кошельков пула и шаблона балансов
+- `yarn set-rates` Установка кошельков пула и шаблона балансов
+
 > в env меняем версию на 1, запускаем команды из пункта 4(Сборка и деплой), для запуска миграции меняем версию на 0
  - `yarn migration` Запуск миграции менеджера
  - `yarn migration-pool` Запуск миграции пула (для каждой валюты нужно отдельно запустить скрипты с соответствующим      migrationIndex)

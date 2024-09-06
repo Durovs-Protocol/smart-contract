@@ -13,14 +13,13 @@ export async function run(provider: NetworkProvider) {
         v1userPosition,
       } = await contracts(provider, user)
 
-
     /*
      * User position (определение up, проверка балансов)
      */
-    log(
-        'User position version: '+
-        await  userPosition.getVersion()
-    );
+    // log(
+    //     'User position version: '
+    //     + await  userPosition.getVersion()
+    // );
     
     await showBalancves(userPosition)
     // await withdrawState(userPosition)
