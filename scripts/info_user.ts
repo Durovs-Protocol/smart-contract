@@ -38,10 +38,11 @@ export async function run(provider: NetworkProvider) {
 
     async function showBalancves(contract: any) {
         const balances: Dictionary<Address, bigint> = await contract.getBalances();
-        const stakedTON = balances.get(Address.parse(assets[0].master)) ?? 0
-        const hipoStakedTON = balances.get(Address.parse(assets[1].master)) ?? 0
-        const tonstakers = balances.get(Address.parse(assets[2].master)) ?? 0
-        const toncoin = balances.get(Address.parse(assets[3].master)) ?? 0
+        console.log(balances)
+        const stakedTON = balances.get(Address.parse(assets[0].master)) ?? -1
+        const hipoStakedTON = balances.get(Address.parse(assets[1].master)) ?? -1
+        const tonstakers = balances.get(Address.parse(assets[2].master)) ?? -1
+        const toncoin = balances.get(Address.parse(assets[3].master)) ?? -1
         log(
             'Staked TON:    ' +
                 fromNano(stakedTON) +

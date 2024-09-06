@@ -117,9 +117,29 @@ contract V1UserPosition  {
 
     /* Withdraw */
     receive(msg: Withdraw) {
+
+        let ctx: Context = context();
+        if (!self.enoughFunds(msg.master, msg.amount)) {
+            send(SendParameters{
+                to: self.user,
+                value: ctx.value,
+                mode: SendIgnoreErrors,
+                bounce: false,
+                body: "Durovs Protocol: Not enough funds to withdraw".asComment()
+            });
+            return;
+        }
+
+        let balancesAfterWithdraw:  map<Address, Int> = self.balances;
+        let newValue = balancesAfterWithdraw.get(msg.master)!! - msg.amount;
+        balancesAfterWithdraw.set(msg.master, newValue);
+
+        if (!self.isHealthy(balancesAfterWithdraw, msg.rates, self.debt)) {
+            self.errorHandler("Durovs Protocol: position is not healthy");
+            return;
+        } 
         
         if (self.updatedTimestamps != null) {
-
             if ((now() - self.lastWithdrawalRequest) > msg.maxExecutionTime) {
                 self.withdrawState = emptyMap();
                 self.updatedTimestamps = null;
@@ -138,19 +158,9 @@ contract V1UserPosition  {
             self.errorHandler("Durovs Protocol: not from positions manager");
             return;
         }
-        let ctx: Context = context();
+
         let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
 
-        if (!self.enoughFunds(msg.master, msg.amount)) {
-            send(SendParameters{
-                to: self.user,
-                value: ctx.value,
-                mode: SendIgnoreErrors,
-                bounce: false,
-                body: "Durovs Protocol:Not enough funds to withdraw".asComment()
-            });
-            return;
-        }
 
         let availableAmount: Int = self.availableBalance(msg.minDelay, msg.master, msg.amount);
 
@@ -301,7 +311,7 @@ contract V1UserPosition  {
     //==================================NEW FEATURES===========================================
     //=============================================================================
     receive(msg: MintStable) {
-        require(sender() == self.manager, "not from position Manager");
+        require(sender() == self.manager, "Durovs Protocol: not from position Manager");
 
         let debtAfterMint: Int = self.debt + msg.amount;
 
@@ -311,8 +321,8 @@ contract V1UserPosition  {
             return;
         } 
 
-        if (!self.isHealthyForMint(self.balances, msg.rates, debtAfterMint)) {
-            self.errorHandler("position is not healthy");
+        if (!self.isHealthy(self.balances, msg.rates, debtAfterMint)) {
+            self.errorHandler("Durovs Protocol: position is not healthy");
             return;
         } 
 
@@ -333,9 +343,9 @@ contract V1UserPosition  {
         
         let comment: StringBuilder = beginString();
         self.debt += msg.amount;
-        comment.append("Durovs Protocol: You have minted");
+        comment.append("Durovs Protocol: You have minted ");
         comment.append(msg.amount.toString());
-        comment.append("runas");
+        comment.append(" durovUSD");
      
         send(SendParameters {
             to: self.user, 
@@ -363,7 +373,7 @@ contract V1UserPosition  {
             amountToBurn = self.debt;
         }
 
-        let remainingValue: Int = myBalance() - self.GasConsumption; 
+        let remainingValue: Int = context().value - self.GasConsumption; 
 
         self.burnState.set(now(), amountToBurn);
 
@@ -407,14 +417,14 @@ contract V1UserPosition  {
     // Helpers
     //=============================================================================
 
-    fun isHealthyForMint(balances: map<Address, Int>, rates: map<Address, Int>, debt: Int): Bool {
+    fun isHealthy(balances: map<Address, Int>, rates: map<Address, Int>, debt: Int): Bool {
 
     let totalCollateral: Int = 0;
 
     foreach (key, value in balances) {
         let currentRate: Int? = rates.get(key);
         if (currentRate != null && value > 0) {
-          totalCollateral += value * currentRate!!;
+          totalCollateral += ((value * currentRate!!) / 1000000000);
         }
     }
 

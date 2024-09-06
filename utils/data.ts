@@ -26,7 +26,7 @@ export const addSupplyAmount: number = 1;
  * Mint
  */
 
-export const mintAmount: number = Number(123); // Минт, отправка на кошелек, обновление UserPosition
+export const mintAmount: number = Number(1235); // Минт, отправка на кошелек, обновление UserPosition
 
 /**
  * Burnx

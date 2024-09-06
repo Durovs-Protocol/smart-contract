@@ -155,7 +155,8 @@ contract V1Manager with Deployable, OwnableTransferable {
                     master: msg.master,
                     minDelay: self.settings.minDelay,
                     maxExecutionTime: self.settings.maxExecutionTime,
-                    pool: self.deps.reservePool
+                    pool: self.deps.reservePool,
+                    rates: self.rates,
                 }.toCell()
             }
         );

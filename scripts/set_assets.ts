@@ -40,7 +40,7 @@ export async function run(provider: NetworkProvider) {
                     assets: assetsData,
                 },
             );
-        // await assetTimer(contract, name)
+        await assetTimer(contract, name)
     } 
 
     async function setBalance(contract: any, name: string) {
@@ -58,11 +58,12 @@ export async function run(provider: NetworkProvider) {
             await balancesTimer(contract, name)
     }
 
-    // await setAssets(manager, 'manager');
-    // await setAssets(reservePool, 'reservePool');
+    await setAssets(manager, 'manager');
+    await setAssets(reservePool, 'reservePool');
     await setBalance(manager, 'manager');
     await setBalance(reservePool, 'reservePool');
 }
+
 
 const getAssetName = function (contract: any, index: number) {
     return async function () {

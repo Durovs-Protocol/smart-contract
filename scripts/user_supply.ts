@@ -12,7 +12,7 @@ export async function run(provider: NetworkProvider) {
     const { reservePool, manager, userPosition } = await contracts(provider, user.address!!);
 
     const supplyAmount = 10;
-    const assetIndex = 0;
+    const assetIndex = 1;
     log('\nВнесение залога jetton:' + supplyAmount + `\n${await contractVersion(manager, 'manager')}`);
     // Адрес кошелька TON Assets
     const masterInterface = JettonMaster.create(Address.parse(assets[assetIndex].master!!));
@@ -52,7 +52,7 @@ export async function run(provider: NetworkProvider) {
         .storeUint(0xf8a7ea5, 32)
         .storeUint(0, 64)
         .storeCoins(toNano(supplyAmount)) // Сумма
-        .storeAddress(reservePool.address) // Кто получит TON Assets
+        .storeAddress(reservePool.address) // Кто получит jetton
         .storeAddress(user.address) // Остаток газа
         .storeUint(0, 1)
         .storeCoins(700000000)

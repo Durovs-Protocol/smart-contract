@@ -138,6 +138,7 @@ message Withdraw {
     minDelay: Int;
     maxExecutionTime: Int;
     pool: Address;
+    rates: map<Address, Int>;
 
 }
 message WithdrawResponce {

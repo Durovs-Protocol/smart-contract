@@ -20,7 +20,7 @@ export async function run(provider: NetworkProvider) {
     );
 
     //3 ton 0 jetton
-    const assetIndex = 3
+    const assetIndex = 0
 
     let oldBalance = 0n
     try {
