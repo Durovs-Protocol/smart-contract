@@ -14,13 +14,13 @@ export async function run(provider: NetworkProvider) {
         } = await contracts(provider, user.address!!)
 
 	const supplyAmount = 0.5;
-	const assetIndex = 5
+	const assetIndex = 5 // Не менять тк этот скрипт только для assetIndex = 5
 	/**
 	 * TON - 5
 	 */
-	log('\nВнесение залога ton:' + supplyAmount +
-	`\n${await contractVersion(manager, 'manager')}` +
-	`\n${await contractVersion(userPosition, 'userPosition')}`
+	log('\nВнесение залога ton: ' + supplyAmount
+	// `\n${await contractVersion(manager, 'manager')}` +
+	// `\n${await contractVersion(userPosition, 'userPosition')}`
 	);
 	let assetBuilder = beginCell().storeMaybeRef(beginCell().storeAddress(Address.parse(assets[assetIndex].master)).storeInt(1n, 64).endCell()).endCell().asSlice()
 

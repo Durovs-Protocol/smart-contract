@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, Dictionary, toNano } from '@ton/core';
 import contracts from '../utils/contracts';
-import { assets, setupGas } from '../utils/data';
+import { assets, assetsv1, setupGas } from '../utils/data';
 import { contractVersion, getBalanceValue, log, timer } from '../utils/helpers';
 import { Asset } from '../wrappers/Manager';
 
@@ -15,7 +15,10 @@ export async function run(provider: NetworkProvider) {
     const assetsData: Dictionary<Address, Asset> = Dictionary.empty();
     const balancesData: Dictionary<Address, bigint> = Dictionary.empty();
 
-    assets.forEach((asset: { name: any; pool_wallet: string; master: string; }) => {
+    const localAssets = process.env.v == '0' ? assets : assetsv1
+
+
+    localAssets.forEach((asset: { name: any; pool_wallet: string; master: string; }) => {
         const assetTemplate: Asset = {
             $$type: 'Asset',
             name: asset.name,

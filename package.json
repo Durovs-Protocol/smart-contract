@@ -31,7 +31,7 @@
         "V1": "------------------------------------------------------------------------",
 
         "v1-build": "rm -rf build/V1Manager && rm -rf build/V1Manager.compiled.jspn && rm -rf build/V1Stable && rm -rf build/V1Stable.compiled.json && rm -rf build/V1StableWallet.compiled.jspn && rm -rf build/V1StableWallet && blueprint build V1Stable &&  blueprint build V1StableWallet &&  blueprint build V1Manager",
-        "v1-deploy": "yarn deploy-v1pool && yarn deploy-v1manager && yarn deploy-stable && yarn deploy-v1up",
+        "v1-deploy": "yarn deploy-v1pool && yarn deploy-v1manager && yarn deploy-stable",
         "v1-deploy-manager": "yarn run-script deploy_v1manager",
         "v1-deploy-pool": "yarn run-script deploy_v1pool",
         "v1-deploy-stable": "yarn run-script deploy_v1stable",

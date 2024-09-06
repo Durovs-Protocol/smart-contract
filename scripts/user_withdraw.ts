@@ -12,15 +12,20 @@ export async function run(provider: NetworkProvider) {
         userPosition
     } = await contracts(provider, user.address!!)
 
-
-
     const withdrawAmount = 0.5;
-    log('\nВозвращение залога: ' + withdrawAmount +
-        `\n${await contractVersion(manager, 'manager')}`
+    log('\nВозвращение залога: ' + withdrawAmount 
+        + `\n${await contractVersion(manager, 'manager')}`
     );
 
-
-    const assetIndex = 1
+    /**
+     * stTON - 0
+     * hTON - 1
+     * tsTON - 2
+     * NOT - 3
+     * Dogs - 4
+	 * TON - 5
+	 */
+    const assetIndex = 0
 
     let oldBalance = 0n
     try {

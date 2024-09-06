@@ -11,9 +11,19 @@ export async function run(provider: NetworkProvider) {
     const user = provider.sender();
     const { reservePool, manager, userPosition } = await contracts(provider, user.address!!);
 
-    const supplyAmount = 10;
+    const supplyAmount = 1;
+    /**
+     * stTON - 0
+     * hTON - 1
+     * tsTON - 2
+     * NOT - 3
+     * Dogs - 4
+	 * TON - 5
+	 */
     const assetIndex = 1;
-    log('\nВнесение залога jetton:' + supplyAmount + `\n${await contractVersion(manager, 'manager')}`);
+    log('\nВнесение залога jetton:' + supplyAmount 
+        // + `\n${await contractVersion(manager, 'manager')}`
+    );
     // Адрес кошелька TON Assets
     const masterInterface = JettonMaster.create(Address.parse(assets[assetIndex].master!!));
     const master = await provider.open(masterInterface);
