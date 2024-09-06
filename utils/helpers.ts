@@ -81,13 +81,8 @@ export async function timer(
     maxAttempts: number = 60,
 ) {
     let currentVal = await checkFunction();
-    console.log(currentVal);
-    console.log(newVal);
-
     console.log('=============================================================================');
-
     let attempt = 1;
-
     if (newVal == currentVal) {
         console.log(`Finished | The same value was received | ${newVal} | ${currentVal}`);
         console.log('=============================================================================');
@@ -159,8 +154,13 @@ export const getBalanceValue = function (contract: any, index: number) {
 };
 
 export const contractVersion = async function (contract: any, name: string) {
+
+    try {
     const version = await contract.getVersion()
     return `version of ${name}: ${version}`
+    } catch(err) {
+    return `contract not exist`
+    }
 };
 
 export async function createAssetsList(owner: string, provider: NetworkProvider, version: string) {

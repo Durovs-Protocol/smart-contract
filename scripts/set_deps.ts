@@ -22,7 +22,7 @@ export async function run(provider: NetworkProvider) {
                 profitPool: Address.parse('UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ'),
                 reservePool: reservePool.address,
                 stable: stable.address,
-                runaCoupon: stable.address,
+                coupon: stable.address,
             },
         );
 

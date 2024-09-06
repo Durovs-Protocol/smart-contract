@@ -1,12 +1,12 @@
 
 # Сборка и деплой (env: v=0)
-1. `yarn build` Запустит build 
+1. `yarn build` Запустит build
 2. `yarn deploy` Деплой деплой
     - `yarn deploy-reserve`
     - `yarn deploy-manager`
     - `yarn deploy-stable`
     > `yarn v1-build` Билд версии 1
-    > `yarn v1-deploy` БLеплой версии 1
+    > `yarn v1-deploy` Деплой версии 1
 
     * Проверить выполнение: в папке вида `deploy/v/{contract_name}.address` должны лежать все адреса контрактов
 

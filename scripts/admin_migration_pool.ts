@@ -32,7 +32,7 @@ export async function run(provider: NetworkProvider) {
                 { value: toNano(0.5) },
                 {
                     $$type: 'PoolMigrationRequest',
-                    amount: BigInt(migrationData[migrationIndex].amount),
+                    amount: toNano(migrationData[migrationIndex].amount),
                     queryId: BigInt(migrationIndex),
                     newPool: newPool,
                     wallet: migrationData[migrationIndex].pool_wallet,

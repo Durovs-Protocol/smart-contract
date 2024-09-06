@@ -19,7 +19,7 @@ async function contracts(provider: NetworkProvider, user: Address) {
         const stable =  provider.open(Stable.fromAddress(Address.parse(await loadAddress('stable', undefined, '1'))))
         const userPositionAddress = await manager.getUserPositionAddress(user)
         const v1userPositionAddress = await v1manager.getUserPositionAddress(user)
-        const userPosition = provider.open(process.env.v == '0' ?  UserPosition.fromAddress(userPositionAddress) : V1UserPosition.fromAddress(userPositionAddress))
+        const userPosition = provider.open(process.env.v == '0' ?  UserPosition.fromAddress(userPositionAddress) : V1UserPosition.fromAddress(v1userPositionAddress))
         const v1userPosition = provider.open(V1UserPosition.fromAddress(v1userPositionAddress))
 
         return {

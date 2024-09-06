@@ -69,6 +69,6 @@ trait Jetton with OwnableTransferable {
     }
 
     virtual fun getJettonWalletInit(address: Address): StateInit {
-        return initOf RunaCouponWallet(myAddress(), address);
+        return initOf couponWallet(myAddress(), address);
     }
 }
