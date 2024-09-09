@@ -12,6 +12,7 @@ contract UserPosition  {
     //settings
     user: Address;
     manager: Address;
+    
     //state
     isActive: Bool = true;
     balances: map<Address, Int>;
@@ -183,7 +184,7 @@ contract UserPosition  {
 
     bounced(msg: bounced<WithdrawRequest>) {
         self.updatedTimestamps = null;
-        //TODO
+        
         self.bouncedHandler();
     }
 

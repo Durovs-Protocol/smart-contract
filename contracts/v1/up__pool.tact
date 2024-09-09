@@ -210,7 +210,7 @@ contract V1UserPosition  {
 
     bounced(msg: bounced<WithdrawRequest>) {
         self.updatedTimestamps = null;
-        //TODO
+        
         self.bouncedHandler();
     }
 
