@@ -47,7 +47,7 @@ contract Stable with Deployable, OwnableTransferable {
             stable: msg.stable,
             coupon: msg.coupon,
         };
-        self.reply("Durovs Protocol: stable's dependencies set".asComment());
+        self.reply("Durovs Protocol: Stable's dependencies set".asComment());
     }
 
     receive(msg: Mint) {
@@ -180,7 +180,7 @@ contract Stable with Deployable, OwnableTransferable {
     }
 
     fun _userPositionAddress(user: Address): Address {
-        let init: StateInit = initOf V1UserPosition(user, self.deps.manager, self.deps.stable );
+        let init: StateInit = initOf V1UserPosition(user, self.deps.manager, self.deps.reservePool, self.deps.stable );
         let userPositionAddress: Address = contractAddress(init);
         return userPositionAddress;
     }

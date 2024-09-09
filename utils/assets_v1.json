@@ -1,1 +1,34 @@
-{"assets":[{"name":"stTON","master":"kQB6gF0_-_NAAeH_bBnmEQDUwpYfQbG9tOCnlTfKhFDZtkOd","pool_wallet":"EQDJ3we18YXN4yqt1QDSQb6eoATRFTTlUvmomlKWtpFkhts_"},{"name":"hTON","master":"kQB1BFKmd4h7XzxpkrFZ-JieDRKSFo0JqIn0dy7yj_zGEZ28","pool_wallet":"EQDRORb7EjAyXGW8pR9QQD8t8MnsupU_C0EPgjLie3DCELyc"},{"name":"tsTON","master":"kQBwNStnliuHZPMCY2D2GCOfVq8fETO0gV58ybOPtDAoh_ha","pool_wallet":"EQDCs3aOg5gvuSjrvxhMZZovfL1ov-EyHuYuK2HrUXLMVEn7"},{"name":"NOT","master":"EQD8J0GOlGqXHjoCqCmmA_-pbsuWNn0c2uOgBYRqemocX-yk","pool_wallet":"EQBuusUSRZumCEhAj5CeCgHXpsl9jbB-JQp-E6hDH843yNmD"},{"name":"Dogs","master":"EQAuxfS2tIGYYGgY88AfrsVl_hKk0g93hWm9b_3wxovr5o6P","pool_wallet":"EQDgucrPMpENQ-7nF6Q7_rMp2qSArmYVtV2LGgtmaZKssGaI"},{"name":"TON","master":"UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ","pool_wallet":"EQDQfC_lu3gk_kVO5AQ0zLz70QYWtIxSZuocJfFkP3Gv3t_j"}]}
+{
+    "assets": [
+        {
+            "name": "stTON",
+            "master": "kQB6gF0_-_NAAeH_bBnmEQDUwpYfQbG9tOCnlTfKhFDZtkOd",
+            "pool_wallet": "EQDJ3we18YXN4yqt1QDSQb6eoATRFTTlUvmomlKWtpFkhts_"
+        },
+        {
+            "name": "hTON",
+            "master": "kQB1BFKmd4h7XzxpkrFZ-JieDRKSFo0JqIn0dy7yj_zGEZ28",
+            "pool_wallet": "EQDRORb7EjAyXGW8pR9QQD8t8MnsupU_C0EPgjLie3DCELyc"
+        },
+        {
+            "name": "tsTON",
+            "master": "kQBwNStnliuHZPMCY2D2GCOfVq8fETO0gV58ybOPtDAoh_ha",
+            "pool_wallet": "EQDCs3aOg5gvuSjrvxhMZZovfL1ov-EyHuYuK2HrUXLMVEn7"
+        },
+        {
+            "name": "NOT",
+            "master": "EQD8J0GOlGqXHjoCqCmmA_-pbsuWNn0c2uOgBYRqemocX-yk",
+            "pool_wallet": "EQBuusUSRZumCEhAj5CeCgHXpsl9jbB-JQp-E6hDH843yNmD"
+        },
+        {
+            "name": "Dogs",
+            "master": "EQAuxfS2tIGYYGgY88AfrsVl_hKk0g93hWm9b_3wxovr5o6P",
+            "pool_wallet": "EQDgucrPMpENQ-7nF6Q7_rMp2qSArmYVtV2LGgtmaZKssGaI"
+        },
+        {
+            "name": "TON",
+            "master": "UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ",
+            "pool_wallet": "EQDQfC_lu3gk_kVO5AQ0zLz70QYWtIxSZuocJfFkP3Gv3t_j"
+        }
+    ]
+}

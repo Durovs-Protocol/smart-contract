@@ -26,7 +26,6 @@
         "set-assets": "yarn run-script set_assets",
         "set-rates": "yarn run-script set_rates",
 
-
         "actions-scripts": "------------------------------------------------------------------------",
         "supply": "yarn run-script user_supply",
         "supply-ton": "yarn run-script user_supply_ton",

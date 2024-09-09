@@ -17,7 +17,7 @@ contract Manager with Deployable, OwnableTransferable {
     version: String = "0";
 
     init(owner: Address){
-        require(owner == sender(), "Durovs Protocol: no access to init manager");
+        require(owner == sender(), "Durovs Protocol: No access to init manager");
         self.owner = sender();
         self.settings = Settings{
             minDelay: 0,
@@ -70,12 +70,12 @@ contract Manager with Deployable, OwnableTransferable {
     receive(msg: SetAssets) {
         self.requireOwner();
         self.assets = msg.assets;
-        self.reply("Durovs Protocol: manager assets set".asComment());
+        self.reply("Durovs Protocol: Manager assets set".asComment());
     }
     receive(msg: SetBalances) {
         self.requireOwner();
         self.balances = msg.balances;
-        self.reply("Durovs Protocol: manager balances template set".asComment());
+        self.reply("Durovs Protocol: Manager balances template set".asComment());
     }
     receive(str: String){
         // приимаем текстовые сообщения
@@ -93,10 +93,11 @@ contract Manager with Deployable, OwnableTransferable {
     //=============================================================================
     receive(msg: SupplyMessage) {
         let ctx: Context = context();
-        require(sender() == self.deps.reservePool, "Durovs Protocol: no access for supply");
+        require(sender() == self.deps.reservePool, "Durovs Protocol: No access for supply");
         let valueToSendForward: Int = ctx.value - (self.MinTonForStorage + self.GasConsumption);
         let init: StateInit = initOf UserPosition(msg.user,
             self.deps.manager,
+            self.deps.reservePool,
             self.balances
         );
         let userPosition: Address = contractAddress(init);
@@ -109,7 +110,8 @@ contract Manager with Deployable, OwnableTransferable {
                 body: Supply{
                     user: msg.user,
                     amount: msg.amount,
-                    payload: msg.payload,
+                    master: msg.master,
+                    userWallet: msg.userWallet
                 }.toCell(),
                 code: init.code,
                 data: init.data
@@ -185,7 +187,7 @@ contract Manager with Deployable, OwnableTransferable {
     receive(msg: InformationResponce) {
         let init: StateInit = initOf PositionKeeper(self.lastMigrationId, myAddress());
         let positionAddress: Address = contractAddress(init);
-        require(sender() == positionAddress, "Durovs Protocol: no access for migration");
+        require(sender() == positionAddress, "Durovs Protocol: No access for migration");
 
         send(SendParameters{
                 to: self._userPositionAddress(msg.user),
@@ -200,7 +202,7 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     receive(msg: BuildPosition) {
-        require(sender() == self._userPositionAddress(msg.user), "Durovs Protocol: no access for migration");
+        require(sender() == self._userPositionAddress(msg.user), "Durovs Protocol: No access for migration");
         send(SendParameters{
                 to: self.settings.newManager,
                 value: 0,
@@ -229,6 +231,7 @@ contract Manager with Deployable, OwnableTransferable {
     fun _userPositionAddress(user: Address): Address {
         let init: StateInit = initOf UserPosition(user,
             self.deps.manager,
+            self.deps.reservePool,
             self.balances
         );
         return contractAddress(init);
@@ -317,7 +320,7 @@ contract PositionKeeper {
     }
 
     receive(msg: InformationRequest) {
-        require(self.manager == sender(), "Durovs Protocol: no access for information request");
+        require(self.manager == sender(), "Durovs Protocol: No access for information request");
         send(SendParameters{
                 to: self.manager,
                 value: 0,

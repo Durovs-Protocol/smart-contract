@@ -66,13 +66,15 @@ message SetRates {
 message SupplyMessage {
     amount: Int;
     user: Address;
-    payload: Address;
+    master: Address;
+    userWallet: Address;
 }
 //up interface
 message Supply {
     user: Address;
     amount: Int as coins;
-    payload: Address;
+    master: Address;
+    userWallet: Address;
 }
 
 message SupplyNotification {

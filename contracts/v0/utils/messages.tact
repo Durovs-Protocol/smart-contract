@@ -6,9 +6,8 @@ struct JettonData {
     content: Cell?;
     walletCode: Cell;
 }
-
 struct SupplyTimestamp {
-    info: map<Int , Int >;
+    info: map<Int, Int>;
 }
 struct WithdrawTransactionInfo {
     amount: Int;
@@ -24,7 +23,6 @@ struct PositionState {
     collateral: Int as coins;
     debt: Int as uint64;
 }
-
 struct Settings {
     minDelay: Int;
     newManager: Address;
@@ -44,52 +42,47 @@ message SetSettings {
     maxAmount: Int;
     maxExecutionTime: Int;
 }
-
 struct Asset {
     name: String;
     poolWallet: Address;
     op_code: Int;
 }
-
 message SetAssets {
-    assets:  map<Address, Asset>;
+    assets: map<Address, Asset>;
 }
 message SetBalances {
-    balances:  map<Address, Int>;
+    balances: map<Address, Int>;
 }
 message SetRates {
-     rates: map<Address, Int>;
+    rates: map<Address, Int>;
 }
-
 //-----SUPPLY
 //user interface
 message SupplyMessage {
     amount: Int;
     user: Address;
-    payload: Address;
+    master: Address;
+    userWallet: Address;
 }
 //up interface
 message Supply {
     user: Address;
     amount: Int as coins;
-    payload: Address;
+    master: Address;
+    userWallet: Address;
 }
-
 message SupplyNotification {
     user: Address;
     amount: Int as coins;
 }
-
 struct ManagerState {
     totalSupplyed: Int;
     totalMinted: Int;
 }
-
 //-----MINT
 //user interface
 message MintStableMessage {
     amount: Int as coins;
-
 }
 //up interface
 message MintStable {
@@ -97,7 +90,6 @@ message MintStable {
     amount: Int as uint64;
     rates: map<Address, Int>;
 }
-
 message OnMintComplete {
     amount: Int as coins;
 }
@@ -140,7 +132,6 @@ message Withdraw {
     minDelay: Int;
     maxExecutionTime: Int;
     pool: Address;
-
 }
 message WithdrawResponce {
     amount: Int as coins;
@@ -151,7 +142,6 @@ message WithdrawRequest {
     user: Address;
     master: Address;
     queryId: Int;
-
 }
 //-----LIQUIDATION
 //user interface
@@ -170,7 +160,6 @@ message DoLiquidation {
     amount: Int;
     price: Int;
 }
-
 //-----MIGRATION
 //user interface
 message Migration {
@@ -178,7 +167,7 @@ message Migration {
 }
 //up interface
 message MigrationRequest {
-   newManager: Address;
+    newManager: Address;
 }
 message InformationRequest {
 }
@@ -186,7 +175,7 @@ message PoolMigrationRequest {
     amount: Int;
     queryId: Int;
     newPool: Address;
-    wallet:  Address;
+    wallet: Address;
 }
 message InformationResponce {
     user: Address;
@@ -196,25 +185,20 @@ message SetState {
     balances: map<Address, Int>;
     supplyTimestamps: map<Address, SupplyTimestamp>;
     updatedTimestamps: SupplyTimestamp?;
-    withdrawState: map<Int , WithdrawTransactionInfo>;
+    withdrawState: map<Int, WithdrawTransactionInfo>;
     lastWithdrawalRequest: Int;
-
 }
-
 message BuildPosition {
     user: Address;
     balances: map<Address, Int>;
     supplyTimestamps: map<Address, SupplyTimestamp>;
     updatedTimestamps: SupplyTimestamp?;
-    withdrawState: map<Int , WithdrawTransactionInfo>;
+    withdrawState: map<Int, WithdrawTransactionInfo>;
     lastWithdrawalRequest: Int;
 }
-
 message OnMigrationComplete {
-    
 }
 message DeleteManager {
-    
 }
 //-----INCREASE POSITION ID & CREATING ADDRESS KEEPER CONTRACT
 message AddPositionId {
@@ -228,14 +212,11 @@ message SetId {
     id: Int;
 }
 
-
-
 //-----feedBack handlers
 message FeePayment {
     amount: Int as uint64;
     user: Address;
 }
-
 //-----SETTINGS
 message UpdateTonPriceMsg {
     price: Int as coins;
@@ -248,12 +229,11 @@ message SetDeps {
     coupon: Address;
 }
 
-
 message SetTransactionInfo {
     amount: Int;
-    user:  Address;
-    master:  Address;
-    queryId:  Int as uint64;
+    user: Address;
+    master: Address;
+    queryId: Int as uint64;
     position: Address;
 }
 message TonTransfer {
@@ -307,9 +287,6 @@ message MintRequest {
     amount: Int as coins;
     notificationAddress: Address?;
 }
-
-
-
 
 //-----NEW FEATURES(not complete)-----
 message MintCoupon {

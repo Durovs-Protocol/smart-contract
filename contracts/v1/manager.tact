@@ -19,7 +19,7 @@ contract V1Manager with Deployable, OwnableTransferable {
     rates: map<Address, Int>;
 
     init(owner: Address, oldManager: Address) {
-        require(owner == sender(), "Durovs Protocol: no access to init manager");
+        require(owner == sender(), "Durovs Protocol: No access to init manager");
         self.owner = sender();
         self.settings = Settings{
             minDelay: 0,
@@ -101,6 +101,7 @@ contract V1Manager with Deployable, OwnableTransferable {
         let valueToSendForward: Int = ctx.value - (self.MinTonForStorage + self.GasConsumption);
         let init: StateInit = initOf V1UserPosition(msg.user,
             self.deps.manager,
+            self.deps.reservePool,
             self.deps.stable,
         );
         let userPosition: Address = contractAddress(init);
@@ -113,7 +114,8 @@ contract V1Manager with Deployable, OwnableTransferable {
                 body: Supply{
                     user: msg.user,
                     amount: msg.amount,
-                    payload: msg.payload,
+                    master: msg.master, 
+                    userWallet: msg.userWallet
                 }.toCell(),
                 code: init.code,
                 data: init.data
@@ -170,7 +172,7 @@ contract V1Manager with Deployable, OwnableTransferable {
     receive(msg: BuildPosition) {
         //!! вернуть после теста !!
         // require(sender() == self.oldManager, "Durovs Protocol: Unable to create a new position");
-        let init: StateInit = initOf V1UserPosition(msg.user, self.deps.manager, self.deps.stable);
+        let init: StateInit = initOf V1UserPosition(msg.user, self.deps.manager, self.deps.reservePool, self.deps.stable);
         let newUserPosition: Address = contractAddress(init);
 
         send(SendParameters{
@@ -277,6 +279,7 @@ contract V1Manager with Deployable, OwnableTransferable {
     fun _userPositionAddress(user: Address): Address {
         let init: StateInit = initOf V1UserPosition(user,
             self.deps.manager,
+            self.deps.reservePool,
             self.deps.stable,
         );
         return contractAddress(init);

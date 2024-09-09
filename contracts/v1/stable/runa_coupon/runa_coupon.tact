@@ -106,7 +106,7 @@ contract coupon with Jetton, Deployable {
 
 
     fun _userPositionAddress(user: Address): Address {
-        let init: StateInit = initOf V1UserPosition(user, self.deps.manager, self.deps.stable);
+        let init: StateInit = initOf V1UserPosition(user, self.deps.manager, self.deps.reservePool, self.deps.stable);
         let userPositionAddress: Address = contractAddress(init);
         return userPositionAddress;
     }
