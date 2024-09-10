@@ -1,31 +1,34 @@
 {
-    "assets":[
-    {
-        "name":"stTON",
-        "master":"kQB6gF0_-_NAAeH_bBnmEQDUwpYfQbG9tOCnlTfKhFDZtkOd",
-        "pool_wallet":"EQBS1l60M9fwt8q9jFWwNGP3ajhntV0JcNUruS_ff7ZtqmOM"
-    },
-    {
-        "name":"hTON",
-        "master":"kQB1BFKmd4h7XzxpkrFZ-JieDRKSFo0JqIn0dy7yj_zGEZ28",
-        "pool_wallet":"EQAM8qlfIFpaITLW3xqmlpZY0Qx3CjiMpf4yba2ImFUBWQlU"
-    },
-    {
-        "name":"tsTON",
-        "master":"kQBwNStnliuHZPMCY2D2GCOfVq8fETO0gV58ybOPtDAoh_ha",
-        "pool_wallet":"EQA8svnp3kzSoyiR4-WNfcbx14nxEHxmd_YiR5yvgKhDZd_r"
-    },
-    {
-        "name":"NOT",
-        "master":"EQD8J0GOlGqXHjoCqCmmA_-pbsuWNn0c2uOgBYRqemocX-yk",
-        "pool_wallet":"EQB8DAGqtmstQoKBl3EXuhVPudI_DNEiniDoJv77Rx2P3Fla"
-    },
-    {
-        "name":"Dogs",
-        "master":"EQAuxfS2tIGYYGgY88AfrsVl_hKk0g93hWm9b_3wxovr5o6P",
-        "pool_wallet":"EQCAKT8dPr7O8-nngNazJ5l5jIMsi25y1jiBCSMVk2KQ_5Cj"
-    },
-    {
-        "name":"TON",
-        "master":"UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ",
-        "pool_wallet":"EQAj_vK-duGuB17d9iDX4yqVCT4ig6gAM-4vZfiRz9uu0GgI"}]}
+    "assets": [
+        {
+            "name": "TON",
+            "master": "UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ",
+            "pool_wallet": "EQBBBF4cjoUPhm-IteP3ykyqwp7wIDsEHoy_12m-x4n9p3IR"
+        },
+        {
+            "name": "stTON",
+            "master": "kQB6gF0_-_NAAeH_bBnmEQDUwpYfQbG9tOCnlTfKhFDZtkOd",
+            "pool_wallet": "EQBAy1JShasSh5fdQOALSzyclNG54_qSrfvA3VzVPwTPZw5Q"
+        },
+        {
+            "name": "hTON",
+            "master": "kQB1BFKmd4h7XzxpkrFZ-JieDRKSFo0JqIn0dy7yj_zGEZ28",
+            "pool_wallet": "EQDG1yP0iUs7yAXfXAFA6KBm6QN3UNhFqQhIeg__wSdI3rfl"
+        },
+        {
+            "name": "tsTON",
+            "master": "kQBwNStnliuHZPMCY2D2GCOfVq8fETO0gV58ybOPtDAoh_ha",
+            "pool_wallet": "EQCz1GF7mzLNua1UITV6OlSa8cT8XGJVt1iVKa4ZlEYQBvOV"
+        },
+        {
+            "name": "NOT",
+            "master": "EQD8J0GOlGqXHjoCqCmmA_-pbsuWNn0c2uOgBYRqemocX-yk",
+            "pool_wallet": "EQBLQ2pnPBvT_GJoylvv7miqfdiQR7LLgQMZaCKy4fTGTsXi"
+        },
+        {
+            "name": "DOGS",
+            "master": "EQAuxfS2tIGYYGgY88AfrsVl_hKk0g93hWm9b_3wxovr5o6P",
+            "pool_wallet": "EQBeS5xv5eGw27PwRs0OfM9Mz0Nvm92PIkefPn-zSsd7pfDL"
+        }
+    ]
+}

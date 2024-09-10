@@ -18,12 +18,12 @@ export async function run(provider: NetworkProvider) {
     );
 
     /**
-     * stTON - 0
-     * hTON - 1
-     * tsTON - 2
-     * NOT - 3
-     * Dogs - 4
-	 * TON - 5
+     * TON - 0
+     * stTON - 1
+     * hTON - 2
+     * tsTON - 3
+     * NOT - 4
+     * Dogs - 5
 	 */
     const assetIndex = 0
 

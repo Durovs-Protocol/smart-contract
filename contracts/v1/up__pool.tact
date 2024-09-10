@@ -15,6 +15,7 @@ contract V1UserPosition  {
     //state
     isActive: Bool = true;
     balances: map<Address, Int>;
+    wallets: map<Address, Address>;
     withdrawState: map<Int , WithdrawTransactionInfo>;
     lastWithdrawalRequest: Int = 0;
     supplyTimestamps: map<Address, SupplyTimestamp> = emptyMap();
@@ -25,11 +26,12 @@ contract V1UserPosition  {
     totalCollateral: Int = 0;
     burnState: map<Int, Int> = emptyMap();
 
-    init(user: Address, manager: Address, stable: Address) {
+    init(user: Address, manager: Address, pool: Address, stable: Address) {
         require(manager == sender(), "Durovs Protocol: no access to init user position");
         self.user = user; 
         self.manager = manager;
         self.balances = emptyMap();
+        self.wallets = emptyMap();
         self.withdrawState = emptyMap();
         self.debt = 0;
         self.stable = stable;
@@ -71,18 +73,21 @@ contract V1UserPosition  {
         let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
         let currency: String = "";
 
-        let oldBalance: Int? = self.balances.get(msg.payload);
+        let oldBalance: Int? = self.balances.get(msg.master);
 
         if (oldBalance != null) {
             let newValue: Int = oldBalance!! + msg.amount;
 
-            self.balances.set(msg.payload, newValue);
+            if (self.wallets.get(msg.master) == null) {
+                self.wallets.set(msg.master, msg.userWallet);
+            }
+            self.balances.set(msg.master, newValue);
 
             let comment: StringBuilder = beginString();
             comment.append("Durovs Protocol: you have supplied ");
             comment.append(msg.amount.toString());
         
-        let supplyTimestamp: SupplyTimestamp? = self.supplyTimestamps.get(msg.payload);
+        let supplyTimestamp: SupplyTimestamp? = self.supplyTimestamps.get(msg.master);
 
         let info: map<Int , Int > = emptyMap();
 
@@ -93,7 +98,7 @@ contract V1UserPosition  {
              info = supplyTimestamp!!.info;
              info.set(now(), msg.amount);
         }
-        self.supplyTimestamps.set(msg.payload, SupplyTimestamp{info: info});
+        self.supplyTimestamps.set(msg.master, SupplyTimestamp{info: info});
 
         send(SendParameters{
                 to: self.user,
@@ -220,6 +225,22 @@ contract V1UserPosition  {
         let transactionInfo: WithdrawTransactionInfo? = self.withdrawState.get(msg.queryId);
 
         if (transactionInfo != null) {
+            let userWallet: Address? = self.wallets.get(transactionInfo!!.master);
+
+            if (userWallet != sender()) {
+            let comment: StringBuilder = beginString();
+                comment.append("Durovs Protocol: invalid sender in token transfer confirmation: ");
+                comment.append(userWallet!!.toString());
+                send(SendParameters{
+                    to: self.user,
+                    value: remainingValue,
+                    mode: SendIgnoreErrors,
+                    bounce: false,
+                    body: comment.toString().asComment()
+                });
+                return;
+            }
+
             let newValue: Int = self.balances.get(transactionInfo!!.master)!! - transactionInfo!!.amount;
             self.balances.set(transactionInfo!!.master, newValue);
             self.clearTransactionState(msg.queryId);
@@ -604,6 +625,7 @@ contract V1ReservePool with Deployable, OwnableTransferable {
 
         let payload: Slice = msg.forwardPayload.preloadRef().beginParse();
         let master: Address = payload.loadAddress();
+        let userWallet: Address = payload.loadAddress();
         let op: Int = payload.loadInt(64);
 
         if (op == 1) {
@@ -624,7 +646,7 @@ contract V1ReservePool with Deployable, OwnableTransferable {
                 value: remainingValue,
                 mode: SendBounceIfActionFail,
                 bounce: true,
-                body: SupplyMessage{amount: msg.amount, user: msg.from, payload: master }.toCell()
+                body: SupplyMessage{amount: msg.amount,  user: msg.from, master: master, userWallet: userWallet }.toCell()
             });
         } else if (op == 2) { 
         // получение jetton
@@ -634,7 +656,7 @@ contract V1ReservePool with Deployable, OwnableTransferable {
                 value: remainingValue,
                 mode: SendBounceIfActionFail,
                 bounce: true,
-                body: SupplyMessage{amount: msg.amount, user: msg.from, payload: master }.toCell()
+                body: SupplyMessage{amount: msg.amount, user: msg.from, master: master, userWallet: userWallet }.toCell()
             });
         } else {
             send(SendParameters{
@@ -715,6 +737,7 @@ contract V1ReservePool with Deployable, OwnableTransferable {
     fun _userPositionAddress(user: Address): Address {
         let init: StateInit = initOf V1UserPosition(user,
             self.deps.manager,
+            self.deps.reservePool,
             self.deps.stable,
         );
         return contractAddress(init);

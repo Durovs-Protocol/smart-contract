@@ -3,7 +3,7 @@ import { NetworkProvider } from '@ton/blueprint';
 import { Address, beginCell, toNano } from '@ton/core';
 import contracts from '../utils/contracts';
 import { assets } from '../utils/data';
-import { contractVersion, getBalanceValue, log, timer } from '../utils/helpers';
+import { getBalanceValue, log, timer } from '../utils/helpers';
 
 export async function run(provider: NetworkProvider) {
 	const user = provider.sender();
@@ -14,7 +14,7 @@ export async function run(provider: NetworkProvider) {
         } = await contracts(provider, user.address!!)
 
 	const supplyAmount = 0.5;
-	const assetIndex = 5 // Не менять тк этот скрипт только для assetIndex = 5
+	const assetIndex = 0 // Не менять тк этот скрипт только для assetIndex = 0
 	/**
 	 * TON - 5
 	 */
@@ -22,8 +22,10 @@ export async function run(provider: NetworkProvider) {
 	// `\n${await contractVersion(manager, 'manager')}` +
 	// `\n${await contractVersion(userPosition, 'userPosition')}`
 	);
-	let assetBuilder = beginCell().storeMaybeRef(beginCell().storeAddress(Address.parse(assets[assetIndex].master)).storeInt(1n, 64).endCell()).endCell().asSlice()
 
+	let assetBuilder = beginCell().storeMaybeRef(beginCell().storeAddress(Address.parse(assets[assetIndex].master)).storeAddress(Address.parse('UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ')).storeInt(1n, 64).endCell()).endCell().asSlice()
+
+	
 	let oldBalance = 0n
 	let positionId = await manager.getLastPositionId()
 

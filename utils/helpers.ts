@@ -166,6 +166,11 @@ export const contractVersion = async function (contract: any, name: string) {
 export async function createAssetsList(owner: string, provider: NetworkProvider, version: string) {
     let assets = [
         {
+            name: 'TON',
+            master: process.env.TON_MINTER,
+            pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ', // адрес пула!!
+        },
+        {
             name: 'stTON', // Свой токен
             master: process.env.ST_JETTON_MINTER,
             pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
@@ -186,15 +191,10 @@ export async function createAssetsList(owner: string, provider: NetworkProvider,
             pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
         },
         {
-            name: 'Dogs',
+            name: 'DOGS',
             master: process.env.DOGS_JETTON_MINTER,
             pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
-        },
-        {
-            name: 'TON',
-            master: process.env.TON_MINTER,
-            pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ', // адрес пула!!
-        },
+        }
     ];
 
     for (const asset of assets) {

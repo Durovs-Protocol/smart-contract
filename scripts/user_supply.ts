@@ -5,7 +5,7 @@ import { JettonMaster } from '@ton/ton';
 import { WalletContractV4 } from '@ton/ton/dist/wallets/WalletContractV4';
 import contracts from '../utils/contracts';
 import { assets } from '../utils/data';
-import { contractVersion, getBalanceValue, log, timer } from '../utils/helpers';
+import { getBalanceValue, log, timer } from '../utils/helpers';
 
 export async function run(provider: NetworkProvider) {
     const user = provider.sender();
@@ -13,12 +13,12 @@ export async function run(provider: NetworkProvider) {
 
     const supplyAmount = 1;
     /**
-     * stTON - 0
-     * hTON - 1
-     * tsTON - 2
-     * NOT - 3
-     * Dogs - 4
-	 * TON - 5
+     * TON - 0
+     * stTON - 1
+     * hTON - 2
+     * tsTON - 3
+     * NOT - 4
+     * Dogs - 5
 	 */
     const assetIndex = 1;
     log('\nВнесение залога jetton:' + supplyAmount 
@@ -31,7 +31,8 @@ export async function run(provider: NetworkProvider) {
     
     let assetBuilder = beginCell();
     assetBuilder.storeAddress(Address.parse(assets[assetIndex].master)); // мастер контракт жетона
-    assetBuilder.storeInt(2n, 64).endCell(); // код олперации, в случае supply это 1
+    assetBuilder.storeAddress(jettonUserWallet); // адрес кошелька пользователя
+    assetBuilder.storeInt(2n, 64).endCell(); // код олперации, в случае jetton это 2
 
     /**
      * A: основной кошелек в принципе (WalletV4)

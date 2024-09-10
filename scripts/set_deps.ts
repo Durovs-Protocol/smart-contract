@@ -33,7 +33,11 @@ export async function run(provider: NetworkProvider) {
 
     await setDeps(manager, 'manager');
     await setDeps(reservePool, 'reservePool');
-    await setDeps(stable, 'stableContract');
+    
+    if (process.env.v == '1') {
+        await setDeps(stable, 'stableContract');
+    }
+
     log('Deps installed successfully');
 }
 
