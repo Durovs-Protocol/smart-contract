@@ -213,9 +213,9 @@ message BuildPosition {
 message OnMigrationComplete {
     
 }
-message DeleteManager {
+// message DeleteManager {
     
-}
+// }
 //-----INCREASE POSITION ID & CREATING ADDRESS KEEPER CONTRACT
 message AddPositionId {
     user: Address;

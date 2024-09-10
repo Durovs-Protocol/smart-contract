@@ -213,17 +213,17 @@ contract V1Manager with Deployable, OwnableTransferable {
         send(SendParameters{to: self.owner, bounce: false, value: 0, mode: SendRemainingValue + SendIgnoreErrors});
     }
 
-    receive(msg: DeleteManager){
-        self.requireOwner();
-        send(SendParameters{
-                to: self.owner,
-                value: 0,
-                mode: SendRemainingBalance + SendDestroyIfZero,
-                bounce: false,
-                body: "Manager contract deleted".asComment()
-            }
-        );
-    }
+    // receive(msg: DeleteManager){
+    //     self.requireOwner();
+    //     send(SendParameters{
+    //             to: self.owner,
+    //             value: 0,
+    //             mode: SendRemainingBalance + SendDestroyIfZero,
+    //             bounce: false,
+    //             body: "Manager contract deleted".asComment()
+    //         }
+    //     );
+    // }
 
     //==================================NEW FEATURES===========================================
     //=============================================================================

@@ -47,7 +47,7 @@ contract UserPosition  {
     }
 
 
-    /* Supply */
+    /* Проверено */
     receive(msg: Supply) {
         if (!self.isActive) {
             self.errorHandler("Durovs Protocol: Position is not active");
@@ -113,7 +113,7 @@ contract UserPosition  {
         }
     }
 
-    /* Withdraw */
+    /* Проверено */
     receive(msg: Withdraw) {
         
         if (self.updatedTimestamps != null) {
@@ -190,11 +190,13 @@ contract UserPosition  {
         });
     }
 
+    /* Проверено */
     bounced(msg: bounced<WithdrawRequest>) {
         self.updatedTimestamps = null;
         self.bouncedHandler();
     }
 
+    /* TODO: добавить проверку (часть вывода): вызывается когда TokenTransferInternal в контракте кошелька  */
     receive(msg: TokenExcesses) {
         let ctx: Context = context();
         let remainingValue: Int = ctx.value - (self.MinTonForStorage + self.GasConsumption);
@@ -247,6 +249,7 @@ contract UserPosition  {
         }
     }
 
+    /* TODO: проверка адреса пула как sender: отправка TON */
     receive(msg: TonTransfer) {
         require(self.pool == sender(), "Durovs Protocol: Not enough access rights to perform this operation");
 
@@ -342,6 +345,7 @@ contract UserPosition  {
         );
     }
 
+    // Проверено
     fun enoughFunds(master: Address, amount: Int): Bool {
         let currentBalance: Int? = self.balances.get(master);
         if (currentBalance == null) {
@@ -351,7 +355,7 @@ contract UserPosition  {
         }
     }
 
-
+    // Проверено
     fun availableBalance(minDelay: Int, master: Address, amount: Int): Int {
             let currentBalance: SupplyTimestamp? = self.supplyTimestamps.get(master);
             if (currentBalance == null) {
@@ -377,7 +381,6 @@ contract UserPosition  {
                     // supplyTimestamps.del(key);
                 } else {
                     updatedTimestamps.info.set(key, value);
-
                 }
             }
             self.updatedTimestamps = updatedTimestamps;
@@ -433,7 +436,7 @@ contract ReservePool with Deployable, OwnableTransferable {
             reservePool: newAddress(0, 0),
             stable: newAddress(0, 0),
             coupon: newAddress(0, 0)
-            };
+        };
         self.balances = emptyMap();
         self.assets = emptyMap();
     }
@@ -460,6 +463,7 @@ contract ReservePool with Deployable, OwnableTransferable {
         self.reply("Durovs Protocol: Pool assets set".asComment());
     }
 
+    // На проверке
     receive(msg: PoolMigrationRequest) {
         self.requireOwner();
         if (msg.wallet != myAddress()) {
@@ -490,6 +494,7 @@ contract ReservePool with Deployable, OwnableTransferable {
         }
     }
 
+    // На проверке
     bounced(msg: bounced<TokenTransfer>) {
         send(SendParameters {
                 to: self.owner,
@@ -500,6 +505,7 @@ contract ReservePool with Deployable, OwnableTransferable {
         });
     }
 
+    // Проверено
     receive(msg: TokenNotification) {
         let ctx: Context = context();
 
@@ -568,10 +574,10 @@ contract ReservePool with Deployable, OwnableTransferable {
         }
     }
 
+    // Проверено (TonTransfer/TokenTransfer)
     receive(msg: WithdrawRequest) {
         let userPositionAddress: Address = self._userPositionAddress(msg.user);
 
-        
         if (sender() != userPositionAddress) {
             self.errorHandler("Durovs Protocol: No access to withdraw funds", sender());
             return;

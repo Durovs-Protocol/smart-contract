@@ -67,16 +67,19 @@ contract Manager with Deployable, OwnableTransferable {
         };
         self.reply("Durovs Protocol: Settings have been updated".asComment());
     }
+
     receive(msg: SetAssets) {
         self.requireOwner();
         self.assets = msg.assets;
         self.reply("Durovs Protocol: Manager assets set".asComment());
     }
+
     receive(msg: SetBalances) {
         self.requireOwner();
         self.balances = msg.balances;
         self.reply("Durovs Protocol: Manager balances template set".asComment());
     }
+
     receive(str: String){
         // приимаем текстовые сообщения
         send(SendParameters {
@@ -140,7 +143,7 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
 
-    /*04 | withdraw TON */
+    /*04 Проверено */
     receive(msg: WithdrawMessage) {
         send(SendParameters{
                 to: self._userPositionAddress(sender()),
@@ -163,8 +166,6 @@ contract Manager with Deployable, OwnableTransferable {
         self.bouncedHandler("Durovs Protocol: Error in withdrawal");
     }
 
-
-
     /* ==Migration== */
     receive(msg: Migration) {
         self.requireOwner();
@@ -177,9 +178,7 @@ contract Manager with Deployable, OwnableTransferable {
                 value: 0,
                 mode: SendBounceIfActionFail + SendRemainingValue,
                 bounce: true,
-                body: InformationRequest{
-
-                }.toCell()
+                body: InformationRequest{}.toCell()
             }
         );
     }
@@ -213,17 +212,17 @@ contract Manager with Deployable, OwnableTransferable {
         );
     }
 
-    receive(msg: DeleteManager){
-        self.requireOwner();
-        send(SendParameters{
-                to: self.owner,
-                value: 0,
-                mode: SendRemainingBalance + SendDestroyIfZero,
-                bounce: false,
-                body: "Manager contract deleted".asComment()
-            }
-        );
-    }
+    // receive(msg: DeleteManager){
+    //     self.requireOwner();
+    //     send(SendParameters{
+    //             to: self.owner,
+    //             value: 0,
+    //             mode: SendRemainingBalance + SendDestroyIfZero,
+    //             bounce: false,
+    //             body: "Manager contract deleted".asComment()
+    //         }
+    //     );
+    // }
     //=============================================================================
     // Helpers
     //=============================================================================
@@ -261,6 +260,7 @@ contract Manager with Deployable, OwnableTransferable {
     get fun userPositionAddress(user: Address): Address {
         return self._userPositionAddress(user);
     }
+
     get fun positionKeeper(id: Int): Address {
         let init: StateInit = initOf PositionKeeper(id, myAddress());
         let posKeeper: Address = contractAddress(init);
@@ -270,9 +270,11 @@ contract Manager with Deployable, OwnableTransferable {
     get fun deps(): Deps {
         return self.deps;
     }
+
     get fun assets(): map<Address, Asset> {
         return self.assets;
     }
+
     get fun settings(): Settings {
         return self.settings;
     }
@@ -315,8 +317,7 @@ contract PositionKeeper {
             value: 0,
             mode: SendRemainingValue,
             body: "Durovs Protocol: user position has been created".asComment()
-        }
-        );
+        });
     }
 
     receive(msg: InformationRequest) {
