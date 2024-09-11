@@ -25,7 +25,7 @@ export async function run(provider: NetworkProvider) {
      * NOT - 4
      * Dogs - 5
 	 */
-    const assetIndex = 0
+    const assetIndex = 1
 
     let oldBalance = 0n
     try {

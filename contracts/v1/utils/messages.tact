@@ -179,6 +179,7 @@ message Migration {
 }
 //up interface
 message MigrationRequest {
+        newManager: Address;
 }
 message InformationRequest {
 }
@@ -202,6 +203,14 @@ message SetState {
 }
 
 message BuildPosition {
+    user: Address;
+    balances: map<Address, Int>;
+    supplyTimestamps: map<Address, SupplyTimestamp>;
+    updatedTimestamps: SupplyTimestamp?;
+    withdrawState: map<Int , WithdrawTransactionInfo>;
+    lastWithdrawalRequest: Int;
+}
+message BuildNewPosition {
     user: Address;
     balances: map<Address, Int>;
     supplyTimestamps: map<Address, SupplyTimestamp>;

@@ -72,7 +72,7 @@ contract UserPosition  {
 
             self.balances.set(msg.master, newValue);
 
-            let currencyType: String = msg.master == newAddress(0, 0) ? " TON" : " tokens";
+            let currencyType: String = msg.master == newAddress(0, 0) ? " TON" : " token(s)";
 
             let comment: StringBuilder = beginString();
                 comment.append("Durovs Protocol: You have supplied ");
@@ -196,7 +196,7 @@ contract UserPosition  {
         self.bouncedHandler();
     }
 
-    /* TODO: добавить проверку (часть вывода): вызывается когда TokenTransferInternal в контракте кошелька  */
+    /* (часть вывода): вызывается когда TokenTransferInternal в контракте кошелька  */
     receive(msg: TokenExcesses) {
         let ctx: Context = context();
         let remainingValue: Int = ctx.value - (self.MinTonForStorage + self.GasConsumption);
@@ -377,8 +377,6 @@ contract UserPosition  {
                         availableAmount += (value - remainderVal);
                         updatedTimestamps.info.set(key, remainderVal);
                     }
-
-                    // supplyTimestamps.del(key);
                 } else {
                     updatedTimestamps.info.set(key, value);
                 }
@@ -462,7 +460,17 @@ contract ReservePool with Deployable, OwnableTransferable {
         self.assets = msg.assets;
         self.reply("Durovs Protocol: Pool assets set".asComment());
     }
-
+    receive(str: String){
+        // приимаем текстовые сообщения и перенаправляем их владельцу контракта
+        send(SendParameters {
+                to: self.owner,
+                value: 0,
+                mode: SendRemainingValue,
+                bounce: false,
+                body: str.asComment()
+            }
+        );
+    }
     // На проверке
     receive(msg: PoolMigrationRequest) {
         self.requireOwner();

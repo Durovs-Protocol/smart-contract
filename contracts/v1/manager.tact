@@ -14,8 +14,10 @@ contract V1Manager with Deployable, OwnableTransferable {
     settings: Settings;
     owner: Address;
     lastPositionId: Int = 0;
-    oldManager: Address;
+    lastMigrationId: Int = 0;
     version: String = "1";
+
+    oldManager: Address;
     rates: map<Address, Int>;
 
     init(owner: Address, oldManager: Address) {
@@ -53,7 +55,7 @@ contract V1Manager with Deployable, OwnableTransferable {
             stable: msg.stable,
             coupon: msg.coupon
         };
-        self.reply("Durovs Protocol: new manager's dependencies set".asComment());
+        self.reply("Durovs Protocol: Manager's dependencies set".asComment());
     }
 
 
@@ -67,22 +69,22 @@ contract V1Manager with Deployable, OwnableTransferable {
             newManager: msg.newManager,
             maxAmount: msg.maxAmount,
             maxExecutionTime: msg.maxExecutionTime,
-
         };
         self.reply("Durovs Protocol: Settings have been updated".asComment());
     }
     receive(msg: SetAssets) {
         self.requireOwner();
         self.assets = msg.assets;
-        self.reply("Durovs Protocol: new manager assets set".asComment());
+        self.reply("Durovs Protocol: New Manager assets set".asComment());
     }
     receive(msg: SetBalances) {
         self.requireOwner();
         self.balances = msg.balances;
-        self.reply("Durovs Protocol: new manager balances template set".asComment());
+        self.reply("Durovs Protocol: New Manager balances template set".asComment());
     }
+
     receive(str: String){
-        // приимаем текстовые сообщения
+        // приимаем текстовые сообщения и перенаправляем их владельцу контракта
         send(SendParameters {
                 to: self.owner,
                 value: 0,
@@ -168,7 +170,7 @@ contract V1Manager with Deployable, OwnableTransferable {
         self.bouncedHandler("Durovs Protocol: Error in withdrawal");
     }
 
-    /* ==Migration== */
+    /* ==Migration== (обработка миграции с предыдущей версии) */
     receive(msg: BuildPosition) {
         //!! вернуть после теста !!
         // require(sender() == self.oldManager, "Durovs Protocol: Unable to create a new position");
@@ -192,26 +194,57 @@ contract V1Manager with Deployable, OwnableTransferable {
             }
         );
     }
-    /* ==Migration== */
+
+    receive(msg: OnMigrationComplete){
+        send(SendParameters{to: self.owner, bounce: false, value: 0, mode: SendRemainingValue + SendIgnoreErrors});
+    }
+    /* ==Migration== (обработка миграции на новую версию) */
     receive(msg: Migration){
         self.requireOwner();
-        let jettonAmount: Int = 0;
         let init: StateInit = initOf V1PositionKeeper(msg.id, myAddress());
         let positionAddress: Address = contractAddress(init);
-        send(SendParameters{
+        self.lastMigrationId = msg.id;
+
+        send(SendParameters {
                 to: positionAddress,
                 value: 0,
-                mode: SendBounceIfActionFail,
+                mode: SendBounceIfActionFail + SendRemainingValue,
+                bounce: true,
+                body: InformationRequest{}.toCell()
+            }
+        );
+    }
+
+    receive(msg: InformationResponce) {
+        let init: StateInit = initOf V1PositionKeeper(self.lastMigrationId, myAddress());
+        let positionAddress: Address = contractAddress(init);
+        require(sender() == positionAddress, "Durovs Protocol: No access for migration");
+
+        send(SendParameters{
+                to: self._userPositionAddress(msg.user),
+                value: 0,
+                mode: SendRemainingValue + SendBounceIfActionFail,
                 bounce: true,
                 body: MigrationRequest{
+                    newManager: self.settings.newManager
                 }.toCell()
             }
         );
     }
 
-    receive(msg: OnMigrationComplete){
-        send(SendParameters{to: self.owner, bounce: false, value: 0, mode: SendRemainingValue + SendIgnoreErrors});
-    }
+    //для миграции с v1 раскомментировать
+    // receive(msg: BuildNewPosition) {
+    //     require(sender() == self._userPositionAddress(msg.user), "Durovs Protocol: No access for migration");
+    //     send(SendParameters{
+    //             to: self.settings.newManager,
+    //             value: 0,
+    //             mode: SendRemainingValue,
+    //             bounce: true,
+    //             body: msg.toCell(),
+    //         }
+    //     );
+    // }
+
 
     // receive(msg: DeleteManager){
     //     self.requireOwner();
@@ -233,7 +266,7 @@ contract V1Manager with Deployable, OwnableTransferable {
     receive(msg: SetRates) {
         self.requireOwner();
         self.rates = msg.rates;
-        self.reply("Durovs Protocol: rates updated".asComment());
+        self.reply("Durovs Protocol: Rates updated".asComment());
     }
 
     /* Mint usdTON */
@@ -366,21 +399,25 @@ contract V1PositionKeeper  {
             bounce: false,
             value: 0,
             mode: SendRemainingValue,
-            body: "Durovs Protocol: user position has been created".asComment()
+            body: "Durovs Protocol: User position has been created".asComment()
         }
         );
     }
-
-    receive(msg: MigrationRequest) {
+    receive(msg: InformationRequest) {
+        require(self.manager == sender(), "Durovs Protocol: No access for information request");
         send(SendParameters{
-                to: self.position,
+                to: self.manager,
                 value: 0,
                 mode: SendRemainingValue + SendBounceIfActionFail,
                 bounce: true,
-                body: msg.toCell()
+                body: InformationResponce{
+                    user: self.user,
+                    position: self.position
+                }.toCell()
             }
         );
     }
+
 
     get fun position(): Address {
         return self.position;

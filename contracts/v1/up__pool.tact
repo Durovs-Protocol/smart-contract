@@ -11,6 +11,7 @@ contract V1UserPosition  {
     //settings
     user: Address;
     manager: Address;
+    pool: Address;
     stable: Address;
     //state
     isActive: Bool = true;
@@ -20,9 +21,9 @@ contract V1UserPosition  {
     lastWithdrawalRequest: Int = 0;
     supplyTimestamps: map<Address, SupplyTimestamp> = emptyMap();
     updatedTimestamps: SupplyTimestamp? = null;
-    debt: Int;
     version: String = "1";
     //
+    debt: Int;
     totalCollateral: Int = 0;
     burnState: map<Int, Int> = emptyMap();
 
@@ -30,6 +31,7 @@ contract V1UserPosition  {
         require(manager == sender(), "Durovs Protocol: no access to init user position");
         self.user = user; 
         self.manager = manager;
+        self.pool = pool;
         self.balances = emptyMap();
         self.wallets = emptyMap();
         self.withdrawState = emptyMap();
@@ -57,16 +59,15 @@ contract V1UserPosition  {
                 }.toCell()
             }
         );
-
     }
     /* Supply */
     receive(msg: Supply) {
         if (!self.isActive) {
-            self.errorHandler("Durovs Protocol: position is not active");
+            self.errorHandler("Durovs Protocol: Position is not active");
             return;
         }
         if (sender() != self.manager) {
-            self.errorHandler("Durovs Protocol: not from positions manager");
+            self.errorHandler("Durovs Protocol: Not from positions manager");
             return;
         }
         let ctx: Context = context();
@@ -77,15 +78,20 @@ contract V1UserPosition  {
 
         if (oldBalance != null) {
             let newValue: Int = oldBalance!! + msg.amount;
-
+            
             if (self.wallets.get(msg.master) == null) {
                 self.wallets.set(msg.master, msg.userWallet);
             }
+
             self.balances.set(msg.master, newValue);
 
+            let currencyType: String = msg.master == newAddress(0, 0) ? " TON" : " token(s)";
+
             let comment: StringBuilder = beginString();
-            comment.append("Durovs Protocol: you have supplied ");
-            comment.append(msg.amount.toString());
+                comment.append("Durovs Protocol: You have supplied ");
+                comment.append(msg.amount.toFloatString(9));
+                comment.append(currencyType);
+
         
         let supplyTimestamp: SupplyTimestamp? = self.supplyTimestamps.get(msg.master);
 
@@ -114,7 +120,7 @@ contract V1UserPosition  {
                 bounce: false,
                 value: remainingValue,
                 mode:  SendIgnoreErrors,
-                body: "Durovs Protocol: asset not found".asComment()
+                body: "Durovs Protocol: Asset not found".asComment()
             }
         );
         }
@@ -122,7 +128,25 @@ contract V1UserPosition  {
 
     /* Withdraw */
     receive(msg: Withdraw) {
+        if (self.updatedTimestamps != null) {
 
+            if ((now() - self.lastWithdrawalRequest) > msg.maxExecutionTime) {
+                self.withdrawState = emptyMap();
+                self.updatedTimestamps = null;
+            } else {
+            self.errorHandler("Durovs Protocol: Wait until the previous withdrawal completed");
+            return;
+            }
+
+        }
+        if (!self.isActive) {
+            self.errorHandler("Durovs Protocol: Position is not active");
+            return;
+        }
+        if (sender() != self.manager) {
+            self.errorHandler("Durovs Protocol: Not from positions manager");
+            return;
+        }
         let ctx: Context = context();
         if (!self.enoughFunds(msg.master, msg.amount)) {
             send(SendParameters{
@@ -130,46 +154,11 @@ contract V1UserPosition  {
                 value: ctx.value,
                 mode: SendIgnoreErrors,
                 bounce: false,
-                body: "Durovs Protocol: not enough funds to withdraw".asComment()
+                body: "Durovs Protocol: Not enough funds to withdraw".asComment()
             });
             return;
         }
-
-        let balancesAfterWithdraw:  map<Address, Int> = self.balances;
-        let newValue = balancesAfterWithdraw.get(msg.master)!! - msg.amount;
-        balancesAfterWithdraw.set(msg.master, newValue);
-
-        if (!self.isHealthy(balancesAfterWithdraw, msg.rates, self.debt)) {
-            self.errorHandler("Durovs Protocol: position is not healthy");
-            return;
-        } 
-        
-        if (self.updatedTimestamps != null) {
-            if ((now() - self.lastWithdrawalRequest) > msg.maxExecutionTime) {
-                self.withdrawState = emptyMap();
-                self.updatedTimestamps = null;
-            } else {
-            self.errorHandler("Durovs Protocol: wait until the previous withdrawal completed");
-            return;
-            }
-
-        }
-
-        if (!self.isActive) {
-            self.errorHandler("Durovs Protocol: position is not active");
-            return;
-        }
-        if (sender() != self.manager) {
-            self.errorHandler("Durovs Protocol: not from positions manager");
-            return;
-        }
-
-        let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
-
-
         let availableAmount: Int = self.availableBalance(msg.minDelay, msg.master, msg.amount);
-
-
         if (availableAmount < msg.amount) {
             self.updatedTimestamps = null;
             send(SendParameters{
@@ -177,17 +166,10 @@ contract V1UserPosition  {
                 value: ctx.value,
                 mode: SendIgnoreErrors,
                 bounce: false,
-                body: "Durovs Protocol: withdrawal available after 6 hours".asComment()
+                body: "Durovs Protocol: Withdrawal available after 6 hours".asComment()
             });
             return;
         }
-
-        //     let comment: StringBuilder = beginString();
-        //         comment.append("Durovs Protocol: Withdrawal will be available in ");
-        //         comment.append(self.lastSupply.toString());
-        //         comment.append(" seconds");
-        
-
         let max: Int = 2^64 - 1;
         let randomId: Int = random(0, max);
 
@@ -196,7 +178,20 @@ contract V1UserPosition  {
          self.withdrawState.set(randomId, WithdrawTransactionInfo{
             amount: msg.amount,
             master: msg.master
-         });
+        });
+
+        // проверка задолженности
+        let balancesAfterWithdraw:  map<Address, Int> = self.balances;
+        let newValue = balancesAfterWithdraw.get(msg.master)!! - msg.amount;
+        balancesAfterWithdraw.set(msg.master, newValue);
+
+        if (!self.isHealthy(balancesAfterWithdraw, msg.rates, self.debt)) {
+            self.errorHandler("Durovs Protocol: Position is not healthy");
+            return;
+        }
+
+        let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
+        //
 
 
         send(SendParameters{
@@ -219,17 +214,19 @@ contract V1UserPosition  {
         self.bouncedHandler();
     }
 
+    
     receive(msg: TokenExcesses) {
         let ctx: Context = context();
         let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
         let transactionInfo: WithdrawTransactionInfo? = self.withdrawState.get(msg.queryId);
+
 
         if (transactionInfo != null) {
             let userWallet: Address? = self.wallets.get(transactionInfo!!.master);
 
             if (userWallet != sender()) {
             let comment: StringBuilder = beginString();
-                comment.append("Durovs Protocol: invalid sender in token transfer confirmation: ");
+                comment.append("Durovs Protocol: Invalid sender in token transfer confirmation: ");
                 comment.append(userWallet!!.toString());
                 send(SendParameters{
                     to: self.user,
@@ -247,12 +244,17 @@ contract V1UserPosition  {
             self.supplyTimestamps.set(transactionInfo!!.master, self.updatedTimestamps);
             self.updatedTimestamps = null;
 
+            let comment: StringBuilder = beginString();
+                comment.append("Durovs Protocol: Withdraw of ");
+                comment.append(transactionInfo!!.amount.toFloatString(9));
+                comment.append(" token(s) was successfull");
+
             send(SendParameters{
                 to: self.user,
                 value: remainingValue,
                 mode: SendIgnoreErrors,
                 bounce: false,
-                body: "Durovs Protocol: withdraw was successful".asComment()
+                body: comment.toString().asComment()
             });
         } else {
             send(SendParameters{
@@ -260,11 +262,15 @@ contract V1UserPosition  {
                 value: remainingValue,
                 mode: SendIgnoreErrors,
                 bounce: false,
-                body: "Durovs Protocol: unidentified withdraw transaction id".asComment()
+                body: "Durovs Protocol: Undefined withdraw transaction id".asComment()
             });
         }
     }
+
+    /* TODO: проверка адреса пула как sender: отправка TON */
     receive(msg: TonTransfer) {
+        require(self.pool == sender(), "Durovs Protocol: Not enough access rights to perform this operation");
+
         let ctx: Context = context();
         let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
         let transactionInfo: WithdrawTransactionInfo? = self.withdrawState.get(msg.queryId);
@@ -273,15 +279,14 @@ contract V1UserPosition  {
             let newValue: Int = self.balances.get(transactionInfo!!.master)!! -  transactionInfo!!.amount;
             self.balances.set(transactionInfo!!.master, newValue);
 
+
             self.supplyTimestamps.set(transactionInfo!!.master, self.updatedTimestamps);
             self.updatedTimestamps = null;
 
             let comment: StringBuilder = beginString();
-            comment.append("Durovs Protocol: withdraw of: ");
-            comment.append(transactionInfo!!.amount.toString());
-            // comment.append(" ");
-            // comment.append(transactionInfo!!.master.toString());
-            comment.append("was successful");
+            comment.append("Durovs Protocol: Withdraw of ");
+            comment.append(transactionInfo!!.amount.toFloatString(9));
+            comment.append("TON was successful");
 
             send(SendParameters{
                 to: self.user,
@@ -298,7 +303,7 @@ contract V1UserPosition  {
                 value: remainingValue,
                 mode: SendIgnoreErrors,
                 bounce: false,
-                body: "Durovs Protocol: unidentified withdraw transaction id".asComment()
+                body: "Durovs Protocol: Undefined withdraw transaction id".asComment()
             });
         }
     }
@@ -307,14 +312,14 @@ contract V1UserPosition  {
     receive(msg: MigrationRequest) {
 
         if (sender() != self.manager) {
-            self.errorHandler("Durovs Protocol: not from positions manager");
+            self.errorHandler("Durovs Protocol: Not from positions manager");
             return;
         }
         let remainingValue: Int = myBalance() - (self.MinTonsForStorage + self.GasConsumption);
         self.isActive = false;
 
         send(SendParameters {
-                to: self.manager,
+                to: msg.newManager,
                 value: remainingValue,
                 bounce: false,
                 body: BuildPosition {
@@ -323,7 +328,7 @@ contract V1UserPosition  {
                     supplyTimestamps: self.supplyTimestamps,
                     updatedTimestamps: self.updatedTimestamps,
                     withdrawState: self.withdrawState,
-                    lastWithdrawalRequest: self.lastWithdrawalRequest
+                    lastWithdrawalRequest: self.lastWithdrawalRequest,
                 }.toCell(),
             }
         );
@@ -332,18 +337,16 @@ contract V1UserPosition  {
     //==================================NEW FEATURES===========================================
     //=============================================================================
     receive(msg: MintStable) {
-        require(sender() == self.manager, "Durovs Protocol: not from position Manager");
-
+        require(sender() == self.manager, "Durovs Protocol: Not from position Manager");
         let debtAfterMint: Int = self.debt + msg.amount;
 
-        
         if (!self.burnState.isEmpty()) {
-            self.errorHandler("You need to wait for the burn complete, contact support for more information");
+            self.errorHandler("Durovs Protocol: You need to wait for the burn complete, contact support for more information");
             return;
         } 
 
         if (!self.isHealthy(self.balances, msg.rates, debtAfterMint)) {
-            self.errorHandler("Durovs Protocol: position is not healthy");
+            self.errorHandler("Durovs Protocol: Position is not healthy");
             return;
         } 
 
@@ -365,7 +368,7 @@ contract V1UserPosition  {
         let comment: StringBuilder = beginString();
         self.debt += msg.amount;
         comment.append("Durovs Protocol: You have minted ");
-        comment.append(msg.amount.toString());
+        comment.append(msg.amount.toFloatString(9));
         comment.append(" durovUSD");
      
         send(SendParameters {
@@ -412,18 +415,17 @@ contract V1UserPosition  {
         });
     }
     bounced(msg: bounced<BurnRequest>) {
-
         self.bouncedHandler();
     }
     receive(msg: OnBurnComplete) {
-        require(sender() == self.stable, "Durovs Protocol:  not from durovUSd");
+        require(sender() == self.stable, "Durovs Protocol: Not from durovUSd");
         self.debt -= msg.amount;
         self.burnState = emptyMap();
 
         let comment: StringBuilder = beginString();
-        comment.append("Durovs Protocol: You have burned");
-        comment.append(msg.amount.toString());
-        comment.append("DurovUsd");
+        comment.append("Durovs Protocol: You have burned ");
+        comment.append(msg.amount.toFloatString(9));
+        comment.append("durovUSD");
 
         send(SendParameters {
             to: self.user, 
@@ -459,7 +461,7 @@ contract V1UserPosition  {
                 bounce: false,
                 value: 0,
                 mode:  SendRemainingValue + SendIgnoreErrors ,
-                body: "Durovs Protocol: error".asComment()
+                body: "Durovs Protocol: Error".asComment()
             }
         );
     }
@@ -509,8 +511,6 @@ contract V1UserPosition  {
                         availableAmount += (value - remainderVal);
                         updatedTimestamps.info.set(key, remainderVal);
                     }
-
-                    // supplyTimestamps.del(key);
                 } else {
                     updatedTimestamps.info.set(key, value);
 
@@ -528,6 +528,9 @@ contract V1UserPosition  {
     //=============================================================================
     get fun totalCollateral(): Int {
         return self.totalCollateral;
+    }
+    get fun debt(): Int {
+        return self.debt;
     }
     get fun user(): Address {
         return self.user;
@@ -562,7 +565,7 @@ contract V1ReservePool with Deployable, OwnableTransferable {
     version: String = "1";
 
     init(owner: Address){
-        require(owner == sender(), "Durovs Protocol: no access to init pool");
+        require(owner == sender(), "Durovs Protocol: No access to init pool");
         self.owner = sender();
         self.deps = Deps {
             manager: newAddress(0, 0),
@@ -584,30 +587,39 @@ contract V1ReservePool with Deployable, OwnableTransferable {
             stable: msg.stable,
             coupon: msg.coupon
         };
-        self.reply("Durovs Protocol: new pool's dependencies set".asComment());
+        self.reply("Durovs Protocol: New Pool dependencies set".asComment());
     }
     receive(msg: SetBalances) {
         self.requireOwner();
         self.balances = msg.balances;
-        self.reply("Durovs Protocol: new pool balances template set".asComment());
+        self.reply("Durovs Protocol: New pool balances template set".asComment());
     }
     receive(msg: SetAssets) {
         self.requireOwner();
         self.assets = msg.assets;
-        self.reply("Durovs Protocol: new pool assets set".asComment());
+        self.reply("Durovs Protocol: New pool assets set".asComment());
     }
     receive(str: String){
-        // приимаем текстовые сообщения
+        // приимаем текстовые сообщения и перенаправляем их владельцу контракта
+        send(SendParameters {
+                to: self.owner,
+                value: 0,
+                mode: SendRemainingValue,
+                bounce: false,
+                body: str.asComment()
+            }
+        );
     }
 
-
+    // На проверке
     receive(msg: PoolMigrationRequest) {
         self.requireOwner();
+        if (msg.wallet != myAddress()) {
         send(SendParameters {
                 to: msg.wallet,
                 value: 0,
                 mode: SendRemainingValue,
-                bounce: false,
+                bounce: true,
                 body: TokenTransfer {
                     amount: msg.amount,
                     queryId: msg.queryId,
@@ -618,7 +630,29 @@ contract V1ReservePool with Deployable, OwnableTransferable {
                     forwardPayload: ("pool migration").asSlice()
                 }.toCell()
         });
+        } else {
+        let remainingBalance: Int = myBalance() - (self.MinTonForStorage + self.GasConsumption);
+        send(SendParameters {
+                to: msg.newPool,
+                value: remainingBalance,
+                mode: SendIgnoreErrors,
+                bounce: false,
+                body: "Durovs Protocol: Pool migration".asComment()
+        });
+        }
     }
+
+
+    bounced(msg: bounced<TokenTransfer>) {
+        send(SendParameters {
+                to: self.owner,
+                value: 0,
+                mode: SendIgnoreErrors + SendRemainingValue,
+                bounce: false,
+                body: "Durovs Protocol: Token transfer error".asComment()
+        });
+    }
+
 
     receive(msg: TokenNotification) {
         let ctx: Context = context();
@@ -626,6 +660,8 @@ contract V1ReservePool with Deployable, OwnableTransferable {
         let payload: Slice = msg.forwardPayload.preloadRef().beginParse();
         let master: Address = payload.loadAddress();
         let userWallet: Address = payload.loadAddress();
+        let asset: Asset? = self.assets.get(master);
+
         let op: Int = payload.loadInt(64);
 
         if (op == 1) {
@@ -636,7 +672,7 @@ contract V1ReservePool with Deployable, OwnableTransferable {
                         value: ctx.value,
                         mode: SendIgnoreErrors,
                         bounce: false,
-                        body: "Durovs Protocol: error while recieving ton: not enought tons sended".asComment()
+                        body: "Durovs Protocol: Error while recieving ton: not enought tons sended".asComment()
                     });
                     return;
             }
@@ -646,10 +682,26 @@ contract V1ReservePool with Deployable, OwnableTransferable {
                 value: remainingValue,
                 mode: SendBounceIfActionFail,
                 bounce: true,
-                body: SupplyMessage{amount: msg.amount,  user: msg.from, master: master, userWallet: userWallet }.toCell()
+                body: SupplyMessage{amount: msg.amount, user: msg.from, master: master, userWallet: userWallet }.toCell()
             });
         } else if (op == 2) { 
         // получение jetton
+            require(asset != null, "Durovs Protocol: Unknown asset");
+
+            if (sender() != asset!!.poolWallet) {
+                let comment: StringBuilder = beginString();
+                comment.append("Durovs Protocol: Sender does not match with pool wallet: ");
+                comment.append(sender().toString());
+                    send(SendParameters{
+                        to: msg.from,
+                        value: ctx.value,
+                        mode: SendIgnoreErrors,
+                        bounce: false,
+                        body: comment.toString().asComment()
+                    });
+                    return;
+            }
+            
             let remainingValue: Int = ctx.value - (self.GasConsumption + self.MinTonForStorage);
             send(SendParameters{
                 to: self.deps.manager,
@@ -664,18 +716,18 @@ contract V1ReservePool with Deployable, OwnableTransferable {
                     value: ctx.value,
                     mode: SendIgnoreErrors,
                     bounce: false,
-                    body: "Durovs Protocol: error while processing payment: unknown op code".asComment()
+                    body: "Durovs Protocol: Error while processing payment: unknown op code".asComment()
                 }
             );
         }
     }
 
+
     receive(msg: WithdrawRequest) {
         let userPositionAddress: Address = self._userPositionAddress(msg.user);
 
-        
         if (sender() != userPositionAddress) {
-            self.errorHandler("Durovs Protocol: no access to withdraw funds", sender());
+            self.errorHandler("Durovs Protocol: No access to withdraw funds", sender());
             return;
         }
 
@@ -726,7 +778,7 @@ contract V1ReservePool with Deployable, OwnableTransferable {
                 value: ctx.value,
                 mode: SendIgnoreErrors,
                 bounce: false,
-                body: "Durovs Protocol: error while withdraw (requested asset not found)".asComment()
+                body: "Durovs Protocol: Error while withdraw (requested asset not found)".asComment()
             }
         );
         }

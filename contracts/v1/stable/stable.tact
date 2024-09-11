@@ -102,33 +102,13 @@ contract Stable with Deployable, OwnableTransferable {
         let winit: StateInit = self.getJettonWalletInit(to);
         let walletAddress: Address = contractAddress(winit);
 
-        let winitPool: StateInit = self.getJettonWalletInit(self.deps.profitPool);
-        let addressPool: Address = contractAddress(winitPool);
-        // for pool
-        send(SendParameters{
-                to: addressPool,
-                value: ton("0.4"),
-                bounce: true,
-                body: TokenTransferInternal {
-                    amount: (amount * 10000000) / 1000000000,
-                    queryId: 0,
-                    from: myAddress(),
-                    responseAddress: responseAddress,
-                    forwardTonAmount: 0,
-                    forwardPayload: emptySlice(),
-                    notificationAddress: null,
-                }.toCell(),
-                code: winitPool.code,
-                data: winitPool.data
-            }
-        );
-        // for user
         send(SendParameters {
                 to: walletAddress,
-                value: context().value - ton("0.43"),
+                value: 0,
+                mode: SendRemainingValue,
                 bounce: true,
                 body: TokenTransferInternal { 
-                    amount: (amount * 990000000) / 1000000000,
+                    amount: amount,
                     queryId: 0,
                     from: myAddress(),
                     responseAddress: responseAddress,
