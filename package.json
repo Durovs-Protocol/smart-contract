@@ -20,7 +20,7 @@
 
         "setup-scripts": "------------------------------------------------------------------------",
 
-        "setup": "yarn set-deps && yarn set-settings && yarn set-assets",
+        "setup": "yarn set-deps && yarn set-settings && yarn set-assets && yarn set-rates",
         "set-deps": "yarn run-script set_deps",
         "set-settings": "yarn run-script set_settings",
         "set-assets": "yarn run-script set_assets",
