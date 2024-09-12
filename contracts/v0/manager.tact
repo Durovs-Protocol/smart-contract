@@ -81,7 +81,7 @@ contract Manager with Deployable, OwnableTransferable {
     }
 
     receive(str: String){
-        // приимаем текстовые сообщения
+        // принимаем текстовые сообщения и перенаправляем их владельцу контракта
         send(SendParameters {
                 to: self.owner,
                 value: 0,
@@ -316,7 +316,7 @@ contract PositionKeeper {
             bounce: false,
             value: 0,
             mode: SendRemainingValue,
-            body: "Durovs Protocol: user position has been created".asComment()
+            body: "Durovs Protocol: User position has been created".asComment()
         });
     }
 

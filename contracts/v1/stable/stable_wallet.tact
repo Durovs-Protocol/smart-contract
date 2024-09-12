@@ -109,26 +109,6 @@ contract StableWallet
         // }
     }
 
-    receive(msg: TokenTransferInternalDex){
-        // Check sender
-        let ctx: Context = context();
-        if (ctx.sender != self.master) {
-            let sinit: StateInit = initOf StableWallet(self.master, msg.from);
-            require(contractAddress(sinit) == ctx.sender, "Durov Protocol: invalid sender");
-        }
-        // Update balance
-        self.balance = self.balance + msg.amount;
-        require(self.balance >= 0, "Invalid balance");
-        // оповещение об успешной покупке
-        send(SendParameters{
-                to: msg.responseAddress!!,
-                value: 0,
-                mode: SendRemainingValue,
-                bounce: false,
-                body: DexNotification{amount: msg.amount, position: msg.notificationAddress!!}.toCell()
-            }
-        );
-    }
 
     bounced(msg: Slice){
         // Parse bounced message
@@ -152,9 +132,9 @@ contract StableWallet
         if balance < amount - error, userStatus.message(error)
         */
 
-        require(sender() == self.master, "Durov Protocol: invalid sender");
+        require(sender() == self.master, "Durov Protocol: Invalid sender");
         // todo add bounced handler in master
-        require((self.balance - msg.amount) >= 0, "Invalid balance");
+        require((self.balance - msg.amount) >= 0, "Durov Protocol: Invalid balance");
         self.balance = self.balance - msg.amount;
         // todo error on this check
         // require(ctx.value > fwdFee + 2 * self.GasConsumption + self.MinTonsForStorage, "Invalid value");

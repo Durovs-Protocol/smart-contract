@@ -18,7 +18,7 @@ export async function run(provider: NetworkProvider) {
         hTON: toNano(1.2),
         tsTON: toNano(1.3),
         NOT: toNano(1.4),
-        Dogs: toNano(1.5),
+        DOGS: toNano(1.5),
         TON: toNano(1.6),
     };
 

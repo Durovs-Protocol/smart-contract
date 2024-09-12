@@ -20,7 +20,7 @@ export async function run(provider: NetworkProvider) {
      * NOT - 4
      * Dogs - 5
 	 */
-    const assetIndex = 1;
+    const assetIndex = 3;
     log('\nВнесение залога jetton:' + supplyAmount 
         // + `\n${await contractVersion(manager, 'manager')}`
     );
