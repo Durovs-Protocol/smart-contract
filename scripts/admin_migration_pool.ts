@@ -10,11 +10,11 @@ export async function run(provider: NetworkProvider) {
     const newPool: Address = Address.parse(await loadAddress('reservePool', undefined, '1'))
 
      const migrationData = [
-        // {
-        //     name: 'TON',
-        //     pool_wallet: Address.parse(assets[0].pool_wallet!!),
-        //     amount: 139473896,// Не надо указывать
-        // },
+        {
+            name: 'TON',
+            pool_wallet: Address.parse(assets[0].pool_wallet!!),
+            amount: 100000000,// Не надо указывать
+        },
         // {
         //     name: 'stTON',
         //     pool_wallet: Address.parse(assets[1].pool_wallet!!),
@@ -25,14 +25,14 @@ export async function run(provider: NetworkProvider) {
         //     pool_wallet: Address.parse(assets[2].pool_wallet!!),
         //     amount: 1000000000
         // },
-        {
-            name: 'tsTON',
-            pool_wallet: Address.parse(assets[3].pool_wallet!!),
-            amount: 1000000000
-        },
+        // {
+        //     name: 'tsTON',
+        //     pool_wallet: Address.parse(assets[3].pool_wallet!!),
+        //     amount: 1000000000
+        // },
     ]
+    
     //TODO нужно сделать автоматическую проверку баланса и формирование этой структуры
-
     const migrationIndex: number = 0;
         try {
             log('Миграция pool');

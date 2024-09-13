@@ -3,7 +3,7 @@ import { Address, Dictionary, fromNano } from '@ton/core';
 import contracts from '../utils/contracts';
 import { assets } from '../utils/data';
 import { log } from '../utils/helpers';
-import { SupplyTimestamp } from '../wrappers/Manager';
+// import { SupplyTimestamp } from '../wrappers/Manager';
 export async function run(provider: NetworkProvider) {
     const user = provider.sender().address as Address;
     log('User Position info');
@@ -43,10 +43,10 @@ export async function run(provider: NetworkProvider) {
          */
         const balances: Dictionary<Address, bigint> = await contract.getBalances();
         console.log(balances)
-        const toncoin = balances.get(Address.parse(assets[3].master)) ?? -1
-        const stakedTON = balances.get(Address.parse(assets[0].master)) ?? -1
-        const hipoStakedTON = balances.get(Address.parse(assets[1].master)) ?? -1
-        const tonstakers = balances.get(Address.parse(assets[2].master)) ?? -1
+        const toncoin = balances.get(Address.parse(assets[0].master)) ?? -1
+        const stakedTON = balances.get(Address.parse(assets[1].master)) ?? -1
+        const hipoStakedTON = balances.get(Address.parse(assets[2].master)) ?? -1
+        const tonstakers = balances.get(Address.parse(assets[3].master)) ?? -1
         log(
             'Staked TON:    ' +
                 fromNano(stakedTON) +
@@ -64,19 +64,20 @@ export async function run(provider: NetworkProvider) {
             console.log(withdrawStates);
         }
     }
-    async function supplyTimestamps(contract: any) {
-        const supplyTimestamps: Dictionary<Address, SupplyTimestamp> = await contract.getSupplyTimestamps();
-        const stakedTON = supplyTimestamps.get(Address.parse(assets[0].master)) ?? 0;
-        const hipoStakedTON = supplyTimestamps.get(Address.parse(assets[1].master)) ?? 0;
-        const tonstakers = supplyTimestamps.get(Address.parse(assets[2].master)) ?? 0;
-        const toncoin = supplyTimestamps.get(Address.parse(assets[3].master)) ?? 0;
-        log('Supply timestamps staked TON:');
-        console.log(stakedTON != 0 ? stakedTON.info : '');
-        log('Supply timestamps hipo');
-        console.log(hipoStakedTON != 0 ? hipoStakedTON.info : '');
-        log('Supply timestamps ton Stakers ');
-        console.log(tonstakers != 0 ? tonstakers.info : '');
-        log('Supply timestamps toncoin: ');
-        console.log(toncoin != 0 ? toncoin.info : '');
-    }
+
+    // async function supplyTimestamps(contract: any) {
+    //     const supplyTimestamps: Dictionary<Address, SupplyTimestamp> = await contract.getSupplyTimestamps();
+    //     const stakedTON = supplyTimestamps.get(Address.parse(assets[0].master)) ?? 0;
+    //     const hipoStakedTON = supplyTimestamps.get(Address.parse(assets[1].master)) ?? 0;
+    //     const tonstakers = supplyTimestamps.get(Address.parse(assets[2].master)) ?? 0;
+    //     const toncoin = supplyTimestamps.get(Address.parse(assets[3].master)) ?? 0;
+    //     log('Supply timestamps staked TON:');
+    //     console.log(stakedTON != 0 ? stakedTON.info : '');
+    //     log('Supply timestamps hipo');
+    //     console.log(hipoStakedTON != 0 ? hipoStakedTON.info : '');
+    //     log('Supply timestamps ton Stakers ');
+    //     console.log(tonstakers != 0 ? tonstakers.info : '');
+    //     log('Supply timestamps toncoin: ');
+    //     console.log(toncoin != 0 ? toncoin.info : '');
+    // }
 }

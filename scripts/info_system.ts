@@ -34,30 +34,30 @@ export async function run(provider: NetworkProvider) {
     );
     async function showBalances(contract: any, name: string) {
         const allBalances: Dictionary<Address, Asset> = await contract.getBalances();
-        const stakedTON = allBalances.get(Address.parse(assets[0].master))!!.toString();
-        const hipoStakedTON = allBalances.get(Address.parse(assets[1].master))!!.toString();
-        const tonstakers = allBalances.get(Address.parse(assets[2].master))!!.toString();
-        const toncoin = allBalances.get(Address.parse(assets[3].master))!!.toString();
+        const toncoin = allBalances.get(Address.parse(assets[0].master))!!.toString();
+        const stakedTON = allBalances.get(Address.parse(assets[1].master))!!.toString();
+        const hipoStakedTON = allBalances.get(Address.parse(assets[2].master))!!.toString();
+        const tonstakers = allBalances.get(Address.parse(assets[3].master))!!.toString();
         console.log(allBalances)
-        // log(
-        //     `Assets in ${name}`.toUpperCase() + 'Staked TON pool wallet :    ' + stakedTON ??
-        //         '' + '\nHipo Staked TON pool wallet: ' + hipoStakedTON ??
-        //         '' + '\nTon Stakers pool wallet:       ' + tonstakers ??
-        //         '' + '\nToncoin pool wallet:   ' + toncoin ??
-        //         '',
-        // );
+        log(
+            `Assets in ${name}`.toUpperCase() + 'Staked TON pool wallet :    ' + stakedTON +
+                '' + '\nHipo Staked TON pool wallet: ' + hipoStakedTON +
+                '' + '\nTon Stakers pool wallet:       ' + tonstakers +
+                '' + '\nToncoin pool wallet:   ' + toncoin +
+                '',
+        );
     }
     async function showPoolWallets(contract: any, name: string) {
         const allAssets: Dictionary<Address, Asset> = await contract.getAssets();
-        const stakedTON = allAssets.get(Address.parse(assets[0].master))?.poolWallet.toString();
-        const hipoStakedTON = allAssets.get(Address.parse(assets[1].master))?.poolWallet.toString();
-        const tonstakers = allAssets.get(Address.parse(assets[2].master))?.poolWallet.toString();
-        const toncoin = allAssets.get(Address.parse(assets[3].master))?.poolWallet.toString();
+        const toncoin = allAssets.get(Address.parse(assets[0].master))?.poolWallet.toString();
+        const stakedTON = allAssets.get(Address.parse(assets[1].master))?.poolWallet.toString();
+        const hipoStakedTON = allAssets.get(Address.parse(assets[2].master))?.poolWallet.toString();
+        const tonstakers = allAssets.get(Address.parse(assets[3].master))?.poolWallet.toString();
         log(
-            `Assets in ${name}`.toUpperCase() + 'Staked TON pool wallet :    ' + stakedTON ??
-                '' + '\nHipo Staked TON pool wallet: ' + hipoStakedTON ??
-                '' + '\nTon Stakers pool wallet:       ' + tonstakers ??
-                '' + '\nToncoin pool wallet:   ' + toncoin ??
+            `Assets in ${name}`.toUpperCase() + 'Staked TON pool wallet :    ' + stakedTON +
+                '' + '\nHipo Staked TON pool wallet: ' + hipoStakedTON +
+                '' + '\nTon Stakers pool wallet:       ' + tonstakers +
+                '' + '\nToncoin pool wallet:   ' + toncoin +
                 '',
         );
     }
