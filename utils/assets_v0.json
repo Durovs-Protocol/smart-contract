@@ -1,1 +1,34 @@
-{"assets":[{"name":"TON","master":"UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ","pool_wallet":"EQBOvygYdOCYBCpGhPsyoVyJAffqbsZqHTTrzQrulnEdGLtB"},{"name":"stTON","master":"kQB6gF0_-_NAAeH_bBnmEQDUwpYfQbG9tOCnlTfKhFDZtkOd","pool_wallet":"EQDe-cvdFTPPdeY1jLLV6gdaGtoo_deF_3K2fY7dm5jWgrcM"},{"name":"hTON","master":"kQB1BFKmd4h7XzxpkrFZ-JieDRKSFo0JqIn0dy7yj_zGEZ28","pool_wallet":"EQCJBmyvdNHcOBW5-VAqt_wUXjAzu8j3ewCbdO2X0ddtUc5x"},{"name":"tsTON","master":"kQBwNStnliuHZPMCY2D2GCOfVq8fETO0gV58ybOPtDAoh_ha","pool_wallet":"EQCFSAAHtcRNZymEI6U1Kz6iVofBSaNoc1rGqspJ-emTDPj8"},{"name":"NOT","master":"EQD8J0GOlGqXHjoCqCmmA_-pbsuWNn0c2uOgBYRqemocX-yk","pool_wallet":"EQBSAOpvcXEWeY4nP59z62ER6rsUfg439QkuAf9s8H5vUbgs"},{"name":"DOGS","master":"EQAuxfS2tIGYYGgY88AfrsVl_hKk0g93hWm9b_3wxovr5o6P","pool_wallet":"EQBP4SIkogU-Q16HdGeuJa27GLsUUYTnIdKhS-Yk236I62kS"}]}
+{
+    "assets":[
+        {
+            "name":"TON",
+            "master":"UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ",
+            "pool_wallet":"EQBOvygYdOCYBCpGhPsyoVyJAffqbsZqHTTrzQrulnEdGLtB"
+        },
+        {
+            "name":"stTON",
+            "master":"kQB6gF0_-_NAAeH_bBnmEQDUwpYfQbG9tOCnlTfKhFDZtkOd",
+            "pool_wallet":"EQDe-cvdFTPPdeY1jLLV6gdaGtoo_deF_3K2fY7dm5jWgrcM"
+        },
+        {
+            "name":"hTON",
+            "master":"kQB1BFKmd4h7XzxpkrFZ-JieDRKSFo0JqIn0dy7yj_zGEZ28",
+            "pool_wallet":"EQCJBmyvdNHcOBW5-VAqt_wUXjAzu8j3ewCbdO2X0ddtUc5x"
+        },
+        {
+            "name":"tsTON",
+            "master":"kQBwNStnliuHZPMCY2D2GCOfVq8fETO0gV58ybOPtDAoh_ha",
+            "pool_wallet":"EQCFSAAHtcRNZymEI6U1Kz6iVofBSaNoc1rGqspJ-emTDPj8"
+        },
+        {
+            "name":"NOT",
+            "master":"EQD8J0GOlGqXHjoCqCmmA_-pbsuWNn0c2uOgBYRqemocX-yk",
+            "pool_wallet":"EQBSAOpvcXEWeY4nP59z62ER6rsUfg439QkuAf9s8H5vUbgs"
+        },
+        {
+            "name":"DOGS",
+            "master":"EQAuxfS2tIGYYGgY88AfrsVl_hKk0g93hWm9b_3wxovr5o6P",
+            "pool_wallet":"EQBP4SIkogU-Q16HdGeuJa27GLsUUYTnIdKhS-Yk236I62kS"
+        }
+    ]
+}

@@ -1,6 +1,4 @@
-Migration complete: 
- user from old position: EQBNAja8fRL6yYP32ZuCYGolmlgsIWbbu0GtJRsvxfRo8zVy;
-oldPosition: EQAtUylVws_FTzS_hFzDop8PTMSlNKMdvtIPS7HQPRssdhcv;
-                
-user from new position: EQBNAja8fRL6yYP32ZuCYGolmlgsIWbbu0GtJRsvxfRo8zVy; 
-newPosition: EQD3MNusCUlKkbPElEbNQ04L7Mm3mABzcwL7aVXSVCubFJq2
+Migration complete with errors:
+User address: EQC5xG015g2DI9bGhwerKyLVITFlW88vCT_b4j2rt0Yww0_h; 
+Position: EQCeoCozY--yO9hxxRhegAN9jOYVab-m4yxZJ3poPjzr9xCu; 
+ Error: Error: Max attempt exceeded
