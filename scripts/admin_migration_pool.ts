@@ -13,7 +13,7 @@ export async function run(provider: NetworkProvider) {
         {
             name: 'TON',
             pool_wallet: Address.parse(assets[0].pool_wallet!!),
-            amount: 100000000,// Не надо указывать
+            amount: toNano(0.5), // Не надо указывать, но мы укажем:) 0.5
         },
         // {
         //     name: 'stTON',

@@ -16,7 +16,7 @@ export async function run(provider: NetworkProvider) {
 	const supplyAmount = 0.5;
 	const assetIndex = 0 // Не менять тк этот скрипт только для assetIndex = 0
 	/**
-	 * TON - 5
+	 * TON - 0
 	 */
 	log('\nВнесение залога ton: ' + supplyAmount
 	// `\n${await contractVersion(manager, 'manager')}` +

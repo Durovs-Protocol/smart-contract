@@ -17,8 +17,6 @@ export async function run(provider: NetworkProvider) {
      * stTON - 1
      * hTON - 2
      * tsTON - 3
-     * NOT - 4
-     * Dogs - 5
 	 */
     const assetIndex = 3;
     log('\nВнесение залога jetton:' + supplyAmount 

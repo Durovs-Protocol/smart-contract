@@ -627,7 +627,7 @@ contract V1ReservePool with Deployable, OwnableTransferable {
                     forwardTonAmount: 0,
                     customPayload: null,
                     responseDestination: sender(),
-                    forwardPayload: ("pool migration").asSlice()
+                    forwardPayload: ("Pool migration").asSlice()
                 }.toCell()
         });
         } else {

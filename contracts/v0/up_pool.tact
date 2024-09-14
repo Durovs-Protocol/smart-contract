@@ -249,7 +249,7 @@ contract UserPosition  {
         }
     }
 
-    /* TODO: проверка адреса пула как sender: отправка TON */
+    /* TODO: проверка адреса пула как sender: отправка TON - must do it */
     receive(msg: TonTransfer) {
         require(self.pool == sender(), "Durovs Protocol: Not enough access rights to perform this operation");
 
