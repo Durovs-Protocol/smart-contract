@@ -5,7 +5,7 @@ import { JettonMaster } from '@ton/ton';
 import { WalletContractV4 } from '@ton/ton/dist/wallets/WalletContractV4';
 import contracts from '../utils/contracts';
 import { assets } from '../utils/data';
-import { getBalanceValue, log, timer } from '../utils/helpers';
+import { contractVersion, getBalanceValue, log, timer } from '../utils/helpers';
 
 export async function run(provider: NetworkProvider) {
     const user = provider.sender();
@@ -18,9 +18,9 @@ export async function run(provider: NetworkProvider) {
      * hTON - 2
      * tsTON - 3
 	 */
-    const assetIndex = 3;
+    const assetIndex = 4;
     log('\nВнесение залога jetton:' + supplyAmount 
-        // + `\n${await contractVersion(manager, 'manager')}`
+        + `\n${await contractVersion(manager, 'manager')}`
     );
     // Адрес кошелька TON Assets
     const masterInterface = JettonMaster.create(Address.parse(assets[assetIndex].master!!));

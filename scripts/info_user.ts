@@ -16,10 +16,10 @@ export async function run(provider: NetworkProvider) {
     /*
      * User position (определение up, проверка балансов)
      */
-    // log(
-    //     'User position version: '
-    //     + await  userPosition.getVersion()
-    // );
+    log(
+        'User position version: '
+        + await  userPosition.getVersion()
+    );
 
     await showBalancves(userPosition);
     // await withdrawState(userPosition)
@@ -43,19 +43,25 @@ export async function run(provider: NetworkProvider) {
          */
         const balances: Dictionary<Address, bigint> = await contract.getBalances();
         console.log(balances)
-        const toncoin = balances.get(Address.parse(assets[0].master)) ?? -1
+        const ton = balances.get(Address.parse(assets[0].master)) ?? -1
         const stakedTON = balances.get(Address.parse(assets[1].master)) ?? -1
         const hipoStakedTON = balances.get(Address.parse(assets[2].master)) ?? -1
         const tonstakers = balances.get(Address.parse(assets[3].master)) ?? -1
+        const not = balances.get(Address.parse(assets[4].master)) ?? -1
+        const dogs = balances.get(Address.parse(assets[5].master)) ?? -1
         log(
-            'Staked TON:    ' +
+                '\nStaked TON     :' +
                 fromNano(stakedTON) +
-                '\nHipo Staked TON: ' +
+                '\nHipo Staked TON:' +
                 fromNano(hipoStakedTON) +
-                '\nTon Stakers:       ' +
+                '\nTon Stakers    :' +
                 fromNano(tonstakers) +
-                '\nToncoin:   ' +
-                fromNano(toncoin),
+                '\nTON            :' +
+                fromNano(ton) +
+                '\nNOT            :' +
+                fromNano(not)+
+                '\nDOGS           :' +
+                fromNano(dogs)
         );
     }
     async function withdrawState(contract: any) {

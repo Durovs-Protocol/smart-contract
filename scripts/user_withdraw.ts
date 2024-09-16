@@ -20,7 +20,7 @@ export async function run(provider: NetworkProvider) {
 	 */
     let assetIndex = 0;
 
-    let withdrawAmount = (assetIndex == 0 ? 1 : 1);
+    let withdrawAmount = (assetIndex == 0 ? 0.5 : 1);
     log('\nВозвращение залога: ' + withdrawAmount 
         + `\n${await contractVersion(manager, 'manager')}`
     );

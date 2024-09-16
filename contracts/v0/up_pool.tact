@@ -268,7 +268,7 @@ contract UserPosition  {
             let comment: StringBuilder = beginString();
             comment.append("Durovs Protocol: Withdraw of ");
             comment.append(transactionInfo!!.amount.toFloatString(9));
-            comment.append("TON was successful");
+            comment.append(" TON was successfull");
 
             send(SendParameters{
                 to: self.user,

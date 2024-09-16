@@ -26,7 +26,6 @@ struct PositionState {
 struct Settings {
     minDelay: Int;
     newManager: Address;
-    maxAmount: Int;
     maxExecutionTime: Int;
 }
 struct Deps {
@@ -39,13 +38,12 @@ struct Deps {
 message SetSettings {
     minDelay: Int;
     newManager: Address;
-    maxAmount: Int;
     maxExecutionTime: Int;
 }
 struct Asset {
     name: String;
     poolWallet: Address;
-    op_code: Int;
+    master: Address;
 }
 message SetAssets {
     assets: map<Address, Asset>;

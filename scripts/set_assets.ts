@@ -22,8 +22,8 @@ export async function run(provider: NetworkProvider) {
         const assetTemplate: Asset = {
             $$type: 'Asset',
             name: asset.name,
+            master: Address.parse(asset.master),
             poolWallet: Address.parse(asset.pool_wallet!!),
-            op_code: 0n
           }
         assetsData.set(Address.parse(asset.master), assetTemplate);
         balancesData.set(Address.parse(asset.master), 0n)

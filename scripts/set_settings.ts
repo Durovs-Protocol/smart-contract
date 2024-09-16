@@ -25,14 +25,14 @@ export async function run(provider: NetworkProvider) {
     await setSettings(manager)
 
     async function setSettings(contract: any) {
+
         await contract.send(
             user,
             { value: toNano(setupGas)},
             {
                 $$type: 'SetSettings',
                 minDelay: unixDelay,
-                newManager: Address.parse(await loadAddress('manager', undefined, '1'),),
-                maxAmount: 0n,
+                newManager: Address.parse(await loadAddress('manager', undefined, '1')),
                 maxExecutionTime: unixMaxExecutionTime,
             }
         )
