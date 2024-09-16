@@ -26,7 +26,6 @@ contract V1Manager with Deployable, OwnableTransferable {
         self.settings = Settings{
             minDelay: 0,
             newManager: newAddress(0, 0),
-            maxAmount: 0,
             maxExecutionTime: 0,
         };
         self.deps = Deps{
@@ -67,7 +66,6 @@ contract V1Manager with Deployable, OwnableTransferable {
         self.settings = Settings{
             minDelay: msg.minDelay,
             newManager: msg.newManager,
-            maxAmount: msg.maxAmount,
             maxExecutionTime: msg.maxExecutionTime,
         };
         self.reply("Durovs Protocol: Settings have been updated".asComment());

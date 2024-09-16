@@ -33,7 +33,7 @@
 
         "migration-scripts": "------------------------------------------------------------------------",
         "migration": "yarn run-script admin_migration",
-        "migration-special": "yarn run-script admin_migration_special",
+        "migration-solo": "yarn run-script admin_migration_special",
         "migration-pool": "yarn run-script admin_migration_pool",
         "delete-manager": "yarn run-script admin_delete_old_manager",
 
