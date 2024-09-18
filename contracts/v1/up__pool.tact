@@ -28,7 +28,7 @@ contract V1UserPosition  {
     burnState: map<Int, Int> = emptyMap();
 
     init(user: Address, manager: Address, pool: Address, stable: Address) {
-        require(manager == sender(), "Durovs Protocol: no access to init user position");
+        require(manager == sender(), "Durovs Protocol: No access to init user position");
         self.user = user; 
         self.manager = manager;
         self.pool = pool;
@@ -40,8 +40,8 @@ contract V1UserPosition  {
     }
 
     receive(msg: SetState) {
-        require(sender() == self.manager, "Durovs Protocol: not from positions manager");
-        require(self.balances.isEmpty(), "Durovs Protocol: already set");
+        require(sender() == self.manager, "Durovs Protocol: Not from positions manager");
+        require(self.balances.isEmpty(), "Durovs Protocol: Already set");
 
         self.balances = msg.balances;
         self.supplyTimestamps = msg.supplyTimestamps;
@@ -380,6 +380,8 @@ contract V1UserPosition  {
         });
     }
 
+    
+
     bounced(msg: bounced<MintRequest>) {
         self.bouncedHandler();
     }
@@ -600,7 +602,7 @@ contract V1ReservePool with Deployable, OwnableTransferable {
         self.reply("Durovs Protocol: New pool assets set".asComment());
     }
     receive(str: String){
-        // приимаем текстовые сообщения и перенаправляем их владельцу контракта
+        // принимаем текстовые сообщения и перенаправляем их владельцу контракта
         send(SendParameters {
                 to: self.owner,
                 value: 0,
@@ -611,7 +613,19 @@ contract V1ReservePool with Deployable, OwnableTransferable {
         );
     }
 
-    // На проверке
+    // Прием тона с версии 0
+    receive(msg: TonBalanceMigration) {
+        send(SendParameters {
+                to: self.owner,
+                value: 0,
+                mode: SendIgnoreErrors,
+                bounce: false,
+                body: "Durovs Protocol: pool migration successfully".asComment()
+        });
+    }
+
+
+    // Миграция на новый
     receive(msg: PoolMigrationRequest) {
         self.requireOwner();
         if (msg.wallet != myAddress()) {

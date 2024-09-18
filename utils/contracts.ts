@@ -7,6 +7,7 @@ import { UserPosition } from '../wrappers/UP';
 import { V1Manager } from '../wrappers/V1Manager';
 import { V1ReservePool } from '../wrappers/V1Pool';
 
+import { Coupon } from '../wrappers/V1Coupon';
 import { Stable } from '../wrappers/V1Stable';
 import { V1UserPosition } from '../wrappers/V1UP';
 import { loadAddress } from './helpers';
@@ -29,6 +30,9 @@ async function contracts(provider: NetworkProvider, user: Address) {
         const stable =  provider.open(
                 Stable.fromAddress(Address.parse(await loadAddress('stable', undefined, '1')))
         )
+        const coupon =  provider.open(
+                Coupon.fromAddress(Address.parse(await loadAddress('coupon', undefined, '1')))
+        )
 
         const userPositionAddress = await manager.getUserPositionAddress(user)
         const v1userPositionAddress = await v1manager.getUserPositionAddress(user)
@@ -41,7 +45,8 @@ async function contracts(provider: NetworkProvider, user: Address) {
                 stable,
                 userPosition,
                 v1manager,
-                v1userPosition
+                v1userPosition,
+                coupon
         }
 }
 

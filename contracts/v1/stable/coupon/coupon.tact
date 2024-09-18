@@ -1,17 +1,17 @@
-import "../v1/user_position.tact";
-import "../jetton.tact";
-import "./runa_coupon_wallet.tact";
-import "../utils/messages.tact";
+import "../../up__pool.tact";
+import "./coupon_wallet.tact";
+import "../../utils/messages.tact";
 import "@stdlib/deploy";
+import "@stdlib/ownable";
 
 
-contract coupon with Jetton, Deployable {
+contract Coupon with Deployable, OwnableTransferable {
     totalSupply: Int as coins;
     owner: Address;
     content: Cell?;
     mintable: Bool;
     deps: Deps;
-    message: String;
+
 
     init(owner: Address, content: Cell?) {
         self.totalSupply = 0;
@@ -25,9 +25,13 @@ contract coupon with Jetton, Deployable {
             stable: newAddress(0, 0),
             coupon: newAddress(0, 0),
         };
-        self.message = "";
     }
 
+
+    receive(msg: TokenUpdateContent){
+        self.requireOwner();
+        self.content = msg.content;
+    }
     receive (msg: SetDeps) {
         self.requireOwner();
         self.deps = Deps{
@@ -37,40 +41,21 @@ contract coupon with Jetton, Deployable {
             stable: msg.stable,
             coupon: msg.coupon,
         };
-        self.reply("coupon contract dependencies set".asComment());
+        self.reply("Durovs Protocol: Coupon's dependencies set".asComment());
     }
+
 
 
     /*
         from userPosition
     */
-    receive(msg: MintCoupon) {
+    receive(msg: MintCoupons) {
         //let userPositionAddress: Address = self._userPositionAddress(msg.user);
         //TODO проверка отправителя
         //require(sender() == userPositionAddress, "Durov Protocol: invalid sender");
-        self.mint(msg.user, msg.amount, msg.user, msg.notificationAddress);
-    }
 
-
-
-
-    receive(msg: BurnNotification) {
-        self.requireWallet(msg.user);
-        self.totalSupply = (self.totalSupply - msg.amount);
-        send(SendParameters{
-                    to: msg.notificationAddress!!,
-                    value: 0,
-                    bounce: true,
-                    mode: SendRemainingValue,
-                    body: OnBurnComplete{ton: msg.withdrawalAmount, stable: msg.amount, fee: msg.fee}.toCell()
-                }
-        );
-    }
-
-    fun mint(to: Address, amount: Int, responseAddress: Address, notificationAddress: Address) {
-        // Update total supply
-        self.totalSupply = (self.totalSupply + amount);
-        let winit: StateInit = self.getJettonWalletInit(to);
+        self.totalSupply = (self.totalSupply + msg.amount);
+        let winit: StateInit = self.getJettonWalletInit(msg.user);
         let walletAddress: Address = contractAddress(winit);
 
         send(SendParameters {
@@ -79,19 +64,63 @@ contract coupon with Jetton, Deployable {
                 mode: SendRemainingValue,
                 bounce: true,
                 body: TokenTransferInternal { 
-                    amount: amount,
+                    amount: msg.amount,
                     queryId: 0,
                     from: myAddress(),
-                    responseAddress: responseAddress,
+                    responseAddress: msg.user,
                     forwardTonAmount: 0,
                     forwardPayload: emptySlice(),
-                    notificationAddress: notificationAddress
+                    notificationAddress: msg.user
                 }.toCell(),
                 code: winit.code,
                 data: winit.data
             }
         );
     }
+
+
+
+    receive(msg: MintCouponNotification) {
+        self.requireWallet(msg.user);
+
+        send(SendParameters{
+                    to: self.deps.manager,
+                    value: 0,
+                    bounce: true,
+                    mode: SendRemainingValue,
+                    body: msg.toCell()
+                }
+        );
+    }
+
+    receive(msg: CouponExchangeRequest) {
+        require(sender() == self.deps.manager, "Durov Protocol: invalid sender");
+        let winit: StateInit = self.getJettonWalletInit(msg.user);
+        let walletAddress: Address = contractAddress(winit);
+
+        send(SendParameters{
+            to: walletAddress, 
+            value: 0, 
+            bounce: true,
+            mode: SendRemainingValue + SendBounceIfActionFail,
+            body: msg.toCell()
+        });
+    }
+
+    receive(msg: CouponExchangeNotification) {
+        self.requireWallet(msg.user);
+        self.totalSupply = (self.totalSupply - msg.amount);
+        send(SendParameters{
+                    to: self.deps.stable,
+                    value: 0,
+                    bounce: true,
+                    mode: SendRemainingValue,
+                    body: OnCouponBurnComplete{stableAmount: msg.stableAmount, amount: msg.amount, user: msg.user}.toCell()
+                }
+        );
+    }
+
+
 
     bounced(msg: bounced<TokenTransferInternal>) {
         send(SendParameters{
@@ -110,7 +139,11 @@ contract coupon with Jetton, Deployable {
         let userPositionAddress: Address = contractAddress(init);
         return userPositionAddress;
     }
-
+    
+    get fun get_wallet_address(owner: Address): Address {
+        let winit: StateInit = self.getJettonWalletInit(owner);
+        return contractAddress(winit);
+    }
 
     get fun deps(): Deps {
         return self.deps;
@@ -123,9 +156,13 @@ contract coupon with Jetton, Deployable {
     get fun userPositionAddress(user: Address): Address {
         return self._userPositionAddress(user);
     }
-
-    get fun message(): String {
-        return self.message;
+    fun requireWallet(owner: Address) {
+        let ctx: Context = context();
+        let winit: StateInit = self.getJettonWalletInit(owner);
+        require(contractAddress(winit) == ctx.sender, "Durov Protocol: invalid sender");
     }
 
+    fun getJettonWalletInit(address: Address): StateInit {
+        return initOf CouponWallet(myAddress(), address);
+    }
 }

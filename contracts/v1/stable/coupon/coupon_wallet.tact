@@ -1,7 +1,7 @@
-import "../utils/messages.tact";
+import "../../utils/messages.tact";
 
 @interface("org.ton.jetton.wallet")
-contract couponWallet
+contract CouponWallet
 {
     const minTonsForStorage: Int = ton("0.01");
     const gasConsumption: Int = ton("0.01");
@@ -10,7 +10,7 @@ contract couponWallet
     master: Address;
     init(master: Address, owner: Address){
         self.balance = 0;
-        self.owner = sender();
+        self.owner = owner;
         self.master = master;
     }
 
@@ -31,7 +31,7 @@ contract couponWallet
             "Invalid value"
         );
         // Send tokens
-        let init: StateInit = initOf couponWallet(self.master, msg.destination);
+        let init: StateInit = initOf CouponWallet(self.master, msg.destination);
         let walletAddress: Address = contractAddress(init);
         send(SendParameters{
                 to: walletAddress,
@@ -56,7 +56,7 @@ contract couponWallet
         // Check sender
         let ctx: Context = context();
         if (ctx.sender != self.master) {
-            let sinit: StateInit = initOf couponWallet(self.master, msg.from);
+            let sinit: StateInit = initOf CouponWallet(self.master, msg.from);
             require(contractAddress(sinit) == ctx.sender, "Durov Protocol: invalid sender");
         }
         // Update balance
@@ -66,42 +66,20 @@ contract couponWallet
         let msgValue: Int = ctx.value;
         let tonBalanceBeforeMsg: Int = myBalance() - msgValue;
         let storageFee: Int = self.minTonsForStorage - min(tonBalanceBeforeMsg, self.minTonsForStorage);
-        msgValue = msgValue - (storageFee + (self.gasConsumption * 2));
-        send(SendParameters{
-                to: msg.notificationAddress!!,
-                value: self.gasConsumption,
-                bounce: true,
-                body: OnMintCouponsComplete{amount: msg.amount}.toCell()
+        msgValue = msgValue - (storageFee + (self.gasConsumption * 3));
+
+
+        send(SendParameters {
+                to: self.master,
+                value: 0,
+                mode: SendRemainingValue,
+                bounce: false,
+                body: MintCouponNotification{
+                    amount: msg.amount,
+                    user: self.owner
+                }.toCell()
             }
         );
-        // Forward ton
-        if (msg.forwardTonAmount > 0) {
-            let fwdFee: Int = ctx.readForwardFee();
-            msgValue = msgValue - (msg.forwardTonAmount + fwdFee);
-            send(SendParameters{
-                    to: self.owner,
-                    value: msg.forwardTonAmount,
-                    bounce: false,
-                    body: TokenNotification {
-                        queryId: msg.queryId,
-                        amount: msg.amount,
-                        from: msg.from,
-                        forwardPayload: msg.forwardPayload
-                    }.toCell()
-                }
-            );
-        }
-        // Cashback
-        if (msg.responseAddress != null && msgValue > 0) {
-            send(SendParameters{
-                    to: msg.responseAddress!!,
-                    value: msgValue,
-                    bounce: false,
-                    mode: SendIgnoreErrors,
-                    body: TokenExcesses{queryId: msg.queryId}.toCell()
-                }
-            );
-        }
     }
 
     bounced(msg: Slice){
@@ -117,31 +95,23 @@ contract couponWallet
 
     // coupon related method
 
-    receive(msg: BurnRequest){
-        /* check if called by master
-        if balance >= amount
-        decrease balance
-        master.repayBurnNotification(amount, fees)
-
-        if balance < amount - error, userStatus.message(error)
-        */
+    receive(msg: CouponExchangeRequest){
 
         require(sender() == self.master, "Durov Protocol: invalid sender");
-        // todo add bounced handler in master
-        require((self.balance - msg.amount) >= 0, "Invalid balance");
+
+        require((self.balance - msg.amount) >= 0, "Durov Protocol: Not enough coupons to exchange");
+
         self.balance = self.balance - msg.amount;
-        // todo error on this check
-        // require(ctx.value > fwdFee + 2 * self.GasConsumption + self.MinTonsForStorage, "Invalid value");
 
         send(SendParameters{
                 to: self.master,
                 value: 0,
                 mode: SendRemainingValue + SendIgnoreErrors,
                 bounce: true,
-                body: BurnNotification{
+                body: CouponExchangeNotification{
                     amount: msg.amount,
-                    user: msg.user,
-                    notificationAddress: msg.notificationAddress
+                    stableAmount: msg.stableAmount,
+                    user: self.owner,
                 }.toCell()
             }
         );
@@ -153,7 +123,7 @@ contract couponWallet
                 balance: self.balance,
                 owner: self.owner,
                 master: self.master,
-                walletCode: initOf couponWallet(self.master, self.owner).code
+                walletCode: initOf CouponWallet(self.master, self.owner).code
             };
     }
 

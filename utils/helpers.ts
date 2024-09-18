@@ -143,7 +143,7 @@ export async function saveLog(name: string, log: any) {
 export function log(message: any) {
     console.log('\n\n=============================================================================');
     console.log(message);
-    console.log('==================================================================================');
+    console.log('\n\n=============================================================================');
 }
 
 export const getBalanceValue = function (contract: any, index: number) {
@@ -185,16 +185,16 @@ export async function createAssetsList(owner: string, provider: NetworkProvider,
             master: process.env.TS_JETTON_MINTER,
             pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
         },
-        {
-            name: 'NOT',
-            master: process.env.NOT_JETTON_MINTER,
-            pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
-        },
-        {
-            name: 'DOGS',
-            master: process.env.DOGS_JETTON_MINTER,
-            pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
-        }
+        // {
+        //     name: 'NOT',
+        //     master: process.env.NOT_JETTON_MINTER,
+        //     pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
+        // },
+        // {
+        //     name: 'DOGS',
+        //     master: process.env.DOGS_JETTON_MINTER,
+        //     pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
+        // }
     ];
 
     for (const asset of assets) {

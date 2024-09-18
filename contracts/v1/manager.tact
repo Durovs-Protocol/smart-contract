@@ -3,49 +3,45 @@ import "@stdlib/ownable";
 import "./up__pool.tact";
 import "./utils/messages.tact";
 
-
 contract V1Manager with Deployable, OwnableTransferable {
     const MinTonForStorage: Int = ton("0.01");
     const GasConsumption: Int = ton("0.01");
     deps: Deps;
-    assets:  map<Address, Asset>;
+    assets: map<Address, Asset>;
     balances: map<Address, Int>;
-
     settings: Settings;
     owner: Address;
     lastPositionId: Int = 0;
     lastMigrationId: Int = 0;
     version: String = "1";
-
     oldManager: Address;
     rates: map<Address, Int>;
+    couponsForBuy: Int;
+    couponsForSell: Int;
 
-    init(owner: Address, oldManager: Address) {
+    init(owner: Address, oldManager: Address){
         require(owner == sender(), "Durovs Protocol: No access to init manager");
         self.owner = sender();
-        self.settings = Settings{
-            minDelay: 0,
-            newManager: newAddress(0, 0),
-            maxExecutionTime: 0,
-        };
+        self.settings = Settings{minDelay: 0, newManager: newAddress(0, 0), maxExecutionTime: 0, couponRate: 0};
         self.deps = Deps{
             manager: newAddress(0, 0),
             profitPool: newAddress(0, 0),
             reservePool: newAddress(0, 0),
             stable: newAddress(0, 0),
-            coupon: newAddress(0, 0),
+            coupon: newAddress(0, 0)
         };
-
         self.assets = emptyMap();
         self.balances = emptyMap();
         self.oldManager = oldManager;
         self.rates = emptyMap();
+        self.couponsForBuy = 0;
+        self.couponsForSell = 0;
     }
 
     //=============================================================================
     // Set Deps
     //=============================================================================
-    receive(msg: SetDeps) {
+    receive(msg: SetDeps){
         self.requireOwner();
         self.deps = Deps{
             manager: msg.manager,
@@ -57,25 +53,27 @@ contract V1Manager with Deployable, OwnableTransferable {
         self.reply("Durovs Protocol: Manager's dependencies set".asComment());
     }
 
-
     //=============================================================================
     // Set Settings
     //=============================================================================
-    receive(msg: SetSettings) {
+    receive(msg: SetSettings){
         self.requireOwner();
         self.settings = Settings{
             minDelay: msg.minDelay,
             newManager: msg.newManager,
             maxExecutionTime: msg.maxExecutionTime,
+            couponRate: msg.couponRate
         };
         self.reply("Durovs Protocol: Settings have been updated".asComment());
     }
-    receive(msg: SetAssets) {
+
+    receive(msg: SetAssets){
         self.requireOwner();
         self.assets = msg.assets;
         self.reply("Durovs Protocol: New Manager assets set".asComment());
     }
-    receive(msg: SetBalances) {
+
+    receive(msg: SetBalances){
         self.requireOwner();
         self.balances = msg.balances;
         self.reply("Durovs Protocol: New Manager balances template set".asComment());
@@ -83,30 +81,23 @@ contract V1Manager with Deployable, OwnableTransferable {
 
     receive(str: String){
         // приимаем текстовые сообщения и перенаправляем их владельцу контракта
-        send(SendParameters {
-                to: self.owner,
-                value: 0,
-                mode: SendRemainingValue,
-                bounce: false,
-                body: str.asComment()
-            }
-        );
+        send(SendParameters{to: self.owner, value: 0, mode: SendRemainingValue, bounce: false, body: str.asComment()});
     }
+
     //=============================================================================
     // User actions
     //=============================================================================
-    receive(msg: SupplyMessage) {
+    receive(msg: SupplyMessage){
         let ctx: Context = context();
         require(sender() == self.deps.reservePool, "Durovs Protocol: Insufficient TONs sent");
         let valueToSendForward: Int = ctx.value - (self.MinTonForStorage + self.GasConsumption);
         let init: StateInit = initOf V1UserPosition(msg.user,
             self.deps.manager,
             self.deps.reservePool,
-            self.deps.stable,
+            self.deps.stable
         );
         let userPosition: Address = contractAddress(init);
-
-        send(SendParameters {
+        send(SendParameters{
                 to: userPosition,
                 value: valueToSendForward,
                 mode: SendBounceIfActionFail,
@@ -114,7 +105,7 @@ contract V1Manager with Deployable, OwnableTransferable {
                 body: Supply{
                     user: msg.user,
                     amount: msg.amount,
-                    master: msg.master, 
+                    master: msg.master,
                     userWallet: msg.userWallet
                 }.toCell(),
                 code: init.code,
@@ -123,11 +114,11 @@ contract V1Manager with Deployable, OwnableTransferable {
         );
     }
 
-    bounced(msg: bounced<Supply>) {
+    bounced(msg: bounced<Supply>){
         self.bouncedHandler("Durovs Protocol: Error in supply.");
     }
 
-    receive(msg: AddPositionId) {
+    receive(msg: AddPositionId){
         self.lastPositionId = self.lastPositionId + 1;
         let init: StateInit = initOf V1PositionKeeper(self.lastPositionId, myAddress());
         let positionAddress: Address = contractAddress(init);
@@ -143,9 +134,8 @@ contract V1Manager with Deployable, OwnableTransferable {
         );
     }
 
-
     /*04 | withdraw TON */
-    receive(msg: WithdrawMessage) {
+    receive(msg: WithdrawMessage){
         send(SendParameters{
                 to: self._userPositionAddress(sender()),
                 value: 0,
@@ -158,7 +148,7 @@ contract V1Manager with Deployable, OwnableTransferable {
                     minDelay: self.settings.minDelay,
                     maxExecutionTime: self.settings.maxExecutionTime,
                     pool: self.deps.reservePool,
-                    rates: self.rates,
+                    rates: self.rates
                 }.toCell()
             }
         );
@@ -169,12 +159,15 @@ contract V1Manager with Deployable, OwnableTransferable {
     }
 
     /* ==Migration== (обработка миграции с предыдущей версии) */
-    receive(msg: BuildPosition) {
+    receive(msg: BuildPosition){
         //!! вернуть после теста !!
         // require(sender() == self.oldManager, "Durovs Protocol: Unable to create a new position");
-        let init: StateInit = initOf V1UserPosition(msg.user, self.deps.manager, self.deps.reservePool, self.deps.stable);
+        let init: StateInit = initOf V1UserPosition(msg.user,
+            self.deps.manager,
+            self.deps.reservePool,
+            self.deps.stable
+        );
         let newUserPosition: Address = contractAddress(init);
-
         send(SendParameters{
                 to: newUserPosition,
                 value: 0,
@@ -185,7 +178,7 @@ contract V1Manager with Deployable, OwnableTransferable {
                     supplyTimestamps: msg.supplyTimestamps,
                     updatedTimestamps: msg.updatedTimestamps,
                     withdrawState: msg.withdrawState,
-                    lastWithdrawalRequest: msg.lastWithdrawalRequest,
+                    lastWithdrawalRequest: msg.lastWithdrawalRequest
                 }.toCell(),
                 code: init.code,
                 data: init.data
@@ -196,14 +189,14 @@ contract V1Manager with Deployable, OwnableTransferable {
     receive(msg: OnMigrationComplete){
         send(SendParameters{to: self.owner, bounce: false, value: 0, mode: SendRemainingValue + SendIgnoreErrors});
     }
+
     /* ==Migration== (обработка миграции на новую версию) */
-    receive(msg: Migration){
+    receive(msg: Migration) {
         self.requireOwner();
         let init: StateInit = initOf V1PositionKeeper(msg.id, myAddress());
         let positionAddress: Address = contractAddress(init);
         self.lastMigrationId = msg.id;
-
-        send(SendParameters {
+        send(SendParameters{
                 to: positionAddress,
                 value: 0,
                 mode: SendBounceIfActionFail + SendRemainingValue,
@@ -217,15 +210,12 @@ contract V1Manager with Deployable, OwnableTransferable {
         let init: StateInit = initOf V1PositionKeeper(self.lastMigrationId, myAddress());
         let positionAddress: Address = contractAddress(init);
         require(sender() == positionAddress, "Durovs Protocol: No access for migration");
-
         send(SendParameters{
                 to: self._userPositionAddress(msg.user),
                 value: 0,
                 mode: SendRemainingValue + SendBounceIfActionFail,
                 bounce: true,
-                body: MigrationRequest{
-                    newManager: self.settings.newManager
-                }.toCell()
+                body: MigrationRequest{newManager: self.settings.newManager}.toCell()
             }
         );
     }
@@ -242,7 +232,6 @@ contract V1Manager with Deployable, OwnableTransferable {
     //         }
     //     );
     // }
-
 
     // receive(msg: DeleteManager){
     //     self.requireOwner();
@@ -272,13 +261,9 @@ contract V1Manager with Deployable, OwnableTransferable {
         send(SendParameters{
                 to: self._userPositionAddress(sender()),
                 value: 0,
-                mode: (SendRemainingValue + SendBounceIfActionFail),
+                mode: SendRemainingValue + SendBounceIfActionFail,
                 bounce: true,
-                body: MintStable{
-                    user: sender(),
-                    amount: msg.amount,
-                    rates: self.rates,
-                }.toCell()
+                body: MintStable{user: sender(), amount: msg.amount, rates: self.rates}.toCell()
             }
         );
     }
@@ -287,18 +272,152 @@ contract V1Manager with Deployable, OwnableTransferable {
         self.bouncedHandler("Durovs Protocol: mint error");
     }
 
-    /*03 | Burn usdTON */
+    /*| Burn usdTON */
     receive(msg: BurnStableMessage){
         send(SendParameters{
                 to: self._userPositionAddress(sender()),
                 value: 0,
-                mode: (SendRemainingValue + SendBounceIfActionFail),
+                mode: SendRemainingValue + SendBounceIfActionFail,
                 bounce: true,
-                body: BurnStable{
-                    user: sender(),
-                    amount: msg.amount,
-                    rates: self.rates,
-                }.toCell()
+                body: BurnStable{user: sender(), amount: msg.amount, rates: self.rates}.toCell()
+            }
+        );
+    }
+
+    receive(msg: ManageCoupons) {
+        //временное решение, нужен автоматический вызов в зависимости от курса
+        let comment: StringBuilder = beginString();
+            comment.append("Durovs Protocol:  ");
+            comment.append(msg.amount.toFloatString(9));
+            comment.append(" coupons available: ");
+            comment.append(msg.type);
+
+        if (msg.type == "buy") {
+            self.offerCoupons(msg.amount);
+        }
+        if (msg.type == "sell") {
+            self.offerCouponsExchange(msg.amount);
+        }
+
+        send(SendParameters{
+            to: self.owner,
+            value: 0,
+            mode: SendIgnoreErrors + SendRemainingValue,
+            bounce: false,
+            body: comment.toString().asComment()
+            }
+        );
+        
+    }
+
+    receive(msg: BuyCouponsMessage){
+        let totalCoupons = (msg.amount * self.settings.couponRate) / 1000000000;
+        if (self.couponsForBuy <= totalCoupons) {
+            let availableAmount = (self.couponsForBuy * 1000000000) / self.settings.couponRate;
+            let comment: StringBuilder = beginString();
+            comment.append("Durovs Protocol: You can buy coupons for ");
+            comment.append(availableAmount.toFloatString(9));
+            comment.append(" durovUSD");
+            send(SendParameters{
+                    to: sender(),
+                    value: 0,
+                    mode: SendIgnoreErrors + SendRemainingValue,
+                    bounce: false,
+                    body: comment.toString().asComment()
+                }
+            );
+            return;
+        }
+        send(SendParameters{
+                to: self.deps.stable,
+                value: 0,
+                mode: SendRemainingValue + SendBounceIfActionFail,
+                bounce: true,
+                body: BurnForCoupons{amount: msg.amount, couponsAmount: totalCoupons, user: sender()}.toCell()
+            }
+        );
+    }
+
+    receive(msg: MintCouponNotification) {
+        self.couponsForBuy -= msg.amount;
+        
+        let comment: StringBuilder = beginString();
+        comment.append("Durovs Protocol: You purchased  ");
+        comment.append(msg.amount.toFloatString(9));
+        comment.append(" coupons. They will be available for sale after the rate increases.");
+
+            send(SendParameters {
+                to: msg.user,
+                value: 0,
+                mode: SendRemainingValue,
+                bounce: false,
+                body: comment.toString().asComment()
+            }
+        );
+    }
+
+    receive(msg: SellCoupons){
+        if (self.couponsForSell <= msg.amount) {
+            let comment: StringBuilder = beginString();
+            comment.append("Durovs Protocol:  ");
+            comment.append(self.couponsForSell.toFloatString(9));
+            comment.append(" coupons available for sale");
+            send(SendParameters{
+                    to: sender(),
+                    value: 0,
+                    mode: SendIgnoreErrors + SendRemainingValue,
+                    bounce: false,
+                    body: comment.toString().asComment()
+                }
+            );
+            return;
+        }
+        let stableAmount: Int = (msg.amount * self.settings.couponRate) / 1000000000;
+        send(SendParameters{
+                to: self.deps.coupon,
+                value: 0,
+                mode: SendRemainingValue + SendBounceIfActionFail,
+                bounce: true,
+                body: CouponExchangeRequest{amount: msg.amount, stableAmount: stableAmount, user: sender()}.toCell()
+            }
+        );
+    }
+
+    receive(msg: TokenNotification) {
+        if (sender() == self.deps.stable) {
+            let payload: Slice = msg.forwardPayload;
+            let prevSender: Address = payload.loadAddress();
+            let user: Address = payload.loadAddress();
+            let stable: Int = payload.loadInt(9);
+            let amount: Int = payload.loadInt(9);
+
+            if (prevSender == self.deps.coupon) {
+                self.couponsForSell -= amount;
+                let comment: StringBuilder = beginString();
+                comment.append("Durovs Protocol:  ");
+                comment.append(amount.toFloatString(9));
+                comment.append(" coupons were paid,");
+                comment.append(" you recieved ");
+                comment.append(stable.toFloatString(9));
+                comment.append(" durovUSD.");
+
+                send(SendParameters{
+                        to: user,
+                        value: 0,
+                        mode: SendIgnoreErrors + SendRemainingValue,
+                        bounce: false,
+                        body: comment.toString().asComment()
+                    }
+                );
+                return;
+            }
+        }
+        send(SendParameters{
+                to: sender(),
+                value: 0,
+                mode: SendIgnoreErrors + SendRemainingValue,
+                bounce: false,
+                body: "Durovs Protocol: unprocessable notification".asComment()
             }
         );
     }
@@ -308,11 +427,7 @@ contract V1Manager with Deployable, OwnableTransferable {
     //=============================================================================
 
     fun _userPositionAddress(user: Address): Address {
-        let init: StateInit = initOf V1UserPosition(user,
-            self.deps.manager,
-            self.deps.reservePool,
-            self.deps.stable,
-        );
+        let init: StateInit = initOf V1UserPosition(user, self.deps.manager, self.deps.reservePool, self.deps.stable);
         return contractAddress(init);
     }
 
@@ -337,7 +452,18 @@ contract V1Manager with Deployable, OwnableTransferable {
         );
     }
 
-
+    fun offerCoupons(amount: Int) {
+        //TODO расчет количества купонов в зависимости от курса
+        //функция должна быть вызвана из аналога оракула при определенных обстоятельсвах
+        //до обсуждения этих обстоятельств я устанавливаю фиксированное количество купонов
+        self.couponsForBuy = amount;
+    }
+    fun offerCouponsExchange(amount: Int) {
+        //TODO расчет количества купонов в зависимости от курса
+        //функция должна быть вызвана из аналога оракула при определенных обстоятельсвах
+        //до обсуждения этих обстоятельств я устанавливаю фиксированное количество купонов
+        self.couponsForSell = amount;
+    }
     //=============================================================================
     // Offchain interface
     //=============================================================================
@@ -349,6 +475,7 @@ contract V1Manager with Deployable, OwnableTransferable {
     get fun userPositionAddress(user: Address): Address {
         return self._userPositionAddress(user);
     }
+
     get fun positionKeeper(id: Int): Address {
         let init: StateInit = initOf V1PositionKeeper(id, myAddress());
         let posKeeper: Address = contractAddress(init);
@@ -358,9 +485,11 @@ contract V1Manager with Deployable, OwnableTransferable {
     get fun deps(): Deps {
         return self.deps;
     }
+
     get fun assets(): map<Address, Asset> {
         return self.assets;
     }
+
     get fun settings(): Settings {
         return self.settings;
     }
@@ -368,17 +497,24 @@ contract V1Manager with Deployable, OwnableTransferable {
     get fun balances(): map<Address, Int> {
         return self.balances;
     }
+
     get fun version(): String {
         return self.version;
     }
+
+    get fun couponsForBuy(): Int {
+        return self.couponsForBuy;
+    }
+    get fun couponsForSell(): Int {
+        return self.couponsForSell;
+    }
 }
 
-contract V1PositionKeeper  {
+contract V1PositionKeeper {
     id: Int as uint32;
     position: Address;
     manager: Address;
     user: Address;
-
     init(id: Int, manager: Address){
         let ctx: Context = context();
         self.manager = ctx.sender;
@@ -387,40 +523,36 @@ contract V1PositionKeeper  {
         self.position = newAddress(0, 0);
     }
 
-    receive(msg: SetAddress) {
+    receive(msg: SetAddress){
         require(self.position == newAddress(0, 0), "Already set");
         self.position = msg.position;
         self.user = msg.user;
-
         send(SendParameters{
-            to: self.manager,
-            bounce: false,
-            value: 0,
-            mode: SendRemainingValue,
-            body: "Durovs Protocol: User position has been created".asComment()
-        }
+                to: self.manager,
+                bounce: false,
+                value: 0,
+                mode: SendRemainingValue,
+                body: "Durovs Protocol: User position has been created".asComment()
+            }
         );
     }
-    receive(msg: InformationRequest) {
+
+    receive(msg: InformationRequest){
         require(self.manager == sender(), "Durovs Protocol: No access for information request");
         send(SendParameters{
                 to: self.manager,
                 value: 0,
                 mode: SendRemainingValue + SendBounceIfActionFail,
                 bounce: true,
-                body: InformationResponce{
-                    user: self.user,
-                    position: self.position
-                }.toCell()
+                body: InformationResponce{user: self.user, position: self.position}.toCell()
             }
         );
     }
 
-
     get fun position(): Address {
         return self.position;
     }
-    
+
     get fun user(): Address {
         return self.user;
     }

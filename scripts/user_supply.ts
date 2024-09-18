@@ -11,7 +11,7 @@ export async function run(provider: NetworkProvider) {
     const user = provider.sender();
     const { reservePool, manager, userPosition } = await contracts(provider, user.address!!);
 
-    const supplyAmount = 1;
+    const supplyAmount = 10;
     /**
      * TON - 0
      * stTON - 1

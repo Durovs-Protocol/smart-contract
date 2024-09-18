@@ -29,6 +29,7 @@ struct Settings {
     minDelay: Int;
     newManager: Address;
     maxExecutionTime: Int;
+    couponRate: Int;
 }
 struct Deps {
     manager: Address;
@@ -41,6 +42,7 @@ message SetSettings {
     minDelay: Int;
     newManager: Address;
     maxExecutionTime: Int;
+    couponRate: Int;
 }
 
 struct Asset {
@@ -346,20 +348,11 @@ message DexNotification {
     position: Address;
 }
 
+message TonBalanceMigration {
 
-//-----NEW FEATURES(not complete)-----
-message MintCoupon {
-    user: Address;
-    amount: Int as coins;
-    notificationAddress: Address;
 }
-message CreateCoupons {
-}
-message DeleteCoupons {
-}
-message BuyCoupons {
-    amount: Int;
-}
+
+
 message AccrualMessage {
     user: Address;
     amount: Int as coins;
@@ -368,9 +361,7 @@ message AccrualMessage {
 message OnAccrualComplete {
     amount: Int as coins;
 }
-message OnMintCouponsComplete {
-    amount: Int as coins;
-}
+
 message CorrectRate {
 }
 message GetAccrual {
@@ -378,4 +369,57 @@ message GetAccrual {
 message AccrualJetton {
     total: Int;
     jettonAmount: Int;
+}
+//-----NEW FEATURES-----
+message BuyCouponsMessage {
+    amount: Int;
+} 
+message BuyCoupons {
+    amount: Int;
+    couponsAmount: Int;
+} 
+message BurnForCoupons {
+    amount: Int;
+    couponsAmount: Int;
+    user: Address;
+} 
+
+message ManageCoupons {
+    type: String;
+    amount: Int;
+}
+
+message MintCoupons {
+    user: Address;
+    amount: Int;
+}
+message MintCouponNotification {
+    user: Address;
+    amount: Int;
+}
+
+message CouponExchangeRequest {
+    amount: Int;
+    stableAmount: Int;
+    user: Address;
+}
+
+message SellCoupons {
+    amount: Int;
+}
+message CouponExchangeNotification {
+    amount: Int;
+    stableAmount: Int;
+    user: Address;
+}
+message OnCouponBurnComplete {
+    stableAmount: Int;
+    amount: Int;
+    user: Address;
+}
+message BurnForCouponsNotification {
+    amount: Int;
+    user: Address;
+    couponsAmount: Int;
+
 }
