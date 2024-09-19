@@ -1,9 +1,8 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import contracts from '../utils/contracts';
-import { setupGas } from '../utils/data';
+import { couponRate, setupGas } from '../utils/data';
 import { contractVersion, loadAddress, log, timer } from '../utils/helpers';
-
 export async function run(provider: NetworkProvider) {
     const user = provider.sender();
     const { manager } = await contracts(provider, user.address!!)
@@ -26,6 +25,19 @@ export async function run(provider: NetworkProvider) {
 
     async function setSettings(contract: any) {
 
+        if (process.env.v == '0') {
+            await contract.send(
+                user,
+                { value: toNano(setupGas)},
+                {
+                    $$type: 'SetSettings',
+                    minDelay: unixDelay,
+                    newManager: Address.parse(await loadAddress('manager', undefined, '1')),
+                    maxExecutionTime: unixMaxExecutionTime,
+                }
+            )
+        }
+        if (process.env.v == '1') {
         await contract.send(
             user,
             { value: toNano(setupGas)},
@@ -34,8 +46,10 @@ export async function run(provider: NetworkProvider) {
                 minDelay: unixDelay,
                 newManager: Address.parse(await loadAddress('manager', undefined, '1')),
                 maxExecutionTime: unixMaxExecutionTime,
+                couponRate: toNano(couponRate)
             }
         )
+    }
 
         await timer('Настройка пула', unixDelay, getMinDelay);
     }

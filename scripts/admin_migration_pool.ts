@@ -29,7 +29,7 @@ export async function run(provider: NetworkProvider) {
         //     name: 'tsTON',
         //     pool_wallet: Address.parse(assets[3].pool_wallet!!),
         //     amount: 1000000000
-        // },
+        // }
     ]
     
     //TODO нужно сделать автоматическую проверку баланса и формирование этой структуры

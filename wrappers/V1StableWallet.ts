@@ -1,1 +1,1 @@
-export * from '../build/V1StableWallet/tact_StableWallet';
+export * from '../build/V1Stable/tact_StableWallet';

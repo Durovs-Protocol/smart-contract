@@ -6,7 +6,9 @@ import { contractVersion, log, timer } from '../utils/helpers';
 
 export async function run(provider: NetworkProvider) {
     const user = provider.sender().address as Address;
-    const { reservePool, manager, stable } = await contracts(provider, user);
+    const { reservePool, manager, stable, coupon } = await contracts(provider, user);
+
+
 	log('Установка зависимостей:'+
         `\n ${await contractVersion(manager, 'manager')}` +
         `\n ${await contractVersion(reservePool, 'reserve pool')}` 
@@ -22,13 +24,15 @@ export async function run(provider: NetworkProvider) {
                 profitPool: Address.parse('UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ'),
                 reservePool: reservePool.address,
                 stable: stable.address,
-                coupon: stable.address,
+                coupon: coupon.address,
             },
         );
 
         await timer(`Set deps in ${name}`, stable.address, stableAddress(contract));
         await timer(`Set deps in ${name}`, manager.address, managerAddress(contract));
         await timer(`Set deps in ${name}`, reservePool.address, reservePoolAddress(contract));
+        await timer(`Set deps in ${name}`, coupon.address, couponAddress(contract));
+        
     }
 
     await setDeps(manager, 'manager');
@@ -36,6 +40,7 @@ export async function run(provider: NetworkProvider) {
     
     if (process.env.v == '1') {
         await setDeps(stable, 'stableContract');
+        await setDeps(coupon, 'coupon');
     }
 
     log('Deps installed successfully');
@@ -63,7 +68,14 @@ const profitPoolAddress = function (contract: any) {
 const stableAddress = function (contract: any) {
     return async function () {
         const deps = await contract.getDeps();
-        console.log(deps)
+
         return deps.stable.toString();
+    };
+};
+const couponAddress = function (contract: any) {
+    return async function () {
+        const deps = await contract.getDeps();
+
+        return deps.coupon.toString();
     };
 };

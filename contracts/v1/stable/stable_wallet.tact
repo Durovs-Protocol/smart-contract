@@ -1,8 +1,7 @@
 import "../utils/messages.tact";
 
 @interface("org.ton.jetton.wallet")
-contract StableWallet
-{
+contract StableWallet {
     const minTonsForStorage: Int = ton("0.01");
     const gasConsumption: Int = ton("0.01");
     balance: Int;
@@ -10,7 +9,7 @@ contract StableWallet
     master: Address;
     init(master: Address, owner: Address){
         self.balance = 0;
-        self.owner = sender();
+        self.owner = owner;
         self.master = master;
     }
 
@@ -153,9 +152,27 @@ contract StableWallet
         );
     }
 
+    receive(msg: BurnForCoupons){
+        require(sender() == self.master, "Durov Protocol: Invalid sender");
+        require((self.balance - msg.amount) >= 0, "Durov Protocol: Invalid balance");
+        self.balance = self.balance - msg.amount;
+
+
+        send(SendParameters{
+                to: self.master,
+                value: 0,
+                mode: SendRemainingValue + SendIgnoreErrors,
+                bounce: true,
+                body: BurnForCouponsNotification{
+                    amount: msg.amount,
+                    user: msg.user,
+                    couponsAmount: msg.couponsAmount}.toCell()
+            });
+
+    }
+
     get fun get_wallet_data(): JettonWalletData {
-        return
-            JettonWalletData{
+        return JettonWalletData{
                 balance: self.balance,
                 owner: self.owner,
                 master: self.master,

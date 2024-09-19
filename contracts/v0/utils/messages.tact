@@ -163,6 +163,9 @@ message DoLiquidation {
 message Migration {
     id: Int;
 }
+message TonBalanceMigration {
+
+}
 //up interface
 message MigrationRequest {
     newManager: Address;
@@ -308,9 +311,8 @@ message AccrualMessage {
 message OnAccrualComplete {
     amount: Int as coins;
 }
-message OnMintCouponsComplete {
-    amount: Int as coins;
-}
+
+
 message CorrectRate {
 }
 message GetAccrual {

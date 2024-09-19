@@ -497,7 +497,7 @@ contract ReservePool with Deployable, OwnableTransferable {
                 value: remainingBalance,
                 mode: SendIgnoreErrors,
                 bounce: false,
-                body: "Durovs Protocol: Pool migration".asComment()
+                body: TonBalanceMigration{}.toCell()
         });
         }
     }

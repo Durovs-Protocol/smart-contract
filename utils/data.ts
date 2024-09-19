@@ -13,6 +13,8 @@ export const burnMin: number = 1; // $
 export const serviceFeePercent: number = 0.1;
 export const serviceFee: number = 1; // $
 
+export const couponRate: number = 1.1
+
 const assetsJson = JSON.parse(fs.readFileSync('utils/assets_v0.json', 'utf-8'))
 const assetsJsonV1 = JSON.parse(fs.readFileSync('utils/assets_v1.json', 'utf-8'))
 
@@ -28,7 +30,7 @@ export const addSupplyAmount: number = 1;
  * Mint
  */
 
-export const mintAmount: number = Number(0.5); // Минт, отправка на кошелек, обновление UserPosition
+export const mintAmount: number = Number(10); // Минт, отправка на кошелек, обновление UserPosition
 
 /**
  * Burnx
@@ -66,12 +68,13 @@ export const stableJettonParams = {
     image: 'https://ipfs.io/ipfs/QmPSGcz4TyDo3qShEymZRQRavKKRRbiLPHYs9GUgbtwEwx',
 };
 
-export const couponParams = {
-    name: `runa-usd-coupon-${Date.now()}`,
-    symbol: 'DurovCoupon',
-    description: 'Coupon for rate stabilization',
+export const couponJettonParams = {
+    name: `coupon-${Date.now()}`,
+    symbol: 'Coupon',
+    description: '~~~',
     image: 'https://ipfs.io/ipfs/QmPSGcz4TyDo3qShEymZRQRavKKRRbiLPHYs9GUgbtwEwx',
 };
+
 
 /**
  * Для теста

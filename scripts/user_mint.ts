@@ -12,23 +12,23 @@ export async function run(provider: NetworkProvider) {
     const user = provider.sender();
     const userWalletAddress = await stable.getGetWalletAddress(user.address as Address);
 
-    const borrowed = toNano(mintAmount);
+    const mint = toNano(mintAmount);
 
-    log('Mint stable: ' + fromNano(borrowed).toString());
+    log('Mint stable: ' + fromNano(mint).toString());
 
     await manager.send(
         user,
         { value: toNano(1) },
         {
             $$type: 'MintStableMessage',
-            amount: borrowed,
+            amount: mint,
         },
     );
 
     const userWallet = provider.open(await StableWallet.fromAddress(userWalletAddress));
     await provider.waitForDeploy(userWalletAddress, 30);
 
-    await timer(`User stable balance`, borrowed, userWallet.getGetBalance);
+    await timer(`User stable balance`, mint, userWallet.getGetBalance);
     await saveAddress('user_stable_wallet', userWalletAddress);
     //проверять в обозревателе транзакций
 }

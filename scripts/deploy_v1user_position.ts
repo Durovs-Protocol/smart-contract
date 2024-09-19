@@ -1,19 +1,20 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, Dictionary, toNano } from '@ton/core';
+import contracts from '../utils/contracts';
 import { assets, gas } from '../utils/data';
-import { loadAddress, saveAddress } from '../utils/helpers';
-import { V1Manager } from '../wrappers/V1Manager';
+import { saveAddress } from '../utils/helpers';
 
 export async function run(provider: NetworkProvider) {
+    const user = provider.sender();
+    const {v1manager } = await contracts(provider, user.address!!);
 
-    const newManager =provider.open(V1Manager.fromAddress(Address.parse(await loadAddress('manager'))))
     const balancesData: Dictionary<Address, bigint> = Dictionary.empty();
 
     assets.forEach((asset: { name: any; pool_wallet: string; master: string; }) => {
         balancesData.set(Address.parse(asset.master), 0n)
     })
 
-    await newManager.send(
+    await v1manager.send(
         provider.sender(),
         {
             value: toNano(gas),
@@ -29,10 +30,10 @@ export async function run(provider: NetworkProvider) {
         },
     );
 
-    const userPosition = await newManager.getUserPositionAddress(provider.sender().address!!)
+    const userPosition = await v1manager.getUserPositionAddress(provider.sender().address!!)
 
     await provider.waitForDeploy(userPosition, 30);
-    await saveAddress('userPosition', newManager.address);
+    await saveAddress('userPosition', v1manager.address);
     console.log('=============================================================================');
     console.log('New Up deployed successfully');
     console.log('=============================================================================');
