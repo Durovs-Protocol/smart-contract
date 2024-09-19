@@ -39,6 +39,7 @@ contract ProfitPool with Deployable, OwnableTransferable {
     // Actions
     //=============================================================================
 
+
     receive(msg: FeePayment){
         let ctx: Context = context();
         let remainingValue: Int = (ctx.value - msg.amount);

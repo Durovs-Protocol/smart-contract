@@ -8,6 +8,7 @@ message Mint {
     amount: Int;
 }
 
+
 contract Stable with Deployable, OwnableTransferable {
     totalSupply: Int as coins;
     owner: Address;

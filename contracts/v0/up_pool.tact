@@ -238,6 +238,7 @@ contract UserPosition  {
                 bounce: false,
                 body: comment.toString().asComment()
             });
+            
         } else {
             send(SendParameters{
                 to: self.user,

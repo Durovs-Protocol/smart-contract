@@ -13,6 +13,7 @@ contract Coupon with Deployable, OwnableTransferable {
     deps: Deps;
 
 
+
     init(owner: Address, content: Cell?) {
         self.totalSupply = 0;
         self.owner = sender();
