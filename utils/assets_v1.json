@@ -3,32 +3,22 @@
         {
             "name": "TON",
             "master": "UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ",
-            "pool_wallet": "EQB3vHh3-9n01_Xw6__p5IXUn42fAnIEUsLEQ2mSd5aXGqb4"
+            "pool_wallet": "EQAPIVtvBcWhpvaP4pi13zRhtuJOBNaLcQ9Kr-b1ECPSJrgR"
         },
         {
             "name": "stTON",
             "master": "kQB6gF0_-_NAAeH_bBnmEQDUwpYfQbG9tOCnlTfKhFDZtkOd",
-            "pool_wallet": "EQBn2AvJlCR9wjapSjcwKcxcujo5w9ztVNTIqysTFdoVADPA"
+            "pool_wallet": "EQAkdHnQnlGoPYrjNLqH0wKfA1Wdg5lVCiFAksHhvQ7NLjXI"
         },
         {
             "name": "hTON",
             "master": "kQB1BFKmd4h7XzxpkrFZ-JieDRKSFo0JqIn0dy7yj_zGEZ28",
-            "pool_wallet": "EQBH3VjLQK4czvIzBFvXVyke_1EfquGUEw2e5Iyd_YISrEJc"
+            "pool_wallet": "EQCZ-nm5PSrqAnEzM5mRea0ZNYIPUUBjeopp7y4sbSUnYAT4"
         },
         {
             "name": "tsTON",
             "master": "kQBwNStnliuHZPMCY2D2GCOfVq8fETO0gV58ybOPtDAoh_ha",
-            "pool_wallet": "EQAE5j_PujWZo6d3G3r_oEmw8aXbS81FZCK7TPExWyg7hAoM"
-        },
-        {
-            "name": "NOT",
-            "master": "EQD8J0GOlGqXHjoCqCmmA_-pbsuWNn0c2uOgBYRqemocX-yk",
-            "pool_wallet": "EQDldL_nE2BntwPfOCQko_m80uOKuxo0RV1f1QbgEW3-7SeD"
-        },
-        {
-            "name": "DOGS",
-            "master": "EQAuxfS2tIGYYGgY88AfrsVl_hKk0g93hWm9b_3wxovr5o6P",
-            "pool_wallet": "EQDq6HqHTjpaSXDAJTb7LtAV7abwtgp2fbCK_37_ZcUt9iJm"
+            "pool_wallet": "EQBJVZnVmOKSDIs_YVNpmDO1jZEnyBLwhqI5mGlvgjnTPIxv"
         }
     ]
 }

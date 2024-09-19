@@ -18,9 +18,9 @@ export async function run(provider: NetworkProvider) {
      * hTON - 2
      * tsTON - 3
 	 */
-    let assetIndex = 0;
+    let assetIndex = 3;
 
-    let withdrawAmount = (assetIndex == 0 ? 0.5 : 1);
+    let withdrawAmount = (assetIndex == 0 ? 0.25 : 5);
     log('\nВозвращение залога: ' + withdrawAmount 
         + `\n${await contractVersion(manager, 'manager')}`
     );

@@ -14,12 +14,12 @@ export async function run(provider: NetworkProvider) {
     }
 
     const ratesData: RatesData = {
-        stTON: toNano(1.1),
-        hTON: toNano(1.2),
-        tsTON: toNano(1.3),
+        stTON: toNano(5.74),
+        hTON: toNano(5.36),
+        tsTON: toNano(5.73),
         NOT: toNano(1.4),
         DOGS: toNano(1.5),
-        TON: toNano(1.6),
+        TON: toNano(5.5),
     };
 
     assets.forEach((asset: { name: any; pool_wallet: string; master: string }) => {
