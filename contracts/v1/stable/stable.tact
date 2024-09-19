@@ -33,7 +33,7 @@ contract Stable with Deployable, OwnableTransferable {
         self.requireOwner();
         self.content = msg.content;
     }
-    receive (msg: SetDeps) {
+    receive (msg: SetDeps) { 
         self.requireOwner();
         self.deps = Deps{
             manager: msg.manager,

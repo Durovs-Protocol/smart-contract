@@ -12,8 +12,9 @@ export async function run(provider: NetworkProvider) {
 
     const userWalletAddress = await coupon.getGetWalletAddress(user.address as Address);
 
-    const stableAmount = 0.9;
-    const checkAmount = stableAmount * couponRate / 1000000000
+    const stableAmount = 0.1;
+
+    const checkAmount = toNano(stableAmount * couponRate) 
 
 
     log(`Buy coupons for ${stableAmount.toString()} stables` );
@@ -29,7 +30,8 @@ export async function run(provider: NetworkProvider) {
 
     const userWallet = provider.open(await CouponWallet.fromAddress(userWalletAddress));
     await provider.waitForDeploy(userWalletAddress, 30);
+    const oldBalance = await userWallet.getGetBalance()
     await saveAddress('user_coupon_wallet', userWallet.address);
-    await timer(`User coupon balance`, checkAmount, userWallet.getGetBalance);
+    await timer(`User coupon balance`, checkAmount + oldBalance, userWallet.getGetBalance);
 
 }

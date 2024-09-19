@@ -152,7 +152,17 @@ contract Coupon with Deployable, OwnableTransferable {
     get fun totalSupply(): Int {
         return self.totalSupply;
     }
-
+    get fun get_jetton_data(): JettonData {
+        let code: Cell = self.getJettonWalletInit(myAddress()).code;
+        return
+            JettonData{
+                totalSupply: self.totalSupply,
+                mintable: self.mintable,
+                owner: self.owner,
+                content: self.content,
+                walletCode: code
+            };
+    }
     get fun userPositionAddress(user: Address): Address {
         return self._userPositionAddress(user);
     }

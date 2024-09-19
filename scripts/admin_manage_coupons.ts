@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { toNano } from '@ton/core';
 import contracts from '../utils/contracts';
-import { setupGas } from '../utils/data';
+import { setupGas, testCouponsValue } from '../utils/data';
 import { log, timer } from '../utils/helpers';
 
 export async function run(provider: NetworkProvider) {
@@ -11,8 +11,7 @@ export async function run(provider: NetworkProvider) {
 
 
     const typeOfCOupons = false ? 'sell' : 'buy'
-    // const typeOfCOupons = 'sell'
-    const testCouponsValue = 10
+
 
 
     log(`Set ${testCouponsValue} coupons with type ${typeOfCOupons}`);
@@ -23,7 +22,7 @@ export async function run(provider: NetworkProvider) {
         {
             $$type: 'ManageCoupons',
             type: typeOfCOupons,
-            // amount: toNano(testCouponsValue)
+            amount: toNano(testCouponsValue)
             //but/sell 
         },
     );

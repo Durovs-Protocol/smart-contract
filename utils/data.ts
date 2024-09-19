@@ -14,7 +14,7 @@ export const serviceFeePercent: number = 0.1;
 export const serviceFee: number = 1; // $
 
 export const couponRate: number = 1.1
-
+export const testCouponsValue = 10
 const assetsJson = JSON.parse(fs.readFileSync('utils/assets_v0.json', 'utf-8'))
 const assetsJsonV1 = JSON.parse(fs.readFileSync('utils/assets_v1.json', 'utf-8'))
 

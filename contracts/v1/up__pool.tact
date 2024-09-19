@@ -620,7 +620,7 @@ contract V1ReservePool with Deployable, OwnableTransferable {
                 value: 0,
                 mode: SendIgnoreErrors,
                 bounce: false,
-                body: "Durovs Protocol: pool migration successfully".asComment()
+                body: "Durovs Protocol: TON transfer was successful".asComment()
         });
     }
 
