@@ -182,7 +182,8 @@ contract V1Manager with Deployable, OwnableTransferable {
                     supplyTimestamps: msg.supplyTimestamps,
                     updatedTimestamps: msg.updatedTimestamps,
                     withdrawState: msg.withdrawState,
-                    lastWithdrawalRequest: msg.lastWithdrawalRequest
+                    lastWithdrawalRequest: msg.lastWithdrawalRequest,
+                    wallets: msg.wallets
                 }.toCell(),
                 code: init.code,
                 data: init.data

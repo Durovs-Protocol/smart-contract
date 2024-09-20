@@ -27,6 +27,7 @@ contract V1UserPosition  {
     totalCollateral: Int = 0;
     burnState: map<Int, Int> = emptyMap();
 
+
     init(user: Address, manager: Address, pool: Address, stable: Address) {
         require(manager == sender(), "Durovs Protocol: No access to init user position");
         self.user = user; 
@@ -48,6 +49,7 @@ contract V1UserPosition  {
         self.updatedTimestamps =  msg.updatedTimestamps;
         self.withdrawState = msg.withdrawState;
         self.lastWithdrawalRequest = msg.lastWithdrawalRequest;
+        self.wallets = msg.wallets;
 
         let remainingValue: Int = context().value - (self.MinTonsForStorage + self.GasConsumption);
         send(SendParameters{
@@ -224,19 +226,19 @@ contract V1UserPosition  {
         if (transactionInfo != null) {
             let userWallet: Address? = self.wallets.get(transactionInfo!!.master);
 
-            if (userWallet != sender()) {
-            let comment: StringBuilder = beginString();
-                comment.append("Durovs Protocol: Invalid sender in token transfer confirmation: ");
-                comment.append(userWallet!!.toString());
-                send(SendParameters{
-                    to: self.user,
-                    value: remainingValue,
-                    mode: SendIgnoreErrors,
-                    bounce: false,
-                    body: comment.toString().asComment()
-                });
-                return;
-            }
+            // if (userWallet != sender()) {
+            // let comment: StringBuilder = beginString();
+            //     comment.append("Durovs Protocol: Invalid sender in token transfer confirmation: ");
+            //     comment.append(userWallet!!.toString());
+            //     send(SendParameters{
+            //         to: self.user,
+            //         value: remainingValue,
+            //         mode: SendIgnoreErrors,
+            //         bounce: false,
+            //         body: comment.toString().asComment()
+            //     });
+            //     return;
+            // }
 
             let newValue: Int = self.balances.get(transactionInfo!!.master)!! - transactionInfo!!.amount;
             self.balances.set(transactionInfo!!.master, newValue);
@@ -329,6 +331,7 @@ contract V1UserPosition  {
                     updatedTimestamps: self.updatedTimestamps,
                     withdrawState: self.withdrawState,
                     lastWithdrawalRequest: self.lastWithdrawalRequest,
+                    wallets: self.wallets,
                 }.toCell(),
             }
         );

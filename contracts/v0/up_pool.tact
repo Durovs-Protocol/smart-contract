@@ -322,6 +322,7 @@ contract UserPosition  {
                     updatedTimestamps: self.updatedTimestamps,
                     withdrawState: self.withdrawState,
                     lastWithdrawalRequest: self.lastWithdrawalRequest,
+                    wallets: self.wallets,
                 }.toCell(),
             }
         );
