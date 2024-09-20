@@ -509,7 +509,7 @@ contract ReservePool with Deployable, OwnableTransferable {
                 value: remainingBalance,
                 bounce: true,
                 body: TonBalanceMigration{
-                    amount: remainingBalance,
+
                 }.toCell()
         });
         }

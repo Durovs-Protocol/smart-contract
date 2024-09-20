@@ -350,7 +350,7 @@ message DexNotification {
 }
 
 message TonBalanceMigration {
-    amount: Int;
+
 }
 
 

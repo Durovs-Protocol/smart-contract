@@ -3,7 +3,7 @@ import { NetworkProvider } from '@ton/blueprint';
 import { Address, beginCell, toNano } from '@ton/core';
 import contracts from '../utils/contracts';
 import { assets, gas } from '../utils/data';
-import { getBalanceValue, log, timer } from '../utils/helpers';
+import { log } from '../utils/helpers';
 
 export async function run(provider: NetworkProvider) {
 	const user = provider.sender();
@@ -29,9 +29,9 @@ export async function run(provider: NetworkProvider) {
 	let oldBalance = 0n
 	let positionId = await manager.getLastPositionId()
 
-	if (positionId != 0n) {
-		oldBalance =  await (await getBalanceValue(userPosition, assetIndex))()
-	}
+	// if (positionId != 0n) {
+	// 	oldBalance =  await (await getBalanceValue(userPosition, assetIndex))()
+	// }
 
 	let balanceAfterSupply = oldBalance + toNano(supplyAmount)
 
@@ -54,11 +54,11 @@ export async function run(provider: NetworkProvider) {
 		},
 	);
 
-	if (positionId == 0n) {
-		await timer(`Supply ${supplyAmount} ${assets[assetIndex].name} `, 1n, manager.getLastPositionId);
-	} else {
-		await timer(`Supply ${supplyAmount} ${assets[assetIndex].name} `, balanceAfterSupply, getBalanceValue(userPosition, assetIndex));
-	}
+	// if (positionId == 0n) {
+	// 	await timer(`Supply ${supplyAmount} ${assets[assetIndex].name} `, 1n, manager.getLastPositionId);
+	// } else {
+	// 	await timer(`Supply ${supplyAmount} ${assets[assetIndex].name} `, balanceAfterSupply, getBalanceValue(userPosition, assetIndex));
+	// }
 }
 
 

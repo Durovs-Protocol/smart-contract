@@ -618,7 +618,7 @@ contract V1ReservePool with Deployable, OwnableTransferable {
 
     // Прием тона с версии 0
     receive(msg: TonBalanceMigration) {
-        let remainingValue: Int = context().value - (self.MinTonForStorage + self.GasConsumption + msg.amount);
+        let remainingValue: Int = context().value - (self.MinTonForStorage + self.GasConsumption);
 
         send(SendParameters {
                 to: self.owner,
@@ -657,7 +657,7 @@ contract V1ReservePool with Deployable, OwnableTransferable {
                 mode: SendIgnoreErrors,
                 bounce: false,
                 body: TonBalanceMigration{
-                    amount: remainingBalance,
+
                 }.toCell()
         });
         }
