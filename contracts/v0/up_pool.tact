@@ -53,6 +53,7 @@ contract UserPosition  {
             self.errorHandler("Durovs Protocol: Position is not active");
             return;
         }
+
         if (sender() != self.manager) {
             self.errorHandler("Durovs Protocol: Not from positions manager");
             return;
@@ -101,6 +102,7 @@ contract UserPosition  {
                 body: comment.toString().asComment()
             }
         );
+        //TODO фикс этой проблемы при инициализации 
         } else {
         send(SendParameters{
                 to: self.user,
@@ -229,7 +231,7 @@ contract UserPosition  {
             let comment: StringBuilder = beginString();
                 comment.append("Durovs Protocol: Withdraw of ");
                 comment.append(transactionInfo!!.amount.toFloatString(9));
-                comment.append(" token(s) was successfull");
+                comment.append(" token(s) was successful");
 
             send(SendParameters{
                 to: self.user,
@@ -268,7 +270,7 @@ contract UserPosition  {
             let comment: StringBuilder = beginString();
             comment.append("Durovs Protocol: Withdraw of ");
             comment.append(transactionInfo!!.amount.toFloatString(9));
-            comment.append(" TON was successfull");
+            comment.append(" TON was successful");
 
             send(SendParameters{
                 to: self.user,

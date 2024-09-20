@@ -10,7 +10,7 @@ export async function run(provider: NetworkProvider) {
 
 
 
-    const typeOfCOupons = false ? 'sell' : 'buy'
+    const typeOfCOupons = true ? 'sell' : 'buy'
 
 
 
@@ -23,15 +23,14 @@ export async function run(provider: NetworkProvider) {
             $$type: 'ManageCoupons',
             type: typeOfCOupons,
             amount: toNano(testCouponsValue)
-            //but/sell 
         },
     );
 
 
 
     if (typeOfCOupons == 'buy') {
-        await timer(`Manager coupons`, testCouponsValue, v1manager.getCouponsForBuy);
+        await timer(`Manager coupons`, toNano(testCouponsValue), v1manager.getCouponsForBuy);
     } else if (typeOfCOupons == 'sell') {
-        await timer(`Manager coupons`, testCouponsValue, v1manager.getCouponsForSell);
+        await timer(`Manager coupons`, toNano(testCouponsValue), v1manager.getCouponsForSell);
     }
 }

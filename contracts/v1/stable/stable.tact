@@ -173,13 +173,11 @@ contract Stable with Deployable, OwnableTransferable {
         let walletAddress: Address = contractAddress(winit);
 
         let payload: Builder = beginCell();
-
         payload.storeAddress(sender());
         payload.storeAddress(msg.user);
         payload.storeInt(msg.stableAmount, 9);
         payload.storeInt(msg.amount, 9);
         payload.endCell();
-
 
         send(SendParameters {
                 to: walletAddress,
