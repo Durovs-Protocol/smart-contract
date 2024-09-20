@@ -615,9 +615,11 @@ contract V1ReservePool with Deployable, OwnableTransferable {
 
     // Прием тона с версии 0
     receive(msg: TonBalanceMigration) {
+        let remainingValue: Int = context().value - (self.MinTonForStorage + self.GasConsumption + msg.amount);
+
         send(SendParameters {
                 to: self.owner,
-                value: 0,
+                value: remainingValue,
                 mode: SendIgnoreErrors,
                 bounce: false,
                 body: "Durovs Protocol: TON transfer was successful".asComment()
@@ -651,7 +653,9 @@ contract V1ReservePool with Deployable, OwnableTransferable {
                 value: remainingBalance,
                 mode: SendIgnoreErrors,
                 bounce: false,
-                body: TonBalanceMigration{}.toCell()
+                body: TonBalanceMigration{
+                    amount: remainingBalance,
+                }.toCell()
         });
         }
     }

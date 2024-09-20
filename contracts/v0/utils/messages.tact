@@ -164,7 +164,7 @@ message Migration {
     id: Int;
 }
 message TonBalanceMigration {
-
+    amount: Int;
 }
 //up interface
 message MigrationRequest {

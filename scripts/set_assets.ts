@@ -61,8 +61,8 @@ export async function run(provider: NetworkProvider) {
             await balancesTimer(contract, name)
     }
 
-    // await setAssets(manager, 'manager');
-    // await setAssets(reservePool, 'reservePool');
+    await setAssets(manager, 'manager');
+    await setAssets(reservePool, 'reservePool');
     await setBalance(manager, 'manager');
     await setBalance(reservePool, 'reservePool');
 }

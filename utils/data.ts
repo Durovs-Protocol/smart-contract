@@ -4,7 +4,7 @@ import fs from 'fs';
  * Общие настройки
  */
 export const tonPrice: number = 5.75;
-export const gas: number = 1;
+export const gas: number = 0.5;
 export const setupGas: number = 0.03;
 export const liquidationRatio: number = 1;
 export const reserveRatio: number = 1.5;

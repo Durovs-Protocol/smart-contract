@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import contracts from '../utils/contracts';
-import { assets } from '../utils/data';
+import { assets, gas } from '../utils/data';
 import { contractVersion, getBalanceValue, log, timer } from '../utils/helpers';
 
 export async function run(provider: NetworkProvider) {
@@ -18,7 +18,7 @@ export async function run(provider: NetworkProvider) {
      * hTON - 2
      * tsTON - 3
 	 */
-    let assetIndex = 0;
+    let assetIndex = 3;
 
     let withdrawAmount = (assetIndex == 0 ? 0.5 : 1);
     log('\nВозвращение залога: ' + withdrawAmount 
@@ -43,7 +43,7 @@ export async function run(provider: NetworkProvider) {
     async function withdraw(contract: any) {
         await contract.send(
             user,
-            { value: toNano(1) },
+            { value: toNano(gas) },
             {
                 $$type: 'WithdrawMessage',
                 amount: toNano(withdrawAmount),

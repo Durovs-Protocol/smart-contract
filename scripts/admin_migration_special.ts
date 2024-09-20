@@ -1,9 +1,11 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
+import { gas } from '../utils/data';
 import { loadAddress, log, saveLog, timer } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { PositionKeeper } from '../wrappers/PositionKeeper';
 import { V1Manager } from '../wrappers/V1Manager';
+import { V1PositionKeeper } from '../wrappers/V1PositionKeeper';
 
 export async function run(provider: NetworkProvider) {
     const user = provider.sender();
@@ -24,7 +26,7 @@ export async function run(provider: NetworkProvider) {
         try {
             await manager.send(
                 user,
-                { value: toNano(1) },
+                { value: toNano(gas) },
                 {
                     $$type: 'Migration',
                     id: BigInt(specialId)
@@ -33,9 +35,9 @@ export async function run(provider: NetworkProvider) {
             await timer(`Position${specialId} migration process`, specialId, newManager.getLastPositionId);
 
             const V1PositionKeeperAddress = await newManager.getPositionKeeper(BigInt(specialId))
-            const V1PositionKeeper = provider.open(await V1PositionKeeper.fromAddress(V1PositionKeeperAddress));
-            const userAddressFromUpdatedContract = await V1PositionKeeper.getUser()
-            const updatedPositionAddress = await V1PositionKeeper.getPosition()
+            const v1PositionKeeper = provider.open(await V1PositionKeeper.fromAddress(V1PositionKeeperAddress));
+            const userAddressFromUpdatedContract = await v1PositionKeeper.getUser()
+            const updatedPositionAddress = await v1PositionKeeper.getPosition()
 
             await saveLog(logName, `Migration complete: \n user from old position: ${userAddress};\noldPosition: ${positionAddress};
                 \nuser from new position: ${userAddressFromUpdatedContract}; \nnewPosition: ${updatedPositionAddress}`)

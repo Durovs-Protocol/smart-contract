@@ -2,7 +2,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, beginCell, toNano } from '@ton/core';
 import contracts from '../utils/contracts';
-import { assets } from '../utils/data';
+import { assets, gas } from '../utils/data';
 import { getBalanceValue, log, timer } from '../utils/helpers';
 
 export async function run(provider: NetworkProvider) {
@@ -44,7 +44,7 @@ export async function run(provider: NetworkProvider) {
 	 */
 	await reservePool.send(
 		user,
-		{ value: toNano(1 + supplyAmount) },
+		{ value: toNano(gas + supplyAmount) },
 		{
 			$$type: 'TokenNotification',
 			queryId: 0n,
