@@ -38,8 +38,6 @@ export async function run(provider: NetworkProvider) {
          * stTON - 1
          * hTON - 2
          * tsTON - 3
-         * NOT - 4
-         * Dogs - 5
          */
         const balances: Dictionary<Address, bigint> = await contract.getBalances();
         console.log(balances)
@@ -47,8 +45,6 @@ export async function run(provider: NetworkProvider) {
         const stakedTON = balances.get(Address.parse(assets[1].master)) ?? -1
         const hipoStakedTON = balances.get(Address.parse(assets[2].master)) ?? -1
         const tonstakers = balances.get(Address.parse(assets[3].master)) ?? -1
-        const not = balances.get(Address.parse(assets[4].master)) ?? -1
-        const dogs = balances.get(Address.parse(assets[5].master)) ?? -1
         log(
                 '\nStaked TON     :' +
                 fromNano(stakedTON) +
@@ -57,11 +53,7 @@ export async function run(provider: NetworkProvider) {
                 '\nTon Stakers    :' +
                 fromNano(tonstakers) +
                 '\nTON            :' +
-                fromNano(ton) +
-                '\nNOT            :' +
-                fromNano(not)+
-                '\nDOGS           :' +
-                fromNano(dogs)
+                fromNano(ton)
         );
     }
     async function withdrawState(contract: any) {

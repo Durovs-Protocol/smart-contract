@@ -14,6 +14,7 @@ contract CouponWallet
         self.master = master;
     }
 
+
     receive(msg: TokenTransfer){
         // Check sender
         let ctx: Context = context();

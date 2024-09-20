@@ -117,6 +117,7 @@ contract V1Manager with Deployable, OwnableTransferable {
         );
     }
 
+
     bounced(msg: bounced<Supply>){
         self.bouncedHandler("Durovs Protocol: Error in supply.");
     }
