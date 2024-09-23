@@ -188,6 +188,7 @@ message SetState {
     updatedTimestamps: SupplyTimestamp?;
     withdrawState: map<Int, WithdrawTransactionInfo>;
     lastWithdrawalRequest: Int;
+    wallets: map<Address, Address>;
 }
 message BuildPosition {
     user: Address;
@@ -196,6 +197,7 @@ message BuildPosition {
     updatedTimestamps: SupplyTimestamp?;
     withdrawState: map<Int, WithdrawTransactionInfo>;
     lastWithdrawalRequest: Int;
+    wallets: map<Address, Address>;
 }
 message OnMigrationComplete {
 }

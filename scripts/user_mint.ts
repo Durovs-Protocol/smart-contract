@@ -1,6 +1,6 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, fromNano, toNano } from '@ton/core';
-import { mintAmount } from '../utils/data';
+import { gas, mintAmount } from '../utils/data';
 import { loadAddress, log, saveAddress, timer } from '../utils/helpers';
 import { V1Manager } from '../wrappers/V1Manager';
 import { Stable } from '../wrappers/V1Stable';
@@ -18,7 +18,7 @@ export async function run(provider: NetworkProvider) {
 
     await manager.send(
         user,
-        { value: toNano(1) },
+        { value: toNano(gas) },
         {
             $$type: 'MintStableMessage',
             amount: mint,

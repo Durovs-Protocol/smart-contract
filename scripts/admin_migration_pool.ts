@@ -1,6 +1,6 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
-import { assets } from '../utils/data';
+import { assets, gas } from '../utils/data';
 import { loadAddress, log, saveLog } from '../utils/helpers';
 import { ReservePool } from '../wrappers/ReservePool';
 
@@ -10,26 +10,26 @@ export async function run(provider: NetworkProvider) {
     const newPool: Address = Address.parse(await loadAddress('reservePool', undefined, '1'))
 
      const migrationData = [
-        // {
-        //     name: 'TON',
-        //     pool_wallet: Address.parse(assets[0].pool_wallet!!),
-        //     amount: toNano(0.5), // Не надо указывать, но мы укажем:) 0.5
-        // },
+        {
+            name: 'TON',
+            pool_wallet: Address.parse(assets[0].pool_wallet!!),
+            amount: toNano(0.5), // Не надо указывать, но мы укажем:) 0.5
+        },
         // {
         //     name: 'stTON',
         //     pool_wallet: Address.parse(assets[1].pool_wallet!!),
         //     amount: 5,
         // },
-        {
-            name: 'hTON',
-            pool_wallet: Address.parse(assets[2].pool_wallet!!),
-            amount: 5,
-        },
         // {
-        //     name: 'tsTON',
-        //     pool_wallet: Address.parse(assets[3].pool_wallet!!),
+        //     name: 'hTON',
+        //     pool_wallet: Address.parse(assets[2].pool_wallet!!),
         //     amount: 5,
         // },
+        {
+            name: 'tsTON',
+            pool_wallet: Address.parse(assets[3].pool_wallet!!),
+            amount: 5,
+        },
     ]
     
     //TODO нужно сделать автоматическую проверку баланса и формирование этой структуры
@@ -38,7 +38,7 @@ export async function run(provider: NetworkProvider) {
             log('Миграция pool');
             await reservePool.send(
                 user,
-                { value: toNano(0.5) },
+                { value: toNano(gas) },
                 {
                     $$type: 'PoolMigrationRequest',
                     amount: toNano(migrationData[migrationIndex].amount),

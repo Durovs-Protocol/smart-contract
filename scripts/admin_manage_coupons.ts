@@ -1,7 +1,7 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { toNano } from '@ton/core';
 import contracts from '../utils/contracts';
-import { setupGas } from '../utils/data';
+import { setupGas, testCouponsValue } from '../utils/data';
 import { log, timer } from '../utils/helpers';
 
 export async function run(provider: NetworkProvider) {
@@ -10,9 +10,8 @@ export async function run(provider: NetworkProvider) {
 
 
 
-    const typeOfCOupons = false ? 'sell' : 'buy'
-    // const typeOfCOupons = 'sell'
-    const testCouponsValue = 10
+    const typeOfCOupons = true ? 'sell' : 'buy'
+
 
 
     log(`Set ${testCouponsValue} coupons with type ${typeOfCOupons}`);
@@ -23,16 +22,15 @@ export async function run(provider: NetworkProvider) {
         {
             $$type: 'ManageCoupons',
             type: typeOfCOupons,
-            // amount: toNano(testCouponsValue)
-            //but/sell 
+            amount: toNano(testCouponsValue)
         },
     );
 
 
 
     if (typeOfCOupons == 'buy') {
-        await timer(`Manager coupons`, testCouponsValue, v1manager.getCouponsForBuy);
+        await timer(`Manager coupons`, toNano(testCouponsValue), v1manager.getCouponsForBuy);
     } else if (typeOfCOupons == 'sell') {
-        await timer(`Manager coupons`, testCouponsValue, v1manager.getCouponsForSell);
+        await timer(`Manager coupons`, toNano(testCouponsValue), v1manager.getCouponsForSell);
     }
 }

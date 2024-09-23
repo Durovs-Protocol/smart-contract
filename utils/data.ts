@@ -4,7 +4,7 @@ import fs from 'fs';
  * Общие настройки
  */
 export const tonPrice: number = 5.75;
-export const gas: number = 1;
+export const gas: number = 0.5;
 export const setupGas: number = 0.03;
 export const liquidationRatio: number = 1;
 export const reserveRatio: number = 1.5;
@@ -14,7 +14,7 @@ export const serviceFeePercent: number = 0.1;
 export const serviceFee: number = 1; // $
 
 export const couponRate: number = 1.1
-
+export const testCouponsValue = 10
 const assetsJson = JSON.parse(fs.readFileSync('utils/assets_v0.json', 'utf-8'))
 const assetsJsonV1 = JSON.parse(fs.readFileSync('utils/assets_v1.json', 'utf-8'))
 

@@ -80,11 +80,11 @@ contract StableWallet {
             msgValue = (msgValue - (storageFee + self.gasConsumption));
         }
         // Forward ton
-        if (msg.forwardTonAmount > 0) {
+        if (msg.forwardTonAmount > 0 && msg.responseAddress != null) {
             let fwdFee: Int = ctx.readForwardFee();
             msgValue = msgValue - (msg.forwardTonAmount + fwdFee);
             send(SendParameters{
-                    to: self.owner,
+                    to: msg.responseAddress!!,
                     value: msg.forwardTonAmount,
                     bounce: false,
                     body: TokenNotification{
@@ -97,16 +97,16 @@ contract StableWallet {
             );
         }
         // Cashback
-        // if (msg.responseAddress != null && msgValue > 0) {
-        //     send(SendParameters{
-        //             to: msg.responseAddress!!,
-        //             value: msgValue,
-        //             bounce: false,
-        //             mode: SendIgnoreErrors,
-        //             body: TokenExcesses{queryId: msg.queryId}.toCell()
-        //         }
-        //     );
-        // }
+        if (msg.responseAddress != null && msgValue > 0) {
+            send(SendParameters{
+                    to: msg.responseAddress!!,
+                    value: msgValue,
+                    bounce: false,
+                    mode: SendIgnoreErrors,
+                    body: TokenExcesses{queryId: msg.queryId}.toCell()
+                }
+            );
+        }
     }
 
 

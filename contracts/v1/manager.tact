@@ -36,6 +36,9 @@ contract V1Manager with Deployable, OwnableTransferable {
         self.rates = emptyMap();
         self.couponsForBuy = 0;
         self.couponsForSell = 0;
+
+
+
     }
 
     //=============================================================================
@@ -179,7 +182,8 @@ contract V1Manager with Deployable, OwnableTransferable {
                     supplyTimestamps: msg.supplyTimestamps,
                     updatedTimestamps: msg.updatedTimestamps,
                     withdrawState: msg.withdrawState,
-                    lastWithdrawalRequest: msg.lastWithdrawalRequest
+                    lastWithdrawalRequest: msg.lastWithdrawalRequest,
+                    wallets: msg.wallets
                 }.toCell(),
                 code: init.code,
                 data: init.data
@@ -192,7 +196,7 @@ contract V1Manager with Deployable, OwnableTransferable {
     }
 
     /* ==Migration== (обработка миграции на новую версию) */
-    receive(msg: Migration) {
+    receive(msg: Migration){
         self.requireOwner();
         let init: StateInit = initOf V1PositionKeeper(msg.id, myAddress());
         let positionAddress: Address = contractAddress(init);
@@ -207,7 +211,7 @@ contract V1Manager with Deployable, OwnableTransferable {
         );
     }
 
-    receive(msg: InformationResponce) {
+    receive(msg: InformationResponce){
         let init: StateInit = initOf V1PositionKeeper(self.lastMigrationId, myAddress());
         let positionAddress: Address = contractAddress(init);
         require(sender() == positionAddress, "Durovs Protocol: No access for migration");
@@ -251,7 +255,7 @@ contract V1Manager with Deployable, OwnableTransferable {
     // Oracle
     // TODO Заменить на оракул
     //=============================================================================
-    receive(msg: SetRates) {
+    receive(msg: SetRates){
         self.requireOwner();
         self.rates = msg.rates;
         self.reply("Durovs Protocol: Rates updated".asComment());
@@ -285,30 +289,27 @@ contract V1Manager with Deployable, OwnableTransferable {
         );
     }
 
-    receive(msg: ManageCoupons) {
+    receive(msg: ManageCoupons){
         //временное решение, нужен автоматический вызов в зависимости от курса
         let comment: StringBuilder = beginString();
-            comment.append("Durovs Protocol:  ");
-            comment.append(msg.amount.toFloatString(9));
-            comment.append(" coupons available: ");
-            comment.append(msg.type);
-
+        comment.append("Durovs Protocol:  ");
+        comment.append(msg.amount.toFloatString(9));
+        comment.append(" coupons available: ");
+        comment.append(msg.type);
         if (msg.type == "buy") {
             self.offerCoupons(msg.amount);
         }
         if (msg.type == "sell") {
             self.offerCouponsExchange(msg.amount);
         }
-
         send(SendParameters{
-            to: self.owner,
-            value: 0,
-            mode: SendIgnoreErrors + SendRemainingValue,
-            bounce: false,
-            body: comment.toString().asComment()
+                to: self.owner,
+                value: 0,
+                mode: SendIgnoreErrors + SendRemainingValue,
+                bounce: false,
+                body: comment.toString().asComment()
             }
         );
-        
     }
 
     receive(msg: BuyCouponsMessage){
@@ -339,15 +340,13 @@ contract V1Manager with Deployable, OwnableTransferable {
         );
     }
 
-    receive(msg: MintCouponNotification) {
+    receive(msg: MintCouponNotification){
         self.couponsForBuy -= msg.amount;
-        
         let comment: StringBuilder = beginString();
         comment.append("Durovs Protocol: You purchased  ");
         comment.append(msg.amount.toFloatString(9));
         comment.append(" coupons. They will be available for sale after the rate increases.");
-
-            send(SendParameters {
+        send(SendParameters{
                 to: msg.user,
                 value: 0,
                 mode: SendRemainingValue,
@@ -384,43 +383,58 @@ contract V1Manager with Deployable, OwnableTransferable {
         );
     }
 
-    receive(msg: TokenNotification) {
-        if (sender() == self.deps.stable) {
-            let payload: Slice = msg.forwardPayload;
-            let prevSender: Address = payload.loadAddress();
-            let user: Address = payload.loadAddress();
-            let stable: Int = payload.loadInt(9);
-            let amount: Int = payload.loadInt(9);
+    receive(msg: TokenNotification){
 
-            if (prevSender == self.deps.coupon) {
-                self.couponsForSell -= amount;
-                let comment: StringBuilder = beginString();
-                comment.append("Durovs Protocol:  ");
-                comment.append(amount.toFloatString(9));
-                comment.append(" coupons were paid,");
-                comment.append(" you recieved ");
-                comment.append(stable.toFloatString(9));
-                comment.append(" durovUSD.");
+        if (msg.from == self.deps.stable) {
+            // let payload: Slice = msg.forwardPayload;
+            // let prevSender: Address = payload.loadAddress();
+            // let user: Address = payload.loadAddress();
+            // let stable: Int = payload.loadInt(9);
+            
 
-                send(SendParameters{
-                        to: user,
-                        value: 0,
-                        mode: SendIgnoreErrors + SendRemainingValue,
-                        bounce: false,
-                        body: comment.toString().asComment()
-                    }
-                );
-                return;
-            }
+            // if (prevSender == self.deps.coupon) {
+            //     self.couponsForSell -= msg.amount;
+            //     let comment: StringBuilder = beginString();
+            //     comment.append("Durovs Protocol:  ");
+            //     comment.append(amount.toFloatString(9));
+            //     comment.append(" coupons were paid,");
+            //     comment.append(" you recieved ");
+            //     comment.append(stable.toFloatString(9));
+            //     comment.append(" durovUSD.");
+            //     send(SendParameters{
+            //             to: user,
+            //             value: 0,
+            //             mode: SendIgnoreErrors + SendRemainingValue,
+            //             bounce: false,
+            //             body: comment.toString().asComment()
+            //         }
+            //     );
+            //     return;
+            // }
+            let comment: StringBuilder = beginString();
+            comment.append(msg.from.toString());
+            // comment.append(user.toString());
+            // comment.append(stable.toString());
+            // comment.append(amount.toString());
+            send(SendParameters{
+                    to: self.owner,
+                    value: 0,
+                    mode: SendIgnoreErrors + SendRemainingValue,
+                    bounce: false,
+                    body: comment.toString().asComment()
+                }
+            );
+            // "Durovs Protocol: unprocessable notification"
+        } else {
+                        send(SendParameters{
+                    to: self.owner,
+                    value: 0,
+                    mode: SendIgnoreErrors + SendRemainingValue,
+                    bounce: false,
+                    body: "Durovs Protocol: unprocessable notification".asComment()
+                }
+            );
         }
-        send(SendParameters{
-                to: sender(),
-                value: 0,
-                mode: SendIgnoreErrors + SendRemainingValue,
-                bounce: false,
-                body: "Durovs Protocol: unprocessable notification".asComment()
-            }
-        );
     }
 
     //=============================================================================
@@ -459,6 +473,7 @@ contract V1Manager with Deployable, OwnableTransferable {
         //до обсуждения этих обстоятельств я устанавливаю фиксированное количество купонов
         self.couponsForBuy = amount;
     }
+
     fun offerCouponsExchange(amount: Int) {
         //TODO расчет количества купонов в зависимости от курса
         //функция должна быть вызвана из аналога оракула при определенных обстоятельсвах
@@ -506,6 +521,7 @@ contract V1Manager with Deployable, OwnableTransferable {
     get fun couponsForBuy(): Int {
         return self.couponsForBuy;
     }
+
     get fun couponsForSell(): Int {
         return self.couponsForSell;
     }

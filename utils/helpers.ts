@@ -91,6 +91,7 @@ export async function timer(
 
     while (newVal != currentVal) {
         console.log(`${message}, currentVal: ${currentVal}, (attempts: ${attempt})`);
+
         await delay(3000);
         currentVal = await checkFunction();
         attempt++;

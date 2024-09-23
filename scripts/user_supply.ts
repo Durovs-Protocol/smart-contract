@@ -4,7 +4,7 @@ import { mnemonicToPrivateKey } from '@ton/crypto';
 import { JettonMaster } from '@ton/ton';
 import { WalletContractV4 } from '@ton/ton/dist/wallets/WalletContractV4';
 import contracts from '../utils/contracts';
-import { assets } from '../utils/data';
+import { assets, gas } from '../utils/data';
 import { contractVersion, getBalanceValue, log, timer } from '../utils/helpers';
 
 export async function run(provider: NetworkProvider) {
@@ -64,7 +64,7 @@ export async function run(provider: NetworkProvider) {
         .storeAddress(reservePool.address) // Кто получит jetton
         .storeAddress(user.address) // Остаток газа
         .storeUint(0, 1)
-        .storeCoins(700000000)
+        .storeCoins(300000000)
         .storeMaybeRef(assetBuilder)
         .endCell();
 
@@ -89,7 +89,7 @@ export async function run(provider: NetworkProvider) {
         secretKey: keyPair.secretKey,
         messages: [
             internal({
-                value: '1',
+                value: gas.toString(),
                 to: jettonUserWallet,
                 body: body,
             }),

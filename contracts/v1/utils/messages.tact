@@ -199,7 +199,7 @@ message SetState {
     updatedTimestamps: SupplyTimestamp?;
     withdrawState: map<Int , WithdrawTransactionInfo>;
     lastWithdrawalRequest: Int;
-
+    wallets: map<Address, Address>;
 }
 
 message BuildPosition {
@@ -209,6 +209,7 @@ message BuildPosition {
     updatedTimestamps: SupplyTimestamp?;
     withdrawState: map<Int , WithdrawTransactionInfo>;
     lastWithdrawalRequest: Int;
+    wallets: map<Address, Address>;
 }
 message BuildNewPosition {
     user: Address;

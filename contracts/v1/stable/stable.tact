@@ -34,7 +34,7 @@ contract Stable with Deployable, OwnableTransferable {
         self.requireOwner();
         self.content = msg.content;
     }
-    receive (msg: SetDeps) {
+    receive (msg: SetDeps) { 
         self.requireOwner();
         self.deps = Deps{
             manager: msg.manager,
@@ -174,13 +174,11 @@ contract Stable with Deployable, OwnableTransferable {
         let walletAddress: Address = contractAddress(winit);
 
         let payload: Builder = beginCell();
-
         payload.storeAddress(sender());
         payload.storeAddress(msg.user);
         payload.storeInt(msg.stableAmount, 9);
         payload.storeInt(msg.amount, 9);
         payload.endCell();
-
 
         send(SendParameters {
                 to: walletAddress,

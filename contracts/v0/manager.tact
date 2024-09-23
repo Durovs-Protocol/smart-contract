@@ -4,8 +4,8 @@ import "./up_pool.tact";
 import "./utils/messages.tact";
 
 contract Manager with Deployable, OwnableTransferable {
-    const MinTonForStorage: Int = ton("0.01");
-    const GasConsumption: Int = ton("0.01");
+    const MinTonForStorage: Int = ton("0.01321");
+    const GasConsumption: Int = ton("0.01321");
     deps: Deps;
     assets:  map<Address, Asset>;
     balances: map<Address, Int>;

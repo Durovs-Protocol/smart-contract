@@ -1,5 +1,6 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
+import { gas } from '../utils/data';
 import { loadAddress, log, saveLog, timer } from '../utils/helpers';
 import { Manager } from '../wrappers/Manager';
 import { PositionKeeper } from '../wrappers/PositionKeeper';
@@ -23,7 +24,7 @@ export async function run(provider: NetworkProvider) {
         try {
             await manager.send(
                 user,
-                { value: toNano(1) },
+                { value: toNano(gas) },
                 {
                     $$type: 'Migration',
                     id: BigInt(i),
