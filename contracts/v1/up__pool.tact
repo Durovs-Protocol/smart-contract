@@ -618,12 +618,11 @@ contract V1ReservePool with Deployable, OwnableTransferable {
 
     // Прием тона с версии 0
     receive(msg: TonBalanceMigration) {
-        let remainingValue: Int = context().value - (self.MinTonForStorage + self.GasConsumption);
-
+        // TODO проверку что отправитель = старый пул 
         send(SendParameters {
                 to: self.owner,
-                value: remainingValue,
-                mode: SendIgnoreErrors,
+                value: ton("0.03"),
+                mode: SendPayGasSeparately + SendIgnoreErrors,
                 bounce: false,
                 body: "Durovs Protocol: TON transfer was successful".asComment()
         });
