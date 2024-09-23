@@ -31,7 +31,7 @@ export async function run(provider: NetworkProvider) {
                 },
             );
 
-            await timer(`Position${i} migration process`, i, newManager.getLastPositionId);
+            await timer(`Position ${i} migration process`, i, newManager.getLastPositionId);
 
             const V1PositionKeeperAddress = await newManager.getPositionKeeper(BigInt(i))
             const v1PositionKeeper = provider.open(await V1PositionKeeper.fromAddress(V1PositionKeeperAddress));

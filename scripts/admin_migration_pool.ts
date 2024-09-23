@@ -13,7 +13,7 @@ export async function run(provider: NetworkProvider) {
         {
             name: 'TON',
             pool_wallet: Address.parse(assets[0].pool_wallet!!),
-            amount: toNano(0.25), // Не надо указывать, но мы укажем:) 0.5
+            amount: 0.8, // Не надо указывать, но мы укажем:) 0.5
         },
         // {
         //     name: 'stTON',
@@ -30,11 +30,11 @@ export async function run(provider: NetworkProvider) {
         //     pool_wallet: Address.parse(assets[2].pool_wallet!!),
         //     amount: 5,
         // },
-        {
-            name: 'tsTON',
-            pool_wallet: Address.parse(assets[3].pool_wallet!!),
-            amount: 5,
-        },
+        // {
+        //     name: 'tsTON',
+        //     pool_wallet: Address.parse(assets[3].pool_wallet!!),
+        //     amount: 5,
+        // },
     ]
     
     //TODO нужно сделать автоматическую проверку баланса и формирование этой структуры
