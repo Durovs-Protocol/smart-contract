@@ -18,7 +18,7 @@ export async function run(provider: NetworkProvider) {
      * hTON - 2
      * tsTON - 3
 	 */
-    const assetIndex = 1;
+    const assetIndex = 3;
     log('\nВнесение залога jetton:' + supplyAmount 
         + `\n${await contractVersion(manager, 'manager')}`
     );

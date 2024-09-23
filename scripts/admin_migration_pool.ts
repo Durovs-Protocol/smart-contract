@@ -10,21 +10,16 @@ export async function run(provider: NetworkProvider) {
     const newPool: Address = Address.parse(await loadAddress('reservePool', undefined, '1'))
 
      const migrationData = [
+        // {
+        //     name: 'TON',
+        //     pool_wallet: Address.parse(assets[0].pool_wallet!!),
+        //     amount: 0.8, // Не надо указывать, но мы укажем:) 0.5
+        // },
         {
-            name: 'TON',
-            pool_wallet: Address.parse(assets[0].pool_wallet!!),
-            amount: 0.8, // Не надо указывать, но мы укажем:) 0.5
+            name: 'stTON',
+            pool_wallet: Address.parse(assets[1].pool_wallet!!),
+            amount: 5,
         },
-        // {
-        //     name: 'stTON',
-        //     pool_wallet: Address.parse(assets[1].pool_wallet!!),
-        //     amount: 5,
-        // },
-        // {
-        //     name: 'hTON',
-        //     pool_wallet: Address.parse(assets[2].pool_wallet!!),
-        //     amount: 5,
-        // },
         // {
         //     name: 'hTON',
         //     pool_wallet: Address.parse(assets[2].pool_wallet!!),
