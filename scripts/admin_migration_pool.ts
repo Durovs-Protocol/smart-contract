@@ -1,6 +1,6 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
-import { assets, gas } from '../utils/data';
+import { assets } from '../utils/data';
 import { loadAddress, log, saveLog } from '../utils/helpers';
 import { ReservePool } from '../wrappers/ReservePool';
 
@@ -38,7 +38,7 @@ export async function run(provider: NetworkProvider) {
             log('Миграция pool');
             await reservePool.send(
                 user,
-                { value: toNano(gas) },
+                { value: toNano(0.1) },
                 {
                     $$type: 'PoolMigrationRequest',
                     amount: toNano(migrationData[migrationIndex].amount),
