@@ -21,6 +21,11 @@ export async function run(provider: NetworkProvider) {
         + await  userPosition.getVersion()
     );
 
+    log(
+        'User position address: '
+        + await  userPosition.address.toString()
+    );
+
     await showBalancves(userPosition);
     // await withdrawState(userPosition)
     // await supplyTimestamps(userPosition)

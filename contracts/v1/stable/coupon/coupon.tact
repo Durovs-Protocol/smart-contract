@@ -28,7 +28,7 @@ contract Coupon with Deployable, OwnableTransferable {
         };
     }
 
-
+    /* ok */
     receive(msg: TokenUpdateContent){
         self.requireOwner();
         self.content = msg.content;

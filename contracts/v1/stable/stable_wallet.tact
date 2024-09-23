@@ -13,7 +13,7 @@ contract StableWallet {
         self.master = master;
     }
 
-
+    /* ok */
     receive(msg: TokenTransfer){
         // Check sender
         let ctx: Context = context();

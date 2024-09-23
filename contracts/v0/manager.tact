@@ -38,7 +38,7 @@ contract Manager with Deployable, OwnableTransferable {
 
 
     //=============================================================================
-    // Set Deps - ok
+    // Set Deps - ok1
     //=============================================================================
     receive(msg: SetDeps) {
         self.requireOwner();

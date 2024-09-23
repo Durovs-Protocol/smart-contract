@@ -1,1 +1,24 @@
-{"assets":[{"name":"TON","master":"UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ","pool_wallet":"EQDU90ipgbeo4kHofbTD34IovAKnt52QsfvEvFU4SceNY9cZ"},{"name":"stTON","master":"kQB6gF0_-_NAAeH_bBnmEQDUwpYfQbG9tOCnlTfKhFDZtkOd","pool_wallet":"EQAyWUnKryT9wq4N7IyoVZm8Ayqu7POF4oKYZb87rKYwlrnX"},{"name":"hTON","master":"kQB1BFKmd4h7XzxpkrFZ-JieDRKSFo0JqIn0dy7yj_zGEZ28","pool_wallet":"EQCegesL3LRvSWRO82Uv64YqeMH1JtjD4rr2KNAW2AOUqLYP"},{"name":"tsTON","master":"kQBwNStnliuHZPMCY2D2GCOfVq8fETO0gV58ybOPtDAoh_ha","pool_wallet":"EQDJi_rpo0Bc5bIFOR3jwOi34BOk_FKVU245LJPSU7BkOCaL"}]}
+{
+    "assets": [
+        {
+            "name": "TON",
+            "master": "UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ",
+            "pool_wallet": "EQAcpZXlxgTIgwY-FvD-QaAc-77dPva-yIkCcWij1y2r1mFl"
+        },
+        {
+            "name": "stTON",
+            "master": "kQB6gF0_-_NAAeH_bBnmEQDUwpYfQbG9tOCnlTfKhFDZtkOd",
+            "pool_wallet": "EQDQ-SLfdjCNp4AgoMhI4ISWhNKeUNrAiyrQqBt2XcUaY-qr"
+        },
+        {
+            "name": "hTON",
+            "master": "kQB1BFKmd4h7XzxpkrFZ-JieDRKSFo0JqIn0dy7yj_zGEZ28",
+            "pool_wallet": "EQBwlqbWsPu5R5myGfdghYckJGf5s3poV32j5rQotKq_BWJp"
+        },
+        {
+            "name": "tsTON",
+            "master": "kQBwNStnliuHZPMCY2D2GCOfVq8fETO0gV58ybOPtDAoh_ha",
+            "pool_wallet": "EQDuMQjokeLmp3twkPYrbAcNmXqYGp_0g--saj5n2hbTe4B3"
+        }
+    ]
+}

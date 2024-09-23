@@ -249,7 +249,7 @@ contract V1UserPosition  {
             let comment: StringBuilder = beginString();
                 comment.append("Durovs Protocol: Withdraw of ");
                 comment.append(transactionInfo!!.amount.toFloatString(9));
-                comment.append(" token(s) was successfull");
+                comment.append(" token(s) was successful");
 
             send(SendParameters{
                 to: self.user,
@@ -832,7 +832,7 @@ contract V1ReservePool with Deployable, OwnableTransferable {
     get fun balances(): map<Address, Int> {
         return self.balances;
     }
-
+    /* ok */
     get fun deps(): Deps {
         return self.deps;
     }

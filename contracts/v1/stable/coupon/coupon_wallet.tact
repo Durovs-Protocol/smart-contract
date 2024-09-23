@@ -16,7 +16,7 @@ contract CouponWallet
 
 
     receive(msg: TokenTransfer){
-        // Check sender
+        // Check sender 2
         let ctx: Context = context();
         require(ctx.sender == self.owner, "Durov Protocol: invalid sender");
         // Update balance
