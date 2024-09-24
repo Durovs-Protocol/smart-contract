@@ -35,11 +35,11 @@ export async function run(provider: NetworkProvider) {
         
     }
 
-    // await setDeps(manager, 'manager');
-    // await setDeps(reservePool, 'reservePool');
+    await setDeps(manager, 'manager');
+    await setDeps(reservePool, 'reservePool');
     
     if (process.env.v == '1') {
-        // await setDeps(stable, 'stableContract');
+        await setDeps(stable, 'stableContract');
         await setDeps(coupon, 'coupon');
     }
 
