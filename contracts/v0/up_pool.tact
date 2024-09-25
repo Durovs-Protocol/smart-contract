@@ -6,8 +6,8 @@ import "./utils/helpers.tact";
 
 
 contract UserPosition  {
-    const MinTonForStorage: Int = ton("0.01321");
-    const GasConsumption: Int = ton("0.01321");
+    const MinTonForStorage: Int = ton("0.016549");
+    const GasConsumption: Int = ton("0.01546459");
     const PositionKeeperGas: Int = ton("0.1");
     //settings
     user: Address;
@@ -51,12 +51,12 @@ contract UserPosition  {
     /* Проверено */
     receive(msg: Supply) {
         if (!self.isActive) {
-            self.errorHandler("Durovs Protocol: Position is not active");
+            self.errorHandler("Durovs Protocol: Position is not active.");
             return;
         }
 
         if (sender() != self.manager) {
-            self.errorHandler("Durovs Protocol: Not from positions manager");
+            self.errorHandler("Durovs Protocol: Not from positions manager.");
             return;
         }
         let ctx: Context = context();
@@ -117,7 +117,7 @@ contract UserPosition  {
                 bounce: false,
                 value: 0,
                 mode:  SendIgnoreErrors + SendRemainingValue,
-                body: "Durovs Protocol: Asset not found".asComment()
+                body: "Durovs Protocol: Asset not found.".asComment()
             }
         );
         }
@@ -429,8 +429,8 @@ contract UserPosition  {
 // ======POOL==================================================================
 
 contract ReservePool with Deployable, OwnableTransferable {
-    const MinTonForStorage: Int = ton("0.011");
-    const GasConsumption: Int = ton("0.01");
+    const MinTonForStorage: Int = ton("0.0165469");
+    const GasConsumption: Int = ton("0.019456");
     deps: Deps;
     owner: Address;
     balances:  map<Address, Int>;
@@ -460,7 +460,7 @@ contract ReservePool with Deployable, OwnableTransferable {
             stable: msg.stable,
             coupon: msg.coupon
         };
-        self.reply("Durovs Protocol: Pool dependencies set".asComment());
+        self.reply("Durovs Protocol: Pool dependencies set.".asComment());
     }
     receive(msg: SetBalances) {
         self.requireOwner();

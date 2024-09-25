@@ -20,6 +20,7 @@ export async function run(provider: NetworkProvider) {
 
     await provider.waitForDeploy(stable.address, 30);
     await saveAddress('stable', stable.address, undefined, '1');
+
     console.log('=============================================================================');
     console.log('Stable deployed successfully');
     console.log('=============================================================================');

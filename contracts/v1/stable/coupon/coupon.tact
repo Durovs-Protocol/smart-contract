@@ -4,6 +4,10 @@ import "../../utils/messages.tact";
 import "@stdlib/deploy";
 import "@stdlib/ownable";
 
+message Mint {
+    amount: Int;
+}
+
 
 contract Coupon with Deployable, OwnableTransferable {
     totalSupply: Int as coins;
@@ -26,6 +30,32 @@ contract Coupon with Deployable, OwnableTransferable {
             stable: newAddress(0, 0),
             coupon: newAddress(0, 0),
         };
+    }
+
+    receive(msg: Mint) {
+        self.requireOwner();
+        self.totalSupply = (self.totalSupply + msg.amount);
+        let winit: StateInit = self.getJettonWalletInit(sender());
+        let walletAddress: Address = contractAddress(winit);
+
+        send(SendParameters {
+                to: walletAddress,
+                value: 0,
+                mode: SendRemainingValue,
+                bounce: true,
+                body: TokenTransferInternal { 
+                    amount: msg.amount,
+                    queryId: 0,
+                    from: myAddress(),
+                    responseAddress: sender(),
+                    forwardTonAmount: 0,
+                    forwardPayload: emptySlice(),
+                    notificationAddress: sender(),
+                }.toCell(),
+                code: winit.code,
+                data: winit.data
+            }
+        );
     }
 
 
@@ -52,7 +82,7 @@ contract Coupon with Deployable, OwnableTransferable {
     */
     receive(msg: MintCoupons) {
         //let userPositionAddress: Address = self._userPositionAddress(msg.user);
-        //TODO проверка отправителя
+        //TODO проверка отправителя 
         //require(sender() == userPositionAddress, "Durov Protocol: invalid sender");
 
         self.totalSupply = (self.totalSupply + msg.amount);
@@ -116,7 +146,7 @@ contract Coupon with Deployable, OwnableTransferable {
                     value: 0,
                     bounce: true,
                     mode: SendRemainingValue,
-                    body: OnCouponBurnComplete{stableAmount: msg.stableAmount, amount: msg.amount, user: msg.user}.toCell()
+                    body: OnCouponBurnComplete{ amount: msg.amount, user: msg.user}.toCell()
                 }
         );
     }

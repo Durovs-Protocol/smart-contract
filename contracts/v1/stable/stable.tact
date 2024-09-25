@@ -136,8 +136,7 @@ contract Stable with Deployable, OwnableTransferable {
     receive(msg: MintCouponNotification) {
         
         let comment: StringBuilder = beginString();
-        // self.debt -= msg.amount;
-        //TODO нужно перенести это либо добавить расчет 
+
         comment.append("Durovs Protocol: You recieved ");
         comment.append(msg.amount.toFloatString(9));
         comment.append(" coupons ");
@@ -169,16 +168,14 @@ contract Stable with Deployable, OwnableTransferable {
     receive(msg: OnCouponBurnComplete) {
         require(sender() == self.deps.coupon, "Durovs Protocol: Not from Coupon Master");
 
-        self.totalSupply = (self.totalSupply + msg.stableAmount);
+        self.totalSupply = (self.totalSupply + msg.amount);
         let winit: StateInit = self.getJettonWalletInit(msg.user);
         let walletAddress: Address = contractAddress(winit);
 
-        let payload: Builder = beginCell();
-        payload.storeAddress(sender());
-        payload.storeAddress(msg.user);
-        payload.storeInt(msg.stableAmount, 9);
-        payload.storeInt(msg.amount, 9);
-        payload.endCell();
+        let infoCell = beginCell().storeAddress(sender()).storeAddress(msg.user).endCell();
+        let builder = beginCell().storeRef(infoCell);
+
+
 
         send(SendParameters {
                 to: walletAddress,
@@ -186,12 +183,12 @@ contract Stable with Deployable, OwnableTransferable {
                 mode: SendRemainingValue,
                 bounce: true,
                 body: TokenTransferInternal { 
-                    amount: msg.stableAmount,
+                    amount: msg.amount,
                     queryId: 0,
                     from: myAddress(),
                     responseAddress: self.deps.manager,
                     forwardTonAmount: ton("0.03"),
-                    forwardPayload: payload.asSlice(),
+                    forwardPayload: builder.asSlice(),
                     notificationAddress: msg.user,
                 }.toCell(),
                 code: winit.code,

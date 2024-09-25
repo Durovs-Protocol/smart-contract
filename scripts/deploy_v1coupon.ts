@@ -19,8 +19,11 @@ export async function run(provider: NetworkProvider) {
         },
     );
 
+
+
     await provider.waitForDeploy(coupon.address, 30);
     await saveAddress('coupon', coupon.address, undefined, '1');
+
     console.log('=============================================================================');
     console.log('Coupon deployed successfully');
     console.log('=============================================================================');

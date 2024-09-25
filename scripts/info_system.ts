@@ -7,7 +7,7 @@ import { Asset } from '../wrappers/Manager';
 
 export async function run(provider: NetworkProvider) {
 
-    const { reservePool, manager } = await contracts(provider, provider.sender().address!!);
+    const { reservePool, manager, v1manager } = await contracts(provider, provider.sender().address!!);
 
     await showWallets(manager, 'manager');
     await showWallets(reservePool, 'reservePool');
@@ -23,6 +23,8 @@ export async function run(provider: NetworkProvider) {
     );
 
     let settings = await manager.getSettings();
+    let settingsv1 = await v1manager.getSettings();
+    console.log(settingsv1)
 
     log(
         'System setting information'.toUpperCase() +
@@ -31,7 +33,12 @@ export async function run(provider: NetworkProvider) {
             '\nnew Manager Address : ' +
             settings.newManager.toString() +
             '\nmax Execution Time  : ' +
-            settings.maxExecutionTime
+            settings.maxExecutionTime + 
+            //
+            process.env.v == '1' ?
+            //
+            '\nmax Coupon rate  : ' +
+            settingsv1.couponRate!! : ''
     );
     async function showWallets(contract: any, name: string) {
         const allBalances: Dictionary<Address, Asset> = await contract.getBalances();

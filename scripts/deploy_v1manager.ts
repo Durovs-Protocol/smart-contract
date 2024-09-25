@@ -5,7 +5,7 @@ import { loadAddress, saveAddress } from '../utils/helpers';
 import { V1Manager } from '../wrappers/V1Manager';
 
 export async function run(provider: NetworkProvider) {
-    const manager = provider.open(await V1Manager.fromInit(provider.sender().address!, Address.parse(await loadAddress('manager', undefined, '0'))));
+    const manager = provider.open(await V1Manager.fromInit(provider.sender().address!, Address.parse(await loadAddress('manager', undefined, '1'))));
 
     await manager.send(
         provider.sender(),

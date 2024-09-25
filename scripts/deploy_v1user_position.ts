@@ -27,6 +27,7 @@ export async function run(provider: NetworkProvider) {
             updatedTimestamps: null,
             withdrawState: Dictionary.empty(),
             lastWithdrawalRequest: 0n,
+            wallets: Dictionary.empty(),
         },
     );
 
