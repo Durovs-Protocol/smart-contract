@@ -99,10 +99,16 @@ User flow (env: v={0/1})
    - Версия контракта;
    - Total collateral in USD (Для проверки первой версии, показывает сумму залога в %);
 
-Миграция (env: v=0)
+# Миграция на v=1
 
-Подготовка: 
-  - `yarn set-settings`
+1. Поменять в `.env` => `v=1`
+2. Запустить: `yarn set-deps`, `yarn set-settings`, `yarn set-assets`, `yarn set-rates`
+3. Поменять в `.env` => `v=0`
+4. Запустить `yarn migration` для переноса up
+5. Запустить `yarn migration-pool` для переноса средств на пуле
+6. Поменять в `.env` => `v=1`
+
+### Описание:
 
 Запуск миграции для up 
  - `yarn migration`

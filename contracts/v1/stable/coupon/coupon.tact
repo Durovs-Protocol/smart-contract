@@ -125,7 +125,7 @@ contract Coupon with Deployable, OwnableTransferable {
     }
 
     receive(msg: CouponExchangeRequest) {
-        require(sender() == self.deps.manager, "Durov Protocol: invalid sender");
+        require(sender() == self.deps.manager, "Durov Protocol: invalid sender wallet");
         let winit: StateInit = self.getJettonWalletInit(msg.user);
         let walletAddress: Address = contractAddress(winit);
 

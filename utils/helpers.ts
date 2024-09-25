@@ -174,28 +174,18 @@ export async function createAssetsList(owner: string, provider: NetworkProvider,
         {
             name: 'stTON', // Свой токен
             master: process.env.ST_JETTON_MINTER,
-            pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
+            pool_wallet: 'EQDNhy-nxYFgUqzfUzImBEP67JqsyMIcyk2S5_RwNNEYku0k',
         },
         {
             name: 'hTON',
             master: process.env.HT_JETTON_MINTER,
-            pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
+            pool_wallet: 'EQDPdq8xjAhytYqfGSX8KcFWIReCufsB9Wdg0pLlYSO_h76w',
         },
         {
             name: 'tsTON',
             master: process.env.TS_JETTON_MINTER,
-            pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
+            pool_wallet: 'EQC98_qAmNEptUtPc7W6xdHh_ZHrBUFpw5Ft_IzNU20QAJav',
         },
-        // {
-        //     name: 'NOT',
-        //     master: process.env.NOT_JETTON_MINTER,
-        //     pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
-        // },
-        // {
-        //     name: 'DOGS',
-        //     master: process.env.DOGS_JETTON_MINTER,
-        //     pool_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
-        // }
     ];
 
     for (const asset of assets) {
