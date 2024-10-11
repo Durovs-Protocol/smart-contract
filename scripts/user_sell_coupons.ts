@@ -1,7 +1,6 @@
 import { NetworkProvider } from '@ton/blueprint';
 import { Address, toNano } from '@ton/core';
 import contracts from '../utils/contracts';
-import { gas } from '../utils/data';
 import { log, timer } from '../utils/helpers';
 import { CouponWallet } from '../wrappers/V1CouponWallet';
 
@@ -22,7 +21,7 @@ export async function run(provider: NetworkProvider) {
 
     await v1manager.send(
         user,
-        { value: toNano(gas) },
+        { value: toNano(0.7) },
         {
             $$type: 'SellCoupons',
             amount: toNano(couponAmount),

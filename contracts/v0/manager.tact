@@ -4,8 +4,8 @@ import "./up_pool.tact";
 import "./utils/messages.tact";
 
 contract Manager with Deployable, OwnableTransferable {
-    const MinTonForStorage: Int = ton("0.01321");
-    const GasConsumption: Int = ton("0.01321");
+    const MinTonForStorage: Int = ton("0.0135469");
+    const GasConsumption: Int = ton("0.015469");
     deps: Deps;
     assets:  map<Address, Asset>;
     balances: map<Address, Int>;
@@ -95,7 +95,7 @@ contract Manager with Deployable, OwnableTransferable {
     //=============================================================================
     receive(msg: SupplyMessage) {
         let ctx: Context = context();
-        require(sender() == self.deps.reservePool, "Durovs Protocol: No access for supply");
+        require(sender() == self.deps.reservePool, "Durovs Protocol: No access for supply.");
         let valueToSendForward: Int = ctx.value - (self.MinTonForStorage + self.GasConsumption);
         let init: StateInit = initOf UserPosition(msg.user,
             self.deps.manager,

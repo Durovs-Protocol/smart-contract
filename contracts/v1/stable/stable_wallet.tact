@@ -153,7 +153,7 @@ contract StableWallet {
         );
     }
 
-    receive(msg: BurnForCoupons){
+    receive(msg: BurnForCoupons) {
         require(sender() == self.master, "Durov Protocol: Invalid sender");
         require((self.balance - msg.amount) >= 0, "Durov Protocol: Invalid balance");
         self.balance = self.balance - msg.amount;

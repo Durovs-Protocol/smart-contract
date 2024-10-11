@@ -37,6 +37,7 @@ export async function run(provider: NetworkProvider) {
                 }
             )
         }
+    
         if (process.env.v == '1') {
         await contract.send(
             user,
@@ -49,7 +50,7 @@ export async function run(provider: NetworkProvider) {
                 couponRate: toNano(couponRate)
             }
         )
-    }
+        }
 
         await timer('Настройка пула', unixDelay, getMinDelay);
     }

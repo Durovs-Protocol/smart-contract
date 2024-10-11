@@ -111,7 +111,6 @@ contract CouponWallet
                 bounce: true,
                 body: CouponExchangeNotification{
                     amount: msg.amount,
-                    stableAmount: msg.stableAmount,
                     user: self.owner,
                 }.toCell()
             }

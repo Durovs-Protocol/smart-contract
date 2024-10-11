@@ -401,7 +401,6 @@ message MintCouponNotification {
 
 message CouponExchangeRequest {
     amount: Int;
-    stableAmount: Int;
     user: Address;
 }
 
@@ -410,11 +409,9 @@ message SellCoupons {
 }
 message CouponExchangeNotification {
     amount: Int;
-    stableAmount: Int;
     user: Address;
 }
 message OnCouponBurnComplete {
-    stableAmount: Int;
     amount: Int;
     user: Address;
 }

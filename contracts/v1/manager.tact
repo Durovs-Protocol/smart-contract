@@ -313,13 +313,18 @@ contract V1Manager with Deployable, OwnableTransferable {
     }
 
     receive(msg: BuyCouponsMessage){
+
         let totalCoupons = (msg.amount * self.settings.couponRate) / 1000000000;
+
         if (self.couponsForBuy <= totalCoupons) {
             let availableAmount = (self.couponsForBuy * 1000000000) / self.settings.couponRate;
             let comment: StringBuilder = beginString();
             comment.append("Durovs Protocol: You can buy coupons for ");
             comment.append(availableAmount.toFloatString(9));
             comment.append(" durovUSD");
+            // убери строку ниже
+            comment.append(msg.amount.toString());
+            
             send(SendParameters{
                     to: sender(),
                     value: 0,
@@ -357,6 +362,7 @@ contract V1Manager with Deployable, OwnableTransferable {
     }
 
     receive(msg: SellCoupons){
+
         if (self.couponsForSell <= msg.amount) {
             let comment: StringBuilder = beginString();
             comment.append("Durovs Protocol:  ");
@@ -372,69 +378,43 @@ contract V1Manager with Deployable, OwnableTransferable {
             );
             return;
         }
-        let stableAmount: Int = (msg.amount * self.settings.couponRate) / 1000000000;
+
         send(SendParameters{
                 to: self.deps.coupon,
                 value: 0,
                 mode: SendRemainingValue + SendBounceIfActionFail,
                 bounce: true,
-                body: CouponExchangeRequest{amount: msg.amount, stableAmount: stableAmount, user: sender()}.toCell()
+                body: CouponExchangeRequest{amount: msg.amount,  user: sender()}.toCell()
             }
         );
     }
 
-    receive(msg: TokenNotification){
+    receive(msg: TokenNotification) {
+            let payload: Slice = msg.forwardPayload.preloadRef().beginParse();
 
-        if (msg.from == self.deps.stable) {
-            // let payload: Slice = msg.forwardPayload;
-            // let prevSender: Address = payload.loadAddress();
-            // let user: Address = payload.loadAddress();
-            // let stable: Int = payload.loadInt(9);
+            let prevSender: Address = payload.loadAddress();
+            let user: Address = payload.loadAddress();
             
+            if (prevSender == self.deps.coupon) {
+                self.couponsForSell -= msg.amount;
+                let comment: StringBuilder = beginString();
+                comment.append("Durovs Protocol:  ");
+                comment.append(msg.amount.toFloatString(9));
+                comment.append(" coupons were paid,");
+                comment.append(" you recieved ");
+                comment.append(msg.amount.toFloatString(9));
+                comment.append(" durovUSD.");
 
-            // if (prevSender == self.deps.coupon) {
-            //     self.couponsForSell -= msg.amount;
-            //     let comment: StringBuilder = beginString();
-            //     comment.append("Durovs Protocol:  ");
-            //     comment.append(amount.toFloatString(9));
-            //     comment.append(" coupons were paid,");
-            //     comment.append(" you recieved ");
-            //     comment.append(stable.toFloatString(9));
-            //     comment.append(" durovUSD.");
-            //     send(SendParameters{
-            //             to: user,
-            //             value: 0,
-            //             mode: SendIgnoreErrors + SendRemainingValue,
-            //             bounce: false,
-            //             body: comment.toString().asComment()
-            //         }
-            //     );
-            //     return;
-            // }
-            let comment: StringBuilder = beginString();
-            comment.append(msg.from.toString());
-            // comment.append(user.toString());
-            // comment.append(stable.toString());
-            // comment.append(amount.toString());
-            send(SendParameters{
-                    to: self.owner,
-                    value: 0,
-                    mode: SendIgnoreErrors + SendRemainingValue,
-                    bounce: false,
-                    body: comment.toString().asComment()
-                }
-            );
-            // "Durovs Protocol: unprocessable notification"
-        } else {
-                        send(SendParameters{
-                    to: self.owner,
-                    value: 0,
-                    mode: SendIgnoreErrors + SendRemainingValue,
-                    bounce: false,
-                    body: "Durovs Protocol: unprocessable notification".asComment()
-                }
-            );
-        }
+                send(SendParameters{
+                        to: user,
+                        value: 0,
+                        mode: SendIgnoreErrors + SendRemainingValue,
+                        bounce: false,
+                        body: comment.toString().asComment()
+                    }
+                );
+                return;
+            }
     }
 
     //=============================================================================

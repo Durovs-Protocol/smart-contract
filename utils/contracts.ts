@@ -17,12 +17,12 @@ async function contracts(provider: NetworkProvider, user: Address) {
         const reservePool = provider.open(
                 process.env.v == '0' ?  
                 ReservePool.fromAddress(Address.parse(await loadAddress('reservePool'))) :  
-                V1ReservePool.fromAddress(Address.parse(await loadAddress('reservePool')))
+                V1ReservePool.fromAddress(Address.parse(await loadAddress('reservePool', undefined, '1')))
         )
         const manager = provider.open(
                 process.env.v == '0' ?  
                 Manager.fromAddress(Address.parse(await loadAddress('manager'))) : 
-                V1Manager.fromAddress(Address.parse(await loadAddress('manager')))
+                V1Manager.fromAddress(Address.parse(await loadAddress('manager', undefined, '1')))
         )
         const v1manager = provider.open(
                 V1Manager.fromAddress(Address.parse(await loadAddress('manager', undefined, '1')))
