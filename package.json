@@ -10,7 +10,10 @@
         "test": "jest --verbose",
         "install": "yarn build && yarn deploy && yarn setup",
 
-        "run-script": "npx blueprint run --mainnet  --tonviewer",
+        "run-script": "npx blueprint run --testnet --mnemonic  --tonviewer",
+        
+        "--run-script-test-----": "npx blueprint run --testnet --mnemonic  --tonviewer",
+        "--run-script-mainnet--": "npx blueprint run --mainnet  --tonviewer",
         
         "v0-scripts": "------------------------------------------------------------------------",
         "v0-build": "rm -rf build/Manager && rm -rf build/Manager.compiled.jspn && blueprint build manager",
