@@ -1,11 +1,11 @@
-import { NetworkProvider } from '@ton/blueprint';
-import { Address, beginCell, internal, toNano } from '@ton/core';
-import { mnemonicToPrivateKey } from '@ton/crypto';
-import { JettonMaster } from '@ton/ton';
-import { WalletContractV4 } from '@ton/ton/dist/wallets/WalletContractV4';
-import contracts from '../utils/contracts';
-import { assets, gas } from '../utils/data';
-import { contractVersion, getBalanceValue, log, timer } from '../utils/helpers';
+import { NetworkProvider } from '@ton/blueprint'
+import { Address, beginCell, internal, toNano } from '@ton/core'
+import { mnemonicToPrivateKey } from '@ton/crypto'
+import { JettonMaster } from '@ton/ton'
+import { WalletContractV4 } from '@ton/ton/dist/wallets/WalletContractV4'
+import contracts from '../utils/contracts'
+import { assets, gas } from '../utils/data'
+import { contractVersion, getBalanceValue, log, timer } from '../utils/helpers'
 
 export async function run(provider: NetworkProvider) {
     const user = provider.sender();
@@ -76,14 +76,16 @@ export async function run(provider: NetworkProvider) {
     let contract = client.open(wallet);
     let seqno: number = await contract.getSeqno();
 
-    let oldBalance = 0n;
+    let oldBalance = 0;
     let positionId = await manager.getLastPositionId();
 
-    if (positionId != 0n) {
-        oldBalance = await (await getBalanceValue(userPosition, assetIndex))();
-    }
+    // закоментированно для проверки версии 1 отдельно, доработать чтобы не пришлось комментировать 
+    // if (positionId != 0n) {
+    //     oldBalance = await (await getBalanceValue(userPosition, assetIndex))();
+    //     console.log(oldBalance)
+    // }
 
-    let balanceAfterSupply = oldBalance + toNano(supplyAmount);
+    let balanceAfterSupply = toNano(oldBalance) + toNano(supplyAmount);
     await contract.sendTransfer({
         seqno,
         secretKey: keyPair.secretKey,

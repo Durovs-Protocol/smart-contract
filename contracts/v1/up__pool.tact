@@ -561,8 +561,8 @@ contract V1UserPosition  {
 }
 
 contract V1ReservePool with Deployable, OwnableTransferable {
-    const MinTonForStorage: Int = ton("0.01");
-    const GasConsumption: Int = ton("0.01");
+    const MinTonForStorage: Int = ton("0.0165");
+    const GasConsumption: Int = ton("0.0165");
     deps: Deps;
     owner: Address;
     balances:  map<Address, Int>;

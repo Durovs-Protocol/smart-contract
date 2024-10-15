@@ -1,9 +1,9 @@
-import { NetworkProvider } from '@ton/blueprint';
-import { Address, Dictionary, toNano } from '@ton/core';
-import contracts from '../utils/contracts';
-import { assets, assetsv1, setupGas } from '../utils/data';
-import { contractVersion, getBalanceValue, log, timer } from '../utils/helpers';
-import { Asset } from '../wrappers/Manager';
+import { NetworkProvider } from '@ton/blueprint'
+import { Address, Dictionary, toNano } from '@ton/core'
+import contracts from '../utils/contracts'
+import { assets, assetsv1, setupGas } from '../utils/data'
+import { contractVersion, getBalanceValue, log, timer } from '../utils/helpers'
+import { Asset } from '../wrappers/Manager'
 
 export async function run(provider: NetworkProvider) {
     const user = provider.sender().address as Address;

@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'fs'
 
 /**
  * Общие настройки
@@ -19,7 +19,7 @@ const assetsJson = JSON.parse(fs.readFileSync('utils/assets_v0.json', 'utf-8'))
 const assetsJsonV1 = JSON.parse(fs.readFileSync('utils/assets_v1.json', 'utf-8'))
 
 
-export const  assets = assetsJson?.assets
+export const  assets = process.env.v == '0' ?  assetsJson?.assets : assetsJsonV1?.assets
 export const  assetsv1 = assetsJsonV1?.assets
 /**
  * Supply

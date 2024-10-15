@@ -1,8 +1,8 @@
-import { NetworkProvider } from '@ton/blueprint';
-import { Address, toNano } from '@ton/core';
-import contracts from '../utils/contracts';
-import { log, timer } from '../utils/helpers';
-import { CouponWallet } from '../wrappers/V1CouponWallet';
+import { NetworkProvider } from '@ton/blueprint'
+import { Address, toNano } from '@ton/core'
+import contracts from '../utils/contracts'
+import { log, timer } from '../utils/helpers'
+import { CouponWallet } from '../wrappers/V1CouponWallet'
 
 export async function run(provider: NetworkProvider) {
 
@@ -11,7 +11,7 @@ export async function run(provider: NetworkProvider) {
 
     const userWalletAddress = await coupon.getGetWalletAddress(user.address as Address);
     const userWallet = provider.open(await CouponWallet.fromAddress(userWalletAddress));
-    const couponAmount = 1 ;
+    const couponAmount = 1.1;
 
     const balanceBeforeExchange = await userWallet.getGetBalance()
     console.log(balanceBeforeExchange)

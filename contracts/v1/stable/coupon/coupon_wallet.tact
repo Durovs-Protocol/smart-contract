@@ -3,8 +3,8 @@ import "../../utils/messages.tact";
 @interface("org.ton.jetton.wallet")
 contract CouponWallet
 {
-    const minTonsForStorage: Int = ton("0.01");
-    const gasConsumption: Int = ton("0.01");
+    const minTonsForStorage: Int = ton("0.01756");
+    const gasConsumption: Int = ton("0.01756");
     balance: Int;
     owner: Address;
     master: Address;

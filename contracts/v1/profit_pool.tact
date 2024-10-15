@@ -5,8 +5,8 @@ import "./user_position.tact";
 import "./utils/math.tact";
 
 contract ProfitPool with Deployable, OwnableTransferable {
-    const MinTonForStorage: Int = ton("0.01");
-    const GasConsumption: Int = ton("0.01");
+    const MinTonForStorage: Int = ton("0.01654");
+    const GasConsumption: Int = ton("0.01645");
     deps: Deps;
     owner: Address;
     init(owner: Address){

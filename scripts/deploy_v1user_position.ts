@@ -1,8 +1,8 @@
-import { NetworkProvider } from '@ton/blueprint';
-import { Address, Dictionary, toNano } from '@ton/core';
-import contracts from '../utils/contracts';
-import { assets, gas } from '../utils/data';
-import { saveAddress } from '../utils/helpers';
+import { NetworkProvider } from '@ton/blueprint'
+import { Address, Dictionary, toNano } from '@ton/core'
+import contracts from '../utils/contracts'
+import { assets, gas } from '../utils/data'
+import { saveAddress } from '../utils/helpers'
 
 export async function run(provider: NetworkProvider) {
     const user = provider.sender();
@@ -34,6 +34,8 @@ export async function run(provider: NetworkProvider) {
     const userPosition = await v1manager.getUserPositionAddress(provider.sender().address!!)
 
     await provider.waitForDeploy(userPosition, 30);
+
+    
     await saveAddress('userPosition', v1manager.address);
     console.log('=============================================================================');
     console.log('New Up deployed successfully');
