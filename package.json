@@ -2,6 +2,9 @@
     "name": "runa-protocol",
     "version": "1.0.0",
     "private": true,
+    "engines" : { 
+        "node" : ">=22.0.0"
+    },
     "scripts": {
         "build": "yarn v0-build && yarn v1-build",
         "deploy": "yarn v0-deploy && yarn v1-deploy",
@@ -9,58 +12,46 @@
         "blueprint-build": "blueprint build ",
         "test": "jest --verbose",
         "install": "yarn build && yarn deploy && yarn setup",
-
         "run-script": "npx blueprint run --testnet --mnemonic  --tonviewer",
-        
         "--run-script-test-----": "npx blueprint run --testnet --mnemonic  --tonviewer",
         "--run-script-mainnet--": "npx blueprint run --mainnet  --tonviewer",
-        
         "v0-scripts": "------------------------------------------------------------------------",
         "v0-build": "rm -rf build/Manager && rm -rf build/Manager.compiled.jspn && blueprint build manager",
         "v0-deploy": "yarn v0-deploy-manager && yarn v0-deploy-reserve",
         "v0-deploy-manager": "yarn run-script deploy_manager",
         "v0-deploy-reserve": "yarn run-script deploy_pool",
-
         "setup-scripts": "------------------------------------------------------------------------",
-
         "setup": "yarn set-deps && yarn set-settings && yarn set-assets && yarn set-rates",
         "set-deps": "yarn run-script set_deps",
         "set-settings": "yarn run-script set_settings",
         "set-assets": "yarn run-script set_assets",
         "set-rates": "yarn run-script set_rates",
-
         "actions-scripts": "------------------------------------------------------------------------",
         "supply": "yarn run-script user_supply",
         "supply-ton": "yarn run-script user_supply_ton",
         "withdraw": "yarn run-script user_withdraw",
-
         "migration-scripts": "------------------------------------------------------------------------",
         "migration": "yarn run-script admin_migration",
         "migration-solo": "yarn run-script admin_migration_special",
         "migration-pool": "yarn run-script admin_migration_pool",
         "delete-manager": "yarn run-script admin_delete_old_manager",
-
         "v1": "------------------------------------------------------------------------",
-
         "v1-build": "rm -rf build/V1Manager && rm -rf build/V1Manager.compiled.jspn && rm -rf build/V1Stable && rm -rf build/V1Stable.compiled.json   && rm -rf build/V1Coupon && rm -rf build/V1Coupon.compiled.jspn && blueprint build V1Stable &&  blueprint build V1Manager && blueprint build V1Coupon",
         "v1-deploy": "yarn v1-deploy-pool && yarn v1-deploy-manager && yarn v1-deploy-stable && yarn v1-deploy-coupon",
         "v1-deploy-manager": "yarn run-script deploy_v1manager",
         "v1-deploy-pool": "yarn run-script deploy_v1pool",
         "v1-deploy-stable": "yarn run-script deploy_v1stable",
         "v1-deploy-coupon": "yarn run-script deploy_v1coupon",
-        "v1-deploy-up": "yarn run-script deploy_v1user_position",
-
         "mint": "yarn run-script user_mint",
         "burn": "yarn run-script user_burn",
         "manage-coupons": "yarn run-script admin_manage_coupons",
         "buy-coupons": "yarn run-script user_buy_coupons",
         "sell-coupons": "yarn run-script user_sell_coupons",
-
+        "payment-ton": "yarn run-script  user_acquiring_ton",
+        "payment": "yarn run-script  user_acquiring",
         "control": "------------------------------------------------------------------------",
-
         "info-system": "yarn run-script info_system",
         "info-user": "yarn run-script info_user",
-
         "DEPRECATED": "------------------------------------------------------------------------",
         "stabilization": "yarn run-script stabilization"
     },
@@ -81,5 +72,8 @@
     },
     "dependencies": {
         "@aws-crypto/sha256-js": "^5.2.0"
-    }
+    },
+    "browser": {
+        "@tact-lang/compiler": "^1.5.2"
+      }
 }

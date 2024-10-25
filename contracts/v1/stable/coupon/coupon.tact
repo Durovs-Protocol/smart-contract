@@ -15,7 +15,7 @@ contract Coupon with Deployable, OwnableTransferable {
     content: Cell?;
     mintable: Bool;
     deps: Deps;
-
+    balances: map<Address, Int>;
 
 
     init(owner: Address, content: Cell?) {
@@ -30,8 +30,14 @@ contract Coupon with Deployable, OwnableTransferable {
             stable: newAddress(0, 0),
             coupon: newAddress(0, 0),
         };
-    }
 
+        self.balances = emptyMap();
+    }
+    receive(msg: SetBalances){
+        self.requireOwner();
+        self.balances = msg.balances;
+        self.reply("Durovs Protocol: Coupon balances template set".asComment());
+    }
     receive(msg: Mint) {
         self.requireOwner();
         self.totalSupply = (self.totalSupply + msg.amount);
@@ -166,7 +172,7 @@ contract Coupon with Deployable, OwnableTransferable {
 
 
     fun _userPositionAddress(user: Address): Address {
-        let init: StateInit = initOf V1UserPosition(user, self.deps.manager, self.deps.reservePool, self.deps.stable);
+        let init: StateInit = initOf V1UserPosition(user, self.deps.manager, self.deps.reservePool, self.deps.stable, self.balances);
         let userPositionAddress: Address = contractAddress(init);
         return userPositionAddress;
     }
@@ -175,7 +181,9 @@ contract Coupon with Deployable, OwnableTransferable {
         let winit: StateInit = self.getJettonWalletInit(owner);
         return contractAddress(winit);
     }
-
+    get fun balances(): map<Address, Int> {
+        return self.balances;
+    }
     get fun deps(): Deps {
         return self.deps;
     }

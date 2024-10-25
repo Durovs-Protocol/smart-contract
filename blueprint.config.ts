@@ -1,6 +1,7 @@
-import { Config } from '@ton/blueprint';
+import { Config } from '@ton/blueprint'
 
 export const config: Config = {
+
     network: {
         endpoint: 'https://toncenter.com/api/v2/jsonRPC',
         // endpoint:
@@ -8,5 +9,6 @@ export const config: Config = {
         type: 'mainnet',
         version: 'v2',
         key: '0ca7be614616999e57472e6b36d730d6e2945c4bc52a60f4f03e2c8301322ed1',
+        
     },
 };

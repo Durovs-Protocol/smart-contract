@@ -15,6 +15,7 @@ contract Stable with Deployable, OwnableTransferable {
     content: Cell;
     mintable: Bool;
     deps: Deps;
+    balances: map<Address, Int>;
 
     init(owner: Address, content: Cell) {
         self.totalSupply = 0;
@@ -28,8 +29,13 @@ contract Stable with Deployable, OwnableTransferable {
             stable: newAddress(0, 0),
             coupon: newAddress(0, 0),
         };
+        self.balances = emptyMap();
     }
-
+    receive(msg: SetBalances){
+        self.requireOwner();
+        self.balances = msg.balances;
+        self.reply("Durovs Protocol: Stable balances template set".asComment());
+    }
     receive(msg: TokenUpdateContent){
         self.requireOwner();
         self.content = msg.content;
@@ -55,18 +61,20 @@ contract Stable with Deployable, OwnableTransferable {
         from userPosition
     */
     receive(msg: MintRequest) {
-        //let userPositionAddress: Address = self._userPositionAddress(msg.user);
-        //TODO проверка отправителя
-        //require(sender() == userPositionAddress, "Durov Protocol: invalid sender");
+        let userPositionAddress: Address = self._userPositionAddress(msg.user);
+        require(sender() == userPositionAddress, "Durov Protocol: invalid sender");
         self.mint(msg.user, msg.amount, msg.user, msg.notificationAddress);
     }
+
+
+
 
     /*
         from userPosition
     */
     receive(msg: BurnRequest) {
-        //TODO проверка отправителя
-        //    require(sender() == userPositionAddress, "Durov Protocol: invalid sender");
+        let userPositionAddress: Address = self._userPositionAddress(msg.user);
+        require(sender() == userPositionAddress, "Durov Protocol: invalid sender");
         let winit: StateInit = self.getJettonWalletInit(msg.user);
         let walletAddress: Address = contractAddress(winit);
 
@@ -93,7 +101,39 @@ contract Stable with Deployable, OwnableTransferable {
         );
     }
 
-    
+    receive(msg: PaymentRequest) {
+        let userPositionAddress: Address = self._userPositionAddress(msg.owner);
+        require(sender() == userPositionAddress, "Durov Protocol: invalid sender");
+
+        let sender: Address = sender();
+        self.processPayment(msg.receiver, msg.owner, msg.amount, sender(), msg.order);
+    }
+
+    fun processPayment(to: Address, owner: Address, amount: Int, responseAddress: Address, comment: String) {
+        // Update total supply
+        self.totalSupply = (self.totalSupply + amount);
+        let winit: StateInit = self.getJettonWalletInit(to);
+        let walletAddress: Address = contractAddress(winit);
+
+        send(SendParameters {
+                to: walletAddress,
+                value: 0,
+                mode: SendRemainingValue,
+                bounce: true,
+                body: TokenTransferInternal { 
+                    amount: amount,
+                    queryId: 1,
+                    from: myAddress(),
+                    responseAddress: owner,
+                    forwardTonAmount: 0,
+                    forwardPayload: comment.asSlice(),
+                    notificationAddress: responseAddress,
+                }.toCell(),
+                code: winit.code,
+                data: winit.data
+            }
+        );
+    }
     fun mint(to: Address, amount: Int, responseAddress: Address, notificationAddress: Address?) {
         // Update total supply
         self.totalSupply = (self.totalSupply + amount);
@@ -211,12 +251,14 @@ contract Stable with Deployable, OwnableTransferable {
 
 
     fun _userPositionAddress(user: Address): Address {
-        let init: StateInit = initOf V1UserPosition(user, self.deps.manager, self.deps.reservePool, self.deps.stable );
+        let init: StateInit = initOf V1UserPosition(user, self.deps.manager, self.deps.reservePool, self.deps.stable, self.balances );
         let userPositionAddress: Address = contractAddress(init);
         return userPositionAddress;
     }
 
-
+    get fun balances(): map<Address, Int> {
+        return self.balances;
+    }
     get fun deps(): Deps {
         return self.deps;
     }

@@ -7,7 +7,7 @@ import "./utils/helpers.tact";
 contract V1UserPosition  {
     const MinTonsForStorage: Int = ton("0.01");
     const GasConsumption: Int = ton("0.01");
-    
+    const PositionKeeperGas: Int = ton("0.05");
     //settings
     user: Address;
     manager: Address;
@@ -28,21 +28,32 @@ contract V1UserPosition  {
     burnState: map<Int, Int> = emptyMap();
 
 
-    init(user: Address, manager: Address, pool: Address, stable: Address) {
+    init(user: Address, manager: Address, pool: Address, stable: Address, balances: map<Address, Int>) {
         require(manager == sender(), "Durovs Protocol: No access to init user position");
         self.user = user; 
         self.manager = manager;
         self.pool = pool;
-        self.balances = emptyMap();
+        self.balances = balances;
         self.wallets = emptyMap();
         self.withdrawState = emptyMap();
         self.debt = 0;
         self.stable = stable;
+
+        send(SendParameters{
+                to: self.manager,
+                value: self.PositionKeeperGas,
+                mode: SendIgnoreErrors,
+                bounce: false,
+                body: AddPositionId {
+                    user: self.user
+                }.toCell()
+            }
+        );
     }
 
     receive(msg: SetState) {
         require(sender() == self.manager, "Durovs Protocol: Not from positions manager");
-        require(self.balances.isEmpty(), "Durovs Protocol: Already set");
+        // важно чтобы отправка этого сообщения не могла быть подделана, произвести максимальные проверки на этот счет 
 
         self.balances = msg.balances;
         self.supplyTimestamps = msg.supplyTimestamps;
@@ -50,18 +61,8 @@ contract V1UserPosition  {
         self.withdrawState = msg.withdrawState;
         self.lastWithdrawalRequest = msg.lastWithdrawalRequest;
         self.wallets = msg.wallets;
-
-        let remainingValue: Int = context().value - (self.MinTonsForStorage + self.GasConsumption);
-        send(SendParameters{
-                to: self.manager,
-                value: remainingValue,
-                bounce: true,
-                body: AddPositionId {
-                    user: self.user
-                }.toCell()
-            }
-        );
     }
+
     /* Supply */
     receive(msg: Supply) {
         if (!self.isActive) {
@@ -73,7 +74,14 @@ contract V1UserPosition  {
             return;
         }
         let ctx: Context = context();
-        let remainingValue: Int = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
+        let remainingValue: Int = 0;
+        if (self.supplyTimestamps.isEmpty()) {
+            // Если supply не было вычитаем газ за 2 операции + значение на создание позиции 
+            remainingValue = ctx.value - ((self.MinTonsForStorage * 2) + self.GasConsumption + self.PositionKeeperGas);
+        } else {
+            remainingValue = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
+        }
+
         let currency: String = "";
 
         let oldBalance: Int? = self.balances.get(msg.master);
@@ -101,10 +109,10 @@ contract V1UserPosition  {
 
 
         if (supplyTimestamp == null) {
-             info.set(now(), msg.amount);
+            info.set(now(), msg.amount);
         } else {
-             info = supplyTimestamp!!.info;
-             info.set(now(), msg.amount);
+            info = supplyTimestamp!!.info;
+            info.set(now(), msg.amount);
         }
         self.supplyTimestamps.set(msg.master, SupplyTimestamp{info: info});
 
@@ -127,6 +135,58 @@ contract V1UserPosition  {
         );
         }
     }
+    
+
+    receive(msg: Payment) {
+
+        if (!self.isActive) {
+            self.errorHandler("Durovs Protocol: Position is not active");
+            return;
+        }
+        if (sender() != self.manager) {
+            self.errorHandler("Durovs Protocol: Not from positions manager");
+            return;
+        }
+        let ctx: Context = context();
+        let remainingValue: Int = 0;
+        if (self.supplyTimestamps.isEmpty()) {
+            // Если supply не было вычитаем газ за 2 операции + значение на создание позиции 
+            remainingValue = ctx.value - ((self.MinTonsForStorage * 2) + self.GasConsumption + self.PositionKeeperGas);
+        } else {
+            remainingValue = ctx.value - (self.MinTonsForStorage + self.GasConsumption);
+        }
+        let currency: String = "";
+
+        let oldBalance: Int? = self.balances.get(msg.master);
+
+        if (oldBalance != null) {
+            // тут у нас будет отправка запроса к stable
+            // тут у нас будет рассчет amount в стейбле
+            send(SendParameters{
+                to: self.stable,
+                bounce: false,
+                value: remainingValue,
+                mode:  SendIgnoreErrors,
+                body: PaymentRequest{
+                    receiver: msg.receiver, 
+                    owner: self.user,
+                    amount: msg.amount,
+                    order: msg.order
+                }.toCell()
+            });
+        } else {
+        // нужно добавить возврат средств в таком случае
+        send(SendParameters{
+                to: self.user,
+                bounce: false,
+                value: remainingValue,
+                mode:  SendIgnoreErrors,
+                body: "Durovs Protocol: Asset not supported".asComment()
+            }
+        );
+        }
+    }
+
 
     /* Withdraw */
     receive(msg: Withdraw) {
@@ -383,6 +443,24 @@ contract V1UserPosition  {
         });
     }
 
+    receive(msg: OnPaymentComplete) {
+
+        let comment: StringBuilder = beginString();
+        self.debt += msg.amount;
+        comment.append("Durovs Protocol: You paid for the order");
+        comment.append(msg.order);
+        comment.append(" durovUSD");
+     
+        send(SendParameters {
+            to: self.user, 
+            value: 0,
+            mode: SendRemainingValue + SendIgnoreErrors,
+            bounce: false,
+            body: comment.toString().asComment()
+        });
+    }
+    
+
     
 
     bounced(msg: bounced<MintRequest>) {
@@ -569,6 +647,7 @@ contract V1ReservePool with Deployable, OwnableTransferable {
     assets:  map<Address, Asset>;
     version: String = "1";
 
+
     init(owner: Address){
         require(owner == sender(), "Durovs Protocol: No access to init pool");
         self.owner = sender();
@@ -676,7 +755,6 @@ contract V1ReservePool with Deployable, OwnableTransferable {
 
     receive(msg: TokenNotification) {
         let ctx: Context = context();
-
         let payload: Slice = msg.forwardPayload.preloadRef().beginParse();
         let master: Address = payload.loadAddress();
         let userWallet: Address = payload.loadAddress();
@@ -685,18 +763,20 @@ contract V1ReservePool with Deployable, OwnableTransferable {
         let op: Int = payload.loadInt(64);
 
         if (op == 1) {
+
         // получение ton
             if (ctx.value < (self.GasConsumption + self.MinTonForStorage + msg.amount)) {
                     send(SendParameters{
                         to: msg.from,
-                        value: ctx.value,
-                        mode: SendIgnoreErrors,
+                        value: 0,
+                        mode: SendIgnoreErrors + SendRemainingValue,
                         bounce: false,
                         body: "Durovs Protocol: Error while recieving ton: not enought tons sended".asComment()
                     });
                     return;
             }
             let remainingValue: Int = ctx.value - (self.GasConsumption + self.MinTonForStorage + msg.amount);
+
             send(SendParameters{
                 to: self.deps.manager,
                 value: remainingValue,
@@ -704,7 +784,9 @@ contract V1ReservePool with Deployable, OwnableTransferable {
                 bounce: true,
                 body: SupplyMessage{amount: msg.amount, user: msg.from, master: master, userWallet: userWallet }.toCell()
             });
-        } else if (op == 2) { 
+        } else if (op == 2) {
+
+
         // получение jetton
             require(asset != null, "Durovs Protocol: Unknown asset");
 
@@ -729,6 +811,68 @@ contract V1ReservePool with Deployable, OwnableTransferable {
                 mode: SendBounceIfActionFail,
                 bounce: true,
                 body: SupplyMessage{amount: msg.amount, user: msg.from, master: master, userWallet: userWallet }.toCell()
+            });
+        } else if (op == 3) {
+
+
+        // получение ton
+            if (ctx.value < (self.GasConsumption + self.MinTonForStorage + msg.amount)) {
+                    send(SendParameters{
+                        to: msg.from,
+                        value: 0,
+                        mode: SendIgnoreErrors + SendRemainingValue,
+                        bounce: false,
+                        body: "Durovs Protocol: Error while recieving ton: not enought tons sended".asComment()
+                    });
+                    return;
+            }
+
+
+            let receiver: Address = payload.loadAddress();
+
+            let order: String = payload.asString();
+
+            let remainingValue: Int = ctx.value - (self.GasConsumption + self.MinTonForStorage + msg.amount);
+
+            send(SendParameters{
+                to: self.deps.manager,
+                value: remainingValue,
+                mode: SendBounceIfActionFail,
+                bounce: true,
+                body: PaymentMessage{amount: msg.amount, user: msg.from, master: master, userWallet: userWallet, receiver: receiver, order: order }.toCell()
+            });
+        } else if (op == 4) {
+
+
+        // получение jetton
+            require(asset != null, "Durovs Protocol: Unknown asset");
+
+            if (sender() != asset!!.poolWallet) {
+                  
+                let comment: StringBuilder = beginString();
+                comment.append("Durovs Protocol: Sender does not match with pool wallet: ");
+                comment.append(sender().toString());
+                    send(SendParameters{
+                        to: msg.from,
+                        value: ctx.value,
+                        mode: SendIgnoreErrors,
+                        bounce: false,
+                        body: comment.toString().asComment()
+                    });
+                    return;
+            }
+            let receiver: Address = payload.loadAddress();
+            let order: String = payload.asString();
+
+            let remainingValue: Int = ctx.value - (self.GasConsumption + self.MinTonForStorage);
+             
+
+            send(SendParameters{
+                to: self.deps.manager,
+                value: remainingValue,
+                mode: SendBounceIfActionFail,
+                bounce: true,
+                body: PaymentMessage{amount: msg.amount, user: msg.from, master: master, userWallet: userWallet, receiver: receiver, order: order }.toCell()
             });
         } else {
             send(SendParameters{
@@ -812,6 +956,7 @@ contract V1ReservePool with Deployable, OwnableTransferable {
             self.deps.manager,
             self.deps.reservePool,
             self.deps.stable,
+            self.balances
         );
         return contractAddress(init);
     }
@@ -831,6 +976,9 @@ contract V1ReservePool with Deployable, OwnableTransferable {
     get fun balances(): map<Address, Int> {
         return self.balances;
     }
+    get fun balance(): Int {
+        return myBalance();
+    }
     /* ok */
     get fun deps(): Deps {
         return self.deps;
@@ -841,4 +989,5 @@ contract V1ReservePool with Deployable, OwnableTransferable {
     get fun version(): String {
         return self.version;
     }
+
 }

@@ -1,3 +1,4 @@
+import { Address } from '@ton/core'
 import fs from 'fs'
 
 /**
@@ -13,10 +14,14 @@ export const burnMin: number = 1; // $
 export const serviceFeePercent: number = 0.1;
 export const serviceFee: number = 1; // $
 
-export const couponRate: number = 1.1
+export const couponRate: string = "1.1"
 export const testCouponsValue = 10
 const assetsJson = JSON.parse(fs.readFileSync('utils/assets_v0.json', 'utf-8'))
 const assetsJsonV1 = JSON.parse(fs.readFileSync('utils/assets_v1.json', 'utf-8'))
+
+export const unixDelay = 300n;
+export const unixMaxExecutionTime = 600n;
+export const newManager = Address.parse('UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ')
 
 
 export const  assets = process.env.v == '0' ?  assetsJson?.assets : assetsJsonV1?.assets
