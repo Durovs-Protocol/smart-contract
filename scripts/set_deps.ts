@@ -1,8 +1,8 @@
-import { NetworkProvider } from '@ton/blueprint';
-import { Address, toNano } from '@ton/core';
-import contracts from '../utils/contracts';
-import { setupGas } from '../utils/data';
-import { contractVersion, log, timer } from '../utils/helpers';
+import { NetworkProvider } from '@ton/blueprint'
+import { Address, toNano } from '@ton/core'
+import contracts from '../utils/contracts'
+import { setupGas } from '../utils/data'
+import { contractVersion, log, timer } from '../utils/helpers'
 
 export async function run(provider: NetworkProvider) {
     const user = provider.sender().address as Address;
@@ -32,7 +32,6 @@ export async function run(provider: NetworkProvider) {
         await timer(`Set deps in ${name}`, manager.address, managerAddress(contract));
         await timer(`Set deps in ${name}`, reservePool.address, reservePoolAddress(contract));
         await timer(`Set deps in ${name}`, coupon.address, couponAddress(contract));
-        
     }
 
     await setDeps(manager, 'manager');

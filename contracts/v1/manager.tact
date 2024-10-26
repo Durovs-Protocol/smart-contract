@@ -4,8 +4,8 @@ import "./up__pool.tact";
 import "./utils/messages.tact";
 
 contract V1Manager with Deployable, OwnableTransferable {
-    const MinTonForStorage: Int = ton("0.01765");
-    const GasConsumption: Int = ton("0.01756");
+    const MinTonForStorage: Int = ton("0.01");
+    const GasConsumption: Int = ton("0.01");
     deps: Deps;
     assets: map<Address, Asset>;
     balances: map<Address, Int>;
@@ -75,7 +75,7 @@ contract V1Manager with Deployable, OwnableTransferable {
         self.assets = msg.assets;
         self.reply("Durovs Protocol: New Manager assets set".asComment());
     }
-
+    // нужно этот кусок переделать, формировать из assets балансы в up
     receive(msg: SetBalances){
         self.requireOwner();
         self.balances = msg.balances;
@@ -83,6 +83,7 @@ contract V1Manager with Deployable, OwnableTransferable {
     }
 
     receive(str: String){
+
         // приимаем текстовые сообщения и перенаправляем их владельцу контракта
         send(SendParameters{to: self.owner, value: 0, mode: SendRemainingValue, bounce: false, body: str.asComment()});
     }
@@ -90,20 +91,24 @@ contract V1Manager with Deployable, OwnableTransferable {
     //=============================================================================
     // User actions
     //=============================================================================
-    receive(msg: SupplyMessage){
+    receive(msg: SupplyMessage) {
+
         let ctx: Context = context();
-        require(sender() == self.deps.reservePool, "Durovs Protocol: Insufficient TONs sent");
-        let valueToSendForward: Int = ctx.value - (self.MinTonForStorage + self.GasConsumption);
+        require(sender() == self.deps.reservePool, "Durovs Protocol: Invalid sender");
+  
         let init: StateInit = initOf V1UserPosition(msg.user,
             self.deps.manager,
             self.deps.reservePool,
-            self.deps.stable
+            self.deps.stable,
+            self.balances
         );
         let userPosition: Address = contractAddress(init);
+
+
         send(SendParameters{
                 to: userPosition,
-                value: valueToSendForward,
-                mode: SendBounceIfActionFail,
+                value: 0,
+                mode: SendRemainingValue + SendBounceIfActionFail,
                 bounce: true,
                 body: Supply{
                     user: msg.user,
@@ -117,6 +122,45 @@ contract V1Manager with Deployable, OwnableTransferable {
         );
     }
 
+
+    receive(msg: PaymentMessage) {
+
+        let ctx: Context = context();
+        require(sender() == self.deps.reservePool, "Durovs Protocol: Invalid sender");
+
+        // let valueToSendForward: Int = ctx.value - (self.MinTonForStorage + self.GasConsumption + self.GasConsumption);
+        let init: StateInit = initOf V1UserPosition(msg.user,
+            self.deps.manager,
+            self.deps.reservePool,
+            self.deps.stable,
+            self.balances
+        );
+        let userPosition: Address = contractAddress(init);
+
+        send(SendParameters{
+                to: userPosition,
+                value: 0,
+                mode: SendRemainingValue,
+                bounce: true,
+
+                body: Payment{
+                    user: msg.user,
+                    amount: msg.amount,
+                    master: msg.master,
+                    userWallet: msg.userWallet,
+                    order: msg.order,
+                    receiver: msg.receiver,
+                }.toCell(),
+                code: init.code,
+                data: init.data
+            }
+        );
+    }
+    /* ok */
+    bounced(msg: bounced<Payment>){
+
+        self.bouncedHandler("Durovs Protocol: Error in payment.");
+    }
     /* ok */
     bounced(msg: bounced<Supply>){
         self.bouncedHandler("Durovs Protocol: Error in supply.");
@@ -126,6 +170,7 @@ contract V1Manager with Deployable, OwnableTransferable {
         self.lastPositionId = self.lastPositionId + 1;
         let init: StateInit = initOf V1PositionKeeper(self.lastPositionId, myAddress());
         let positionAddress: Address = contractAddress(init);
+
         send(SendParameters{
                 to: positionAddress,
                 value: 0,
@@ -169,7 +214,8 @@ contract V1Manager with Deployable, OwnableTransferable {
         let init: StateInit = initOf V1UserPosition(msg.user,
             self.deps.manager,
             self.deps.reservePool,
-            self.deps.stable
+            self.deps.stable,
+            self.balances
         );
         let newUserPosition: Address = contractAddress(init);
         send(SendParameters{
@@ -422,7 +468,7 @@ contract V1Manager with Deployable, OwnableTransferable {
     //=============================================================================
 
     fun _userPositionAddress(user: Address): Address {
-        let init: StateInit = initOf V1UserPosition(user, self.deps.manager, self.deps.reservePool, self.deps.stable);
+        let init: StateInit = initOf V1UserPosition(user, self.deps.manager, self.deps.reservePool, self.deps.stable, self.balances);
         return contractAddress(init);
     }
 
@@ -485,6 +531,9 @@ contract V1Manager with Deployable, OwnableTransferable {
     get fun assets(): map<Address, Asset> {
         return self.assets;
     }
+    get fun rates(): map<Address, Int> {
+        return self.rates;
+    }
 
     get fun settings(): Settings {
         return self.settings;
@@ -508,6 +557,8 @@ contract V1Manager with Deployable, OwnableTransferable {
 }
 
 contract V1PositionKeeper {
+        const MinTonForStorage: Int = ton("0.01");
+            const GasConsumption: Int = ton("0.01");
     id: Int as uint32;
     position: Address;
     manager: Address;
@@ -521,14 +572,16 @@ contract V1PositionKeeper {
     }
 
     receive(msg: SetAddress){
+
         require(self.position == newAddress(0, 0), "Already set");
         self.position = msg.position;
         self.user = msg.user;
+        let ctx: Context = context();
         send(SendParameters{
-                to: self.manager,
+                to: self.user,
                 bounce: false,
-                value: 0,
-                mode: SendRemainingValue,
+                value: (ctx.value - (self.MinTonForStorage + self.GasConsumption)),
+                mode: SendIgnoreErrors,
                 body: "Durovs Protocol: User position has been created".asComment()
             }
         );

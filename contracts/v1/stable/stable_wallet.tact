@@ -52,7 +52,9 @@ contract StableWallet {
             }
         );
     }
+    receive(msg: PaymentRequest) {
 
+    }
     receive(msg: TokenTransferInternal) {
         // Check sender
         let ctx: Context = context();
@@ -60,25 +62,54 @@ contract StableWallet {
             let sinit: StateInit = initOf StableWallet(self.master, msg.from);
             require(contractAddress(sinit) == ctx.sender, "Durov Protocol: invalid sender");
         }
+
         // Update balance
         self.balance = self.balance + msg.amount;
+
         require(self.balance >= 0, "Invalid balance");
         // Adjust value for gas
         let msgValue: Int = ctx.value;
         let tonBalanceBeforeMsg: Int = myBalance() - msgValue;
         let storageFee: Int = self.minTonsForStorage - min(tonBalanceBeforeMsg, self.minTonsForStorage);
+
         if (msg.notificationAddress != null) {
-            msgValue = (msgValue - (storageFee + self.gasConsumption * 2));
+
+            if (msg.queryId == 1) {
+                    msgValue = (msgValue - (storageFee + self.gasConsumption * 3) );
+                    //проверить точно ли хватает газа в операции
+
+                    send(SendParameters{
+                        to: msg.notificationAddress!!,
+                        value: msgValue,
+                        bounce: false,
+                        mode: SendIgnoreErrors,
+                        body: OnPaymentComplete{amount: msg.amount, order: msg.forwardPayload.asString()}.toCell()
+                    }
+                );
+
+            send(SendParameters{
+                    to: self.owner,
+                    value: self.gasConsumption,
+                    bounce: false,
+
+                    body: msg.forwardPayload.asString().asComment()
+                }
+            );
+            } else {
+            msgValue = (msgValue - (storageFee + self.gasConsumption * 2) );
             send(SendParameters{
                     to: msg.notificationAddress!!,
                     value: msgValue,
                     bounce: true,
-                    body: OnMintComplete{amount: msg.amount}.toCell()
+                    body: OnMintComplete{amount: msg.amount }.toCell()
                 }
             );
+            }
+
         } else {
             msgValue = (msgValue - (storageFee + self.gasConsumption));
         }
+
         // Forward ton
         if (msg.forwardTonAmount > 0 && msg.responseAddress != null) {
             let fwdFee: Int = ctx.readForwardFee();
@@ -87,7 +118,7 @@ contract StableWallet {
                     to: msg.responseAddress!!,
                     value: msg.forwardTonAmount,
                     bounce: false,
-                    body: TokenNotification{
+                    body: TokenNotification {
                         queryId: msg.queryId,
                         amount: msg.amount,
                         from: msg.from,
@@ -96,6 +127,7 @@ contract StableWallet {
                 }
             );
         }
+
         // Cashback
         if (msg.responseAddress != null && msgValue > 0) {
             send(SendParameters{

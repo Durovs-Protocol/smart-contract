@@ -1,8 +1,9 @@
-import { NetworkProvider } from '@ton/blueprint';
-import { Address, toNano } from '@ton/core';
-import { setupGas, stableJettonParams } from '../utils/data';
-import { buildOnchainMetadata, saveAddress } from '../utils/helpers';
-import { Stable } from '../wrappers/V1Stable';
+import { NetworkProvider } from '@ton/blueprint'
+import { Address, toNano } from '@ton/core'
+import { setupGas, stableJettonParams } from '../utils/data'
+import { buildOnchainMetadata, saveAddress } from '../utils/helpers'
+import { Stable } from '../wrappers/V1Stable'
+
 export async function run(provider: NetworkProvider) {
     const owner = provider.sender().address as Address;
     const stable = provider.open(await Stable.fromInit(owner, buildOnchainMetadata(stableJettonParams)));

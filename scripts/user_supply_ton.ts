@@ -1,9 +1,9 @@
 
-import { NetworkProvider } from '@ton/blueprint';
-import { Address, beginCell, toNano } from '@ton/core';
-import contracts from '../utils/contracts';
-import { assets, gas } from '../utils/data';
-import { log } from '../utils/helpers';
+import { NetworkProvider } from '@ton/blueprint'
+import { Address, beginCell, toNano } from '@ton/core'
+import contracts from '../utils/contracts'
+import { assets, gas } from '../utils/data'
+import { log } from '../utils/helpers'
 
 export async function run(provider: NetworkProvider) {
 	const user = provider.sender();
@@ -25,7 +25,6 @@ export async function run(provider: NetworkProvider) {
 
 	let assetBuilder = beginCell().storeMaybeRef(beginCell().storeAddress(Address.parse(assets[assetIndex].master)).storeAddress(Address.parse('UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ')).storeInt(1n, 64).endCell()).endCell().asSlice()
 
-	
 	let oldBalance = 0n
 	let positionId = await manager.getLastPositionId()
 
